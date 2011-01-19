@@ -17,9 +17,9 @@
 #include <libgen.h>
 
 #ifdef USE_DBRECSTORE
-#include "be_io_dbrecstore.h"
+#include <be_io_dbrecstore.h>
 #else
-#include "be_io_filerecstore.h"
+#include <be_io_filerecstore.h>
 #endif
 
 #include "toolsutils.h"
