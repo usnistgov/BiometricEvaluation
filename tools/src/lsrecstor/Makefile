@@ -14,6 +14,7 @@ all: $(PROGS)
 
 lsrecstor: lsrecstor.cpp
 	$(CXX) $(CXXFLAGS) -DUSE_DBRECSTORE $^ -o $@ -lbiomeval
+	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
 	$(CP) $@ $(LOCALBIN)/$@
 
 clean:
