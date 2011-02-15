@@ -15,12 +15,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <libgen.h>
-
-#ifdef USE_DBRECSTORE
-#include <be_io_dbrecstore.h>
-#else
-#include <be_io_filerecstore.h>
-#endif
+#include <be_io_factory.h>
 
 #include "toolsutils.h"
 
@@ -44,7 +39,7 @@ PrintUsage(char* argv[])
 int 
 main (int argc, char* argv[]) 
 {
-	DBRecordStore *rs = NULL;
+	std::tr1::shared_ptr<RecordStore>rs;
 	string sName, sParentDir, sKey;
 	int c, iRetCode = EXIT_FAILURE;
 	
@@ -69,11 +64,7 @@ main (int argc, char* argv[])
 	
 	/* Open record store */
 	try {
-#ifdef USE_DBRECSTORE
-		rs = new DBRecordStore(sName, sParentDir);
-#else
-		rs = new FileRecordStore(sName, sParentDir);
-#endif
+		rs = Factory::openRecordStore(sName, sParentDir, READONLY);
 	} catch (Error::ObjectDoesNotExist) {
 		ERR_OUT("Failed to open record store %s", sName.c_str());
 	} catch (Error::StrategyError e) {
@@ -97,8 +88,6 @@ main (int argc, char* argv[])
 	iRetCode = EXIT_SUCCESS;
 	
 err_out:
-	if (rs)
-		delete rs;
 
 	return iRetCode;
 }

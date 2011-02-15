@@ -17,6 +17,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <be_io_dbrecstore.h>
+#include <be_io_factory.h>
 
 #include "toolsutils.h"
 
@@ -28,9 +29,11 @@ using namespace BiometricEvaluation::IO;
 void 
 PrintUsage(char* argv[])
 {
-	printf("Usage: %s [-b size] [-d dest_dir] [-r] <name> <description> <recstore_list>\n\n", argv[0]);
+	printf("Usage: %s [-b size] [-d dest_dir] [-r] <name> <description> <recordtype> <recstore_list>\n\n", argv[0]);
 	printf("   name          = Record store name\n");
 	printf("   description   = Record store description\n");
+	printf("   recordtype  = Record store type "
+				"(ie. BERKELEYDB, ARCHIVE, or FILE)\n\n");
 	printf("   recstore_list = File containing list of record stores to merge\n\n");
 	printf("Options:\n");
 	printf("   -b size       = Buffer size to allocate for reading data from record stores;\n");
@@ -47,12 +50,12 @@ PrintUsage(char* argv[])
 int 
 main (int argc, char* argv[]) 
 {
-	DBRecordStore *rsout = NULL;
-	DBRecordStore *rsin = NULL;
+	std::tr1::shared_ptr<RecordStore>rsout;
+	std::tr1::shared_ptr<RecordStore>rsin;
 	FILE *fp = NULL;
 	struct stat sb;
 	unsigned char *pBuffer = NULL;
-	string sName, sDescription, sRecStoreList, sDestDir, sKey;
+	string sName, sDescription, sRecordType, sRecStoreList, sDestDir, sKey;
 	char szLine[1024];
 	char *pszRecStoreName, *pszRecStoreDir;
 	uint64_t ui64DataSize;
@@ -61,7 +64,7 @@ main (int argc, char* argv[])
 	int iStatus = EXIT_FAILURE;
 	
 	opterr = 0;
-	
+
 	/* Process optional command line arguments */
 	while ((c = getopt (argc, argv, "b:d:r")) != -1)
 		switch (c) {
@@ -81,13 +84,14 @@ main (int argc, char* argv[])
 			PrintUsage(argv);
 		}
 		
-	if ((argc - optind) != 3)
+	if ((argc - optind) != 4)
 		PrintUsage(argv);
 	
 	/* Process mandatory command line arguments */
 	sName.assign(argv[optind]);
 	sDescription.assign(argv[optind+1]);
-	sRecStoreList.assign(argv[optind+2]);
+	sRecordType.assign(argv[optind+2]);
+	sRecStoreList.assign(argv[optind+3]);
 	
 	/* Allocate buffer to read data from record stores */
 	pBuffer = new unsigned char[iBufferSize];
@@ -113,7 +117,11 @@ main (int argc, char* argv[])
 	
 	/* Create new record store */
 	try {
-		rsout = new DBRecordStore(sName, sDescription, sDestDir);		
+		rsout = Factory::createRecordStore
+				(sName,
+				sDescription,
+				sRecordType,
+				sDestDir);
 	} catch (Error::ObjectExists) {
 		string sInput;
 		
@@ -122,10 +130,14 @@ main (int argc, char* argv[])
 			getline(cin, sInput);
 			
 			if (sInput == "y" || sInput == "Y") {
-				DBRecordStore::removeRecordStore(sName, sDestDir);
+				RecordStore::removeRecordStore(sName, sDestDir);
 				
 				try {
-					rsout = new DBRecordStore(sName, sDescription, sDestDir);
+					rsout = Factory::createRecordStore
+							(sName,
+							sDescription,
+							sRecordType,
+							sDestDir);
 				} catch (Error::ObjectExists) {
 					ERR_OUT("Failed to create record store %s!", sName.c_str());
 				} catch (Error::StrategyError e) {
@@ -152,9 +164,11 @@ main (int argc, char* argv[])
 			pszRecStoreDir = dirname(szLine);
 			
 			try {
-				/* Open record store */
-				rsin = new DBRecordStore(pszRecStoreName, pszRecStoreDir);
-				
+				/* Open record store */				//rsin = new DBRecordStore(pszRecStoreName, pszRecStoreDir);
+				rsin = Factory::openRecordStore
+						(pszRecStoreName,
+						pszRecStoreDir,
+						READONLY);
 				/* 
 				 * Step through the keys in this record store and add each to
 				 * the new record store.
@@ -186,9 +200,6 @@ main (int argc, char* argv[])
 			} catch (Error::StrategyError e) {
 				ERR_OUT("A strategy error occurred: %s", e.getInfo().c_str());
 			}
-			
-			delete rsin;
-			rsin = NULL;
 		}
 	}
 	
@@ -207,7 +218,7 @@ main (int argc, char* argv[])
 				pszRecStoreDir = dirname(szLine);
 				
 				try {
-					DBRecordStore::removeRecordStore(pszRecStoreName, pszRecStoreDir);
+					RecordStore::removeRecordStore(pszRecStoreName, pszRecStoreDir);
 				} catch (Error::ObjectDoesNotExist) {
 					ERR_OUT("Failed to remove record store %s!", szLine);
 				} catch (Error::StrategyError e) {
@@ -226,10 +237,6 @@ err_out:
 		delete[] pBuffer;
 	if (fp)
 		fclose(fp);
-	if (rsout)
-		delete rsout;
-	if (rsin)
-		delete rsin;
 
 	return iStatus;
 }

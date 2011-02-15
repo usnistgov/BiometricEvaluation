@@ -15,14 +15,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <libgen.h>
-
-#ifdef USE_DBRECSTORE
-#include <be_io_dbrecstore.h>
-#else
-#include <be_io_filerecstore.h>
-#endif
-
+#include <be_io_factory.h>
 #include "toolsutils.h"
+
 
 using namespace BiometricEvaluation;
 using namespace BiometricEvaluation::IO;
@@ -50,7 +45,7 @@ PrintUsage(char* argv[])
 int 
 main (int argc, char* argv[]) 
 {
-	RecordStore *rs = NULL;
+	std::tr1::shared_ptr<RecordStore>rs;
 	FILE *fp = NULL;
 	unsigned char *pBuffer = NULL;
 	string sName, sInputDir, sOutputDir, sSearchKey, sKey, sOutputFile;
@@ -120,11 +115,7 @@ main (int argc, char* argv[])
 
 	/* Open record store */
 	try {
-#ifdef USE_DBRECSTORE
-		rs = new DBRecordStore(sName, sInputDir);
-#else
-		rs = new FileRecordStore(sName, sInputDir);
-#endif
+		rs = Factory::openRecordStore(sName, sInputDir, READONLY);
 	} catch (Error::ObjectDoesNotExist) {
 		ERR_OUT("Failed to open record store %s!", sName.c_str());
 	} catch (Error::StrategyError e) {
@@ -232,8 +223,6 @@ err_out:
 		delete[] pBuffer;
 	if (fp)
 		fclose(fp);
-	if (rs)
-		delete rs;
 
 	return iRetCode;
 }

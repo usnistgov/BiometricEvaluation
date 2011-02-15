@@ -16,13 +16,7 @@
 #include <sys/stat.h>
 #include <libgen.h>
 #include <errno.h>
-
-#ifdef USE_DBRECSTORE
-#include <be_io_dbrecstore.h>
-#else
-#include <be_io_filerecstore.h>
-#endif
-
+#include <be_io_factory.h>
 #include "toolsutils.h"
 
 using namespace BiometricEvaluation;
@@ -31,9 +25,11 @@ using namespace BiometricEvaluation::IO;
 void 
 PrintUsage(char* argv[])
 {
-	printf("Usage: %s [-d dest_dir] [-v] <name> <description> <filelist>\n\n", argv[0]);
+	printf("Usage: %s [-d dest_dir] [-v] <name> <description> <recordtype> <filelist>\n\n", argv[0]);
 	printf("   name        = Record store name\n");
 	printf("   description = Record store description\n");
+	printf("   recordtype  = Record store type "
+			"(ie. BERKELEYDB, ARCHIVE, or FILE)\n\n");
 	printf("   filelist    = File containing list of files to add to the record store\n\n");
 	printf("Options:\n");
 	printf("   -d dest_dir = Directory to create record store in; default is current\n");
@@ -50,7 +46,7 @@ PrintUsage(char* argv[])
  * Add a file to the record store.
  */
 bool 
-AddFileToRecordStore(RecordStore *rs, char *pszFilename)
+AddFileToRecordStore(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename)
 {
 	struct stat sb;
 	string sKey;
@@ -96,7 +92,7 @@ err_out:
  * Verify the file data matches what was inserted into the record store.
  */
 bool 
-VerifyRecord(RecordStore *rs, char *pszFilename)
+VerifyRecord(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename)
 {
 	string sKey;
 	uint64_t ui64Length;
@@ -163,10 +159,10 @@ err_out:
 int 
 main (int argc, char* argv[]) 
 {
-	RecordStore *rs = NULL;
+	std::tr1::shared_ptr<RecordStore>rs;
 	FILE *pFile = NULL;
 	struct stat sb;
-	string sName, sDescription, sDestDir, sFileList;
+	string sName, sDescription, sRecordType, sDestDir, sFileList;
 	char szFilename[1024];
 	int c;
 	bool bVerify = false;
@@ -189,13 +185,14 @@ main (int argc, char* argv[])
 			PrintUsage(argv);
 		}
 		
-	if ((argc - optind) != 3)
+	if ((argc - optind) != 4)
 		PrintUsage(argv);
 	
 	/* Process mandatory command line arguments */
 	sName.assign(argv[optind]);
 	sDescription.assign(argv[optind+1]);
-	sFileList.assign(argv[optind+2]);
+	sRecordType.assign(argv[optind+2]);
+	sFileList.assign(argv[optind+3]);
 	
 	/* If necessary, create output directory */
 	if (!sDestDir.empty()) {
@@ -211,11 +208,11 @@ main (int argc, char* argv[])
 	
 	/* Create new record store */
 	try {
-#ifdef USE_DBRECSTORE
-		rs = new DBRecordStore(sName, sDescription, sDestDir);
-#else
-		rs = new FileRecordStore(sName, sDescription, sDestDir);
-#endif		
+		rs = Factory::createRecordStore
+				(sName,
+				sDescription,
+				sRecordType,
+				sDestDir);
 	} catch (Error::ObjectExists) {
 		string sInput;
 		
@@ -224,14 +221,14 @@ main (int argc, char* argv[])
 			getline(cin, sInput);
 			
 			if (sInput == "y" || sInput == "Y") {
-				DBRecordStore::removeRecordStore(sName, sDestDir);
+				RecordStore::removeRecordStore(sName, sDestDir);
 				
 				try {
-#ifdef USE_DBRECSTORE
-				rs = new DBRecordStore(sName, sDescription, sDestDir);
-#else
-				rs = new FileRecordStore(sName, sDescription, sDestDir);
-#endif
+					rs = Factory::createRecordStore
+							(sName,
+							sDescription,
+							sRecordType,
+							sDestDir);
 				} catch (Error::ObjectExists) {
 					ERR_OUT("Failed to create record store!");
 				} catch (Error::StrategyError e) {
@@ -257,9 +254,6 @@ main (int argc, char* argv[])
 				ERR_OUT("Failed to add %s to the record store!",  szFilename);
 		}
 	}
-
-	delete rs;
-	rs = NULL;
 	
 	printf("Record store created successfully!\n");
 	
@@ -271,11 +265,10 @@ main (int argc, char* argv[])
 		
 		/* Open record store */
 		try {
-#ifdef USE_DBRECSTORE
-			rs = new DBRecordStore(sName, sDestDir);
-#else
-			rs = new FileRecordStore(sName, sDestDir);
-#endif
+			rs = Factory::openRecordStore
+					(sName,
+					sDestDir,
+					READONLY);
 		} catch (Error::ObjectDoesNotExist) {
 			ERR_OUT("Failed to open record store.  Verification failed!");
 		}
@@ -306,8 +299,6 @@ main (int argc, char* argv[])
 err_out:
 	if (pFile)
 		fclose(pFile);
-	if (rs)
-		delete rs;
 
 	return iRetCode;
 }
