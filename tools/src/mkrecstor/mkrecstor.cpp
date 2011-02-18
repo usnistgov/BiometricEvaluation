@@ -17,6 +17,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <be_io_factory.h>
+#include <be_text.h>
 #include "toolsutils.h"
 
 using namespace BiometricEvaluation;
@@ -25,7 +26,7 @@ using namespace BiometricEvaluation::IO;
 void 
 PrintUsage(char* argv[])
 {
-	printf("Usage: %s [-d dest_dir] [-v] <name> <description> <recordtype> <filelist>\n\n", argv[0]);
+	printf("Usage: %s [-d dest_dir] [-v] [-h] <name> <description> <recordtype> <filelist>\n\n", argv[0]);
 	printf("   name        = Record store name\n");
 	printf("   description = Record store description\n");
 	printf("   recordtype  = Record store type "
@@ -34,7 +35,8 @@ PrintUsage(char* argv[])
 	printf("Options:\n");
 	printf("   -d dest_dir = Directory to create record store in; default is current\n");
 	printf("                 directory\n");
-	printf("   -v          = Verify contents of record store after it is created\n\n");
+	printf("   -v          = Verify contents of record store after it is created\n");
+	printf("   -h          = Use an MD5 hash as a key instead of a filename\n\n");
 	printf("Examples:\n");
 	printf("   %s MyStore \"Sample Store\" filelist.txt\n", argv[0]);
 	printf("   %s -d MyDir -v MyStore \"Sample Store\" filelist.txt\n\n", argv[0]);
@@ -46,7 +48,8 @@ PrintUsage(char* argv[])
  * Add a file to the record store.
  */
 bool 
-AddFileToRecordStore(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename)
+AddFileToRecordStore(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename,
+    bool hash, std::tr1::shared_ptr<RecordStore> hash_rs)
 {
 	struct stat sb;
 	string sKey;
@@ -66,11 +69,17 @@ AddFileToRecordStore(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename)
 	pData = new unsigned char[sb.st_size];
 	fread(pData, 1, sb.st_size, pFile);
 	
-	sKey.assign(basename(pszFilename));
+	if (!hash)
+		sKey.assign(basename(pszFilename));
+	else
+		sKey.assign(Text::digest(basename(pszFilename)));
 	
 	/* Insert file into record store using the filename as the key */
 	try {
 		rs->insert(sKey, pData, sb.st_size);
+		if (hash)
+			hash_rs->insert(sKey, basename(pszFilename),
+			    strlen(basename(pszFilename)));
 	} catch (Error::ObjectExists) {
 		ERR_OUT("File %s already exist in the record store", pszFilename);
 	} catch (Error::StrategyError e) {
@@ -92,7 +101,7 @@ err_out:
  * Verify the file data matches what was inserted into the record store.
  */
 bool 
-VerifyRecord(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename)
+VerifyRecord(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename, bool hash)
 {
 	string sKey;
 	uint64_t ui64Length;
@@ -110,8 +119,11 @@ VerifyRecord(std::tr1::shared_ptr<RecordStore> rs, char *pszFilename)
 	pFile = fopen(pszFilename, "rb");
 	if (pFile == NULL)
 		ERR_OUT("Failed to open file %s. Verification failed!", pszFilename);
-		
-	sKey.assign(basename(pszFilename));
+	
+	if (!hash)
+		sKey.assign(basename(pszFilename));
+	else
+		sKey.assign(Text::digest(basename(pszFilename)));
 	
 	try {
 		ui64Length = rs->length(sKey);
@@ -159,19 +171,20 @@ err_out:
 int 
 main (int argc, char* argv[]) 
 {
-	std::tr1::shared_ptr<RecordStore>rs;
+	std::tr1::shared_ptr<RecordStore>rs, hash_rs;
 	FILE *pFile = NULL;
 	struct stat sb;
 	string sName, sDescription, sRecordType, sDestDir, sFileList;
 	char szFilename[1024];
 	int c;
 	bool bVerify = false;
+	bool hash = false;
 	int iRetCode = EXIT_FAILURE;
 	
 	opterr = 0;
 	
 	/* Process optional command line arguments */
-	while ((c = getopt (argc, argv, "d:v")) != -1)
+	while ((c = getopt (argc, argv, "d:vh")) != -1)
 		switch (c) {
 		case 'd':
 			sDestDir.assign(optarg);
@@ -179,6 +192,10 @@ main (int argc, char* argv[])
 			
 		case 'v':
 			bVerify = true;
+			break;
+
+		case 'h':
+			hash = true;
 			break;
 			
 		default:
@@ -213,6 +230,11 @@ main (int argc, char* argv[])
 				sDescription,
 				sRecordType,
 				sDestDir);
+		if (hash) {
+			hash_rs = Factory::createRecordStore(
+			    sName + "_hash", sDescription, sRecordType,
+			    sDestDir);
+		}
 	} catch (Error::ObjectExists) {
 		string sInput;
 		
@@ -222,6 +244,9 @@ main (int argc, char* argv[])
 			
 			if (sInput == "y" || sInput == "Y") {
 				RecordStore::removeRecordStore(sName, sDestDir);
+				if (hash)
+					RecordStore::removeRecordStore(sName + 
+					    "_hash", sDestDir);
 				
 				try {
 					rs = Factory::createRecordStore
@@ -229,6 +254,14 @@ main (int argc, char* argv[])
 							sDescription,
 							sRecordType,
 							sDestDir);
+					if (hash) {
+						hash_rs = 
+						    Factory::createRecordStore(
+						    sName + "_hash",
+						    sDescription,
+						    sRecordType,
+						    sDestDir);
+					}
 				} catch (Error::ObjectExists) {
 					ERR_OUT("Failed to create record store!");
 				} catch (Error::StrategyError e) {
@@ -250,7 +283,8 @@ main (int argc, char* argv[])
 	/* Add each file in our file list to the record store */
 	while (!feof(pFile)) {
 		if (fscanf(pFile, "%s\n", szFilename) == 1) {
-			if (!AddFileToRecordStore(rs, szFilename))
+			if (!AddFileToRecordStore(rs, szFilename, hash, 
+			    hash_rs))
 				ERR_OUT("Failed to add %s to the record store!",  szFilename);
 		}
 	}
@@ -281,7 +315,7 @@ main (int argc, char* argv[])
 		 */
 		while (!feof(pFile)) {
 			if (fscanf(pFile, "%s\n", szFilename) == 1) {
-				if (!VerifyRecord(rs, szFilename))
+				if (!VerifyRecord(rs, szFilename, hash))
 					ERR_OUT("Verification failed for %s in record store!", szFilename);
 				
 				uiFileCount++;
