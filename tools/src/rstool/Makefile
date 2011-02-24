@@ -7,20 +7,26 @@
 # its use by other parties, and makes no guarantees, expressed or implied,
 # about its quality, reliability, or any other characteristic.
 #
-
-# The 'core' library and programs, that always build
-CORE := dmprecstor lsrecstor mkrecstor mrgrecstor rstool
-SUBDIRS := $(CORE)
-
+# Builds rstool, a tool for manipulating RecordStores.
+#
 include ../common.mk
+#
+LIB = -lbiomeval
+#
+SOURCES = rstool.cpp
+OBJECTS = $(SOURCES:%.cpp=%.o)
+#
+PROGRAM = rstool
 
-all:
-	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) all) || exit 1; \
-	done
+all: $(PROGRAM)
+
+debug: CXXFLAGS += -g
+debug: all
+
+$(PROGRAM): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LIB)
+	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
+	$(CP) $@ $(LOCALBIN)/$@
 
 clean:
-	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) clean) || exit 1; \
-	done
-	rm -f .gdb_history
+	$(RM) $(PROGRAM) $(OBJECTS)
