@@ -12,7 +12,6 @@
  * rstool - A tool for manipulating RecordStores.
  */
 
-#include <sys/dir.h>
 #include <sys/stat.h>
 
 #include <cstdio>
@@ -22,6 +21,7 @@
 #include <iostream>
 #include <vector>
 
+#include <dirent.h>
 #include <getopt.h>
 #include <libgen.h>
 
