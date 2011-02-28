@@ -160,11 +160,17 @@ static Action procargs(int argc, char *argv[])
 	/* Parse out common options first */
 	char c;
 	optind = 2;
+	Utility::AutoArray<char> base, dir;
 	while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
 		case 'o':	/* Output directory */
+			base.resize(strlen(optarg) + 1);
+			dir.resize(strlen(optarg) + 1);
+			strncpy(base, optarg, strlen(optarg) + 1);
+			strncpy(dir, optarg, strlen(optarg) + 1);
+
 			if (IO::Utility::constructAndCheckPath(
-			    basename(optarg), dirname(optarg), oflagval)) {
+			    basename(base), dirname(dir), oflagval)) {
 				if (!IO::Utility::pathIsDirectory(optarg)) {
 					cerr << optarg << " is not a "
 					    "directory." << endl;
@@ -246,9 +252,14 @@ static int procargs_dump(int argc, char *argv[], string &key, string &range,
 		return (EXIT_FAILURE);
 	}
 	try {
-		rs = IO::Factory::openRecordStore(
-		    basename(const_cast<char*>(sflagval.c_str())),
-		    dirname(const_cast<char*>(sflagval.c_str())));
+		Utility::AutoArray<char> base, dir;
+		base.resize(sflagval.size() + 1);
+		dir.resize(sflagval.size() + 1);
+		sflagval.copy(base, sflagval.size());
+		base[sflagval.size()] = '\0';
+		sflagval.copy(dir, sflagval.size());
+		dir[sflagval.size()] = '\0';
+		rs = IO::Factory::openRecordStore(basename(base), dirname(dir));
 	} catch (Error::Exception &e) {
 		cerr << "Could not open " << sflagval << ".  " <<
 		    e.getInfo() << endl;
@@ -375,10 +386,14 @@ static int list(int argc, char *argv[])
 {
 	tr1::shared_ptr<IO::RecordStore> rs;
 	try {
-		rs = IO::Factory::openRecordStore(
-		    basename(const_cast<char*>(sflagval.c_str())),
-		    dirname(const_cast<char*>(sflagval.c_str())),
-		    IO::READONLY);
+		Utility::AutoArray<char> base, dir;
+		base.resize(sflagval.size() + 1);
+		dir.resize(sflagval.size() + 1);
+		sflagval.copy(base, sflagval.size());
+		base[sflagval.size()] = '\0';
+		sflagval.copy(dir, sflagval.size());
+		dir[sflagval.size()] = '\0';
+		rs = IO::Factory::openRecordStore(basename(base), dirname(dir));
 	} catch (Error::Exception &e) {
 		cerr << "Could not open RecordStore - " << e.getInfo() << endl;
 		return (EXIT_FAILURE);
@@ -503,8 +518,12 @@ static int make_insert_contents(const string &filename,
 	buffer_file.close();
 	
 	static string key = "", hash_value = "";
+	static Utility::AutoArray<char> base;
 	try {
-		key = basename(const_cast<char*>(filename.c_str()));
+		base.resize(filename.size() + 1);
+		filename.copy(base, filename.size());
+		base[filename.size()] = '\0';
+		key = basename(base);
 		if (hash_rs.get() == NULL)
 			rs->insert(key, buffer, buffer_size);
 		else {
@@ -627,16 +646,21 @@ static int make(int argc, char *argv[])
 
 	string line;
 	ifstream input;
+	Utility::AutoArray<char> base, dir;
 	for (unsigned int i = 0; i < elements.size(); i++) {
 		if (IO::Utility::pathIsDirectory(elements[i])) {
 			try {
 				/* Recursively insert contents of directory */
+				base.resize(elements[i].size() + 1);
+				dir.resize(elements[i].size() + 1);
+				elements[i].copy(base, elements[i].size());
+				base[elements[i].size()] = '\0';
+				elements[i].copy(dir, elements[i].size());
+				dir[elements[i].size()] = '\0';
+
 				if (make_insert_directory_contents(
-				    basename(const_cast<char*>(
-				    elements[i].c_str())),
-				    dirname(const_cast<char*>(
-				    elements[i].c_str())), rs, hash_rs) !=
-				    EXIT_SUCCESS)
+				    basename(base), dirname(dir), rs,
+				    hash_rs) != EXIT_SUCCESS)
 			    		return (EXIT_FAILURE);
 			} catch (Error::Exception &e) {
 				cerr << "Could not add contents of dir " <<
@@ -695,6 +719,7 @@ static int procargs_merge(int argc, char *argv[], string &type,
 {
 	char c;
 	num_child_rs = 0;
+	Utility::AutoArray<char> base, dir;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
 		case 't':	/* Destination RecordStore type */
@@ -707,10 +732,14 @@ static int procargs_merge(int argc, char *argv[], string &type,
 		case 'a':	/* RecordStore to be merged */
 			try {
 				/* Add to AutoArray */
+				base.resize(strlen(optarg) + 1);
+				dir.resize(strlen(optarg) + 1);
+				strncpy(base, optarg, strlen(optarg) + 1);
+				strncpy(dir, optarg, strlen(optarg) + 1);
 				child_rs.resize(child_rs.size() + 1);
 				child_rs[num_child_rs++] =
 				    IO::Factory::openRecordStore(
-				    basename(optarg), dirname(optarg),
+				    basename(base), dirname(dir),
 				    IO::READONLY);
 			} catch (Error::Exception &e) {
 				cerr << "Could not open " << optarg << " - " <<
@@ -814,9 +843,14 @@ static int procargs_unhash(int argc, char *argv[], string &hash,
 
 	/* sflagval here is the hashed RecordStore */
 	try {
-		rs = IO::Factory::openRecordStore(
-		    basename(const_cast<char*>(sflagval.c_str())),
-		    dirname(const_cast<char*>(sflagval.c_str())),
+		Utility::AutoArray<char> base, dir;
+		base.resize(sflagval.size() + 1);
+		dir.resize(sflagval.size() + 1);
+		sflagval.copy(base, sflagval.size());
+		base[sflagval.size()] = '\0';
+		sflagval.copy(dir, sflagval.size());
+		dir[sflagval.size()] = '\0';
+		rs = IO::Factory::openRecordStore(basename(base), dirname(dir),
 		    IO::READONLY);
 	} catch (Error::Exception &e) {
 		cerr << "Could not open " << sflagval << " - " << e.getInfo() <<
