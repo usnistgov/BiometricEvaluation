@@ -27,7 +27,10 @@
 
 #include <be_error.h>
 #include <be_error_exception.h>
+#include <be_io_archiverecstore.h>
+#include <be_io_dbrecstore.h>
 #include <be_io_factory.h>
+#include <be_io_filerecstore.h>
 #include <be_io_recordstore.h>
 #include <be_io_utility.h>
 #include <be_text.h>
@@ -85,6 +88,8 @@ static void usage(char *exe)
 
 	cerr << "Merge Options:" << endl;
 	cerr << "\t-a <RS>\t\tRecordStore to be merged (multiple)" << endl;
+	cerr << "\t-h <RS>\t\tHash keys and store a hash translation "
+	    "RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
 
@@ -709,13 +714,16 @@ static int make(int argc, char *argv[])
  * @param num_child_rs[in]
  *	Reference to an integer that will specify the contents of the child_rs
  *	array.
+ * @param hash_filename[in]
+ *	Reference to a string that will specify the name of the hash translation
+ *	RecordStore, if one is desired.
  *
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
  */
 static int procargs_merge(int argc, char *argv[], string &type,
     Utility::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
-    int &num_child_rs)
+    int &num_child_rs, string &hash_filename)
 {
 	char c;
 	num_child_rs = 0;
@@ -747,6 +755,9 @@ static int procargs_merge(int argc, char *argv[], string &type,
 				return (EXIT_FAILURE);
 			}
 			break;
+		case 'h':
+			hash_filename.assign(optarg);
+			break;
 		}
 	}
 
@@ -767,6 +778,89 @@ static int procargs_merge(int argc, char *argv[], string &type,
 	return (EXIT_SUCCESS);
 }
 
+/** 
+ * Create a new RecordStore that contains the contents of several RecordStores,
+ * hashing the keys of the child RecordStores before adding them to the merged.
+ *  
+ * @param mergedName[in]
+ * 	The name of the new RecordStore that will be created.
+ * @param mergedDescription[in]
+ * 	The text used to describe the RecordStore.
+ * @hashName[in]
+ *	The name of the new hash translation RecordStore that will be created.
+ * @param parentDir[in]
+ * 	Where, in the file system, the new store should be rooted.
+ * @param type[in]
+ * 	The type of RecordStore that mergedName should be.
+ * @param recordStores[in]
+ * 	An array of shared pointers to RecordStore that should be merged into
+ *	mergedName.
+ * @param numRecordStores[in]
+ * 	The number of RecordStore* in recordStores.
+ * \throws Error::ObjectExists
+ * 	A RecordStore with mergedNamed in parentDir
+ * \throws Error::StrategyError
+ * 	An error occurred when using the underlying storage system
+ */
+static void mergeAndHashRecordStores(
+    const string &mergedName,
+    const string &mergedDescription,
+    const string &hashName,
+    const string &parentDir,
+    const string &type,
+    tr1::shared_ptr<IO::RecordStore> recordStores[],
+    size_t numRecordStores)
+    throw (Error::ObjectExists, Error::StrategyError)
+{
+	auto_ptr<IO::RecordStore> merged_rs, hash_rs;
+	string hash_description = "Hash translation of " + mergedName;
+	if (type == IO::RecordStore::BERKELEYDBTYPE) {
+		merged_rs.reset(new IO::DBRecordStore(mergedName,
+		    mergedDescription, parentDir));
+		hash_rs.reset(new IO::DBRecordStore(hashName,
+		    hash_description, parentDir));
+	} else if (type == IO::RecordStore::ARCHIVETYPE) {
+		merged_rs.reset(new IO::ArchiveRecordStore(mergedName, 
+		    mergedDescription, parentDir));
+		hash_rs.reset(new IO::ArchiveRecordStore(hashName,
+		    hash_description, parentDir));
+	} else if (type == IO::RecordStore::FILETYPE) {
+		merged_rs.reset(new IO::FileRecordStore(mergedName,
+		    mergedDescription, parentDir));
+		hash_rs.reset(new IO::FileRecordStore(hashName,
+		    hash_description, parentDir));
+	} else
+		throw Error::StrategyError("Unknown RecordStore type");
+
+	bool exhausted;
+	uint64_t record_size;
+	string key, hash;
+	Utility::AutoArray<uint8_t> buf;
+	for (int i = 0; i < numRecordStores; i++) {
+		exhausted = false;
+		while (!exhausted) {
+			hash = Text::digest(key);
+			try {
+				record_size = recordStores[i]->sequence(key);
+				buf.resize(record_size);
+			} catch (Error::ObjectDoesNotExist) {
+				exhausted = true;
+				continue;
+			}
+
+			try {
+				recordStores[i]->read(key, buf);
+			} catch (Error::ObjectDoesNotExist) {
+				throw Error::StrategyError("Could not read " +
+				    key + " from RecordStore");
+			}
+
+			merged_rs->insert(hash, buf, record_size);
+			hash_rs->insert(hash, key.c_str(), key.size() + 1);
+		}
+	}
+}
+
 /**
  * @brief
  * Facilitates the merging of multiple RecordStores.
@@ -782,10 +876,11 @@ static int procargs_merge(int argc, char *argv[], string &type,
  */
 static int merge(int argc, char *argv[])
 {
-	string type = "";
+	string type = "", hash_filename = "";
 	int num_rs = 0;
 	Utility::AutoArray< tr1::shared_ptr<IO::RecordStore> > child_rs;
-	if (procargs_merge(argc, argv, type, child_rs, num_rs) != EXIT_SUCCESS)
+	if (procargs_merge(argc, argv, type, child_rs, num_rs, hash_filename) !=
+	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	string description = "A merge of ";
@@ -797,8 +892,15 @@ static int merge(int argc, char *argv[])
 	}
 
 	try {
-		IO::RecordStore::mergeRecordStores(
-		    sflagval, description, oflagval, type, child_rs, num_rs);
+		if (hash_filename.empty()) {
+			IO::RecordStore::mergeRecordStores(
+			    sflagval, description, oflagval, type, child_rs,
+			    num_rs);
+		} else {
+			mergeAndHashRecordStores(
+			    sflagval, description, hash_filename, oflagval,
+			    type, child_rs, num_rs);
+		}
 	} catch (Error::Exception &e) {
 		cerr << "Could not create " << sflagval << " - " <<
 		    e.getInfo() << endl;
