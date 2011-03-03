@@ -19,6 +19,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include <dirent.h>
@@ -242,11 +243,8 @@ static int procargs_dump(int argc, char *argv[], string &key, string &range,
 			break;
 		}
 	}
-	if (key.empty() && range.empty()) {
-		cerr << "Missing required option (-k or -r)." << endl <<
-		    endl;
-		return (EXIT_FAILURE);
-	} else if (!key.empty() && !range.empty()) {
+
+	if (!key.empty() && !range.empty()) {
 		cerr << "Choose only one (-k or -r)." << endl;
 		return (EXIT_FAILURE);
 	}
@@ -269,6 +267,13 @@ static int procargs_dump(int argc, char *argv[], string &key, string &range,
 		cerr << "Could not open " << sflagval << ".  " <<
 		    e.getInfo() << endl;
 		return (EXIT_FAILURE);
+	}
+
+	/* If user didn't specify, dump the entire RecordStore */
+	if (range.empty() && key.empty()) {
+		stringstream out;
+		out << "1-" << rs->getCount();
+		range = out.str();
 	}
 
 	return (EXIT_SUCCESS);
