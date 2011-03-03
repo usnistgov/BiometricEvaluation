@@ -352,12 +352,12 @@ static int dump(int argc, char *argv[])
 			}
 		}
 		for (int i = atoi(ranges[0].c_str());
-		    i < atoi(ranges[1].c_str()); i++) {
+		    i <= atoi(ranges[1].c_str()); i++) {
 			try {
 				buf.resize(rs->sequence(next_key, NULL));
 				rs->read(next_key, buf);
 			} catch (Error::Exception &e) {
-				cerr << "Could not read key " << i << 
+				cerr << "Could not read key " << i << " - " <<
 				    e.getInfo() << "." << endl;
 				return (EXIT_FAILURE);
 			}
