@@ -1,0 +1,244 @@
+.\"
+.Dd March 07, 2011
+.Dt RSTOOL 1
+.Os "Mac OS X"
+.Sh NAME
+.Nm rstool
+.Nd manipulate RecordStores
+.\"
+.Sh SYNOPSIS
+.Nm
+dump
+.Fl s
+.Ar rs
+.Op Fl k Ar key | Fl r Ar #-#
+.Op Fl o Ar dir
+.Pp
+.\"
+.Nm
+list
+.Fl s
+.Ar rs
+.Pp
+.\"
+.Nm
+make
+.Fl s
+.Ar new_rs
+.Fl a
+.Ar dir/file
+.Op Fl a Ar ...
+.Op Fl h Ar hash_rs
+.Op Fl o Ar dir
+.Op Fl t Ar rs_type
+.Pp
+.\"
+.Nm
+merge
+.Fl s
+.Ar new_rs
+.Fl a
+.Ar existing_rs
+.Op Fl a Ar ...
+.Op Fl h Ar hash_rs
+.Op Fl o Ar dir
+.Op Fl t Ar rs_type
+.Pp
+.\"
+.Nm
+unhash
+.Fl s
+.Ar hash_rs
+.Fl h
+.Ar hash
+.\"
+.Sh DESCRIPTION
+The
+.Nm
+command is used to manipulate any type of RecordStore supported by the BiometricEvaluation framework.
+.Pp
+The functions are as follows:
+.\"
+.Bl -tag -indent
+.It Cm dump
+Extract records from 
+.Fa rs .
+.\"
+.Bl -tag -compact -width "dir    "
+.It Cm -o Fa dir
+Place extracted records in
+.Fa dir .
+.It Cm -k Fa key
+The
+.Fa key
+to extract.
+.It Cm -r Fa #-#
+Inclusive range of keys to extract.
+.It Cm -s Fa rs
+The RecordStore from which to dump
+.Fa key
+or
+.Fa #-# .
+.El
+.It Cm list
+List all keys contained in
+.Fa rs .
+.Bl -tag -compact -width "-s rs "
+.It Cm -s Fa rs
+The RecordStore to list.
+.El
+.It Cm make
+Create a new RecordStore named
+.Fa new_rs .
+.Bl -tag -compact -width "dir/file    "
+.It Cm -a Fa dir/file
+Recursively add the files within
+.Fa dir ,
+or add the files whose file paths are listed in
+.Fa file .
+Multiple 
+.Cm -a
+arguments may be specified.
+.It Cm -h Fa hash_rs
+Hash keys that will be added to 
+.Fa new_rs
+and create a hash translation RecordStore (of type
+.Fa type )
+at 
+.Fa hash_rs 
+that can be used with
+.Cm unhash .
+.It Cm -o Fa dir
+Place 
+.Fa new_rs
+(and 
+.Fa hash_rs )
+in
+.Fa dir .
+.It Cm -s Fa new_rs
+The RecordStore that will be created.
+.It Cm -t Fa type
+Create a
+.Fa type
+RecordStore, where type is:
+.Bl -tag -compact
+.It Fa Archive
+.It Fa BerkeleyDB
+(default)
+.It Fa File
+.El 
+.El
+.It Cm merge
+Merge one or more existing RecordStores into 
+.Fa new_rs .
+.Bl -tag -width "-a existing_rs " -compact
+.It Cm -a Fa existing_rs
+Add all records within
+.Fa existing_rs
+to 
+.Fa new_rs .
+Multiple 
+.Cm -a
+arguments may be specified.
+.It Cm -h Fa hash_rs
+Hash the keys in
+.Fa existing_rs
+and create a hash translation RecordStore
+(of type
+.Fa type )
+at 
+.Fa hash_rs
+that can be used with
+.Cm unhash
+before merging into
+.Fa new_rs .
+.It Cm -o Fa dir
+Place 
+.Fa new_rs
+(and 
+.Fa hash_rs )
+in
+.Fa dir .
+.It Cm -s Fa new_rs
+The merge of all
+.Cm -a
+options.
+.It Cm -t Fa type
+Create a
+.Fa type
+RecordStore, where type is:
+.Bl -tag -compact
+.It Fa Archive
+.It Fa BerkeleyDB
+(default)
+.It Fa File
+.El 
+.El
+.It Cm unhash
+Extract the original form of 
+.Fa hash .
+.Bl -tag -compact -width "-s hash_rs "
+.It Cm -h Fa hash
+The hash to unhash.
+.It Cm -s Fa hash_rs
+The hash translation RecordStore.
+.El
+.Sh EXAMPLES
+.Bl -tag -width -indend
+.It Li rstool merge -s 3B -a templates/3B-00001 -a templates/3B-00002
+.Pp
+Merge the RecordStores
+.Em 3B-00001
+and
+.Em 3B-00002
+into the new RecordStore
+.Em 3B ,
+that will be placed in the current working directory.
+.Pp
+.\"
+.It Li rstool dump -s 3B -o exports
+.Pp
+Create a separate file for each record in 
+.Em 3B
+in the newly created directory
+.Em exports .
+.Pp
+.\"
+.It Li rstool list -s 3B > 3B_listing.txt
+.Pp
+Create a textfile named
+.Em 3B_listing.txt
+that contains the keys of all the records in
+.Em 3B .
+.Pp
+.\"
+.It Li rstool -s hash_translation_rs -h 26ab33fb2612fc4755479bf95736d53f
+.Pp
+Find the unhashed version of 
+.Em 26ab33fb2612fc4755479bf95736d53f
+using the 
+.Em hash_translation_rs .
+.Pp
+.\"
+.It Li rstool merge -s azla_new -a azla_db -t archive
+.Pp
+Convert
+.Em azla_db
+(a BerkeleyDB RecordStore) into an Archive RecordStore named
+.Em azla_new .
+.Pp
+.\"
+.It Li rstool make -s azla -a ~/images/azla/00001/ -a ~/images/azla/00002/
+.Pp
+Add the contents of the directories
+.Em 00001
+and
+.Em 00002
+into a newly formed RecordStore named
+.Em azla .
+.Pp
+.El
+.\"
+.\"
+.Sh HISTORY
+First released March 07, 2011 by NIST.

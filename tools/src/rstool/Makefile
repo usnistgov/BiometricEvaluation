@@ -10,6 +10,7 @@
 # Builds rstool, a tool for manipulating RecordStores.
 #
 include ../common.mk
+LOCALMAN = ../../man
 #
 LIB = -lbiomeval
 #
@@ -27,6 +28,7 @@ $(PROGRAM): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LIB)
 	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
 	$(CP) $@ $(LOCALBIN)/$@
+	$(CP) $@.1 $(LOCALMAN)
 
 clean:
 	$(RM) $(PROGRAM) $(OBJECTS)
