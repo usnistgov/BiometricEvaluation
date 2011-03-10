@@ -342,7 +342,7 @@ static int dump(int argc, char *argv[])
 		}
 
 		string next_key;
-		for (int i = 0; i < atoi(ranges[0].c_str()); i++) {
+		for (int i = 0; i < atoi(ranges[0].c_str()) - 1; i++) {
 			try {
 				rs->sequence(next_key, NULL);
 			} catch (Error::Exception &e) {
