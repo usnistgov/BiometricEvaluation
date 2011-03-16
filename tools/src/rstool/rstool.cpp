@@ -716,6 +716,7 @@ static int procargs_merge(int argc, char *argv[], string &type,
 		case 'a':	/* RecordStore to be merged */
 			try {
 				/* Add to AutoArray */
+				child_rs.resize(num_child_rs + 1);
 				child_rs[num_child_rs++] =
 				    IO::Factory::openRecordStore(
 				    Text::filename(optarg),
