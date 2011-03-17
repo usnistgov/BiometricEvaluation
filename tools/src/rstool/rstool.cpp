@@ -39,7 +39,7 @@
 
 static string oflagval = ".";		/* Output directory */
 static string sflagval = "";		/* Path to main RecordStore */
-static const char optstr[] = "a:h:k:m:o:r:s:t:";
+static const char optstr[] = "a:ch:k:m:o:r:s:t:";
 
 /* Possible actions performed by this utility */
 static const string ADD_ARG = "add";
@@ -68,14 +68,15 @@ static void usage(char *exe)
 	cerr << endl;
 
 	cerr << "Common:" << endl;
+	cerr << "\t-c\t\tHash contents, not filename" << endl;
 	cerr << "\t-o <...>\tOutput directory" << endl;
 	cerr << "\t-s <path>\tRecordStore" << endl;
 
 	cerr << endl;
 
 	cerr << "Add Options:" << endl;
-	cerr << "-a <file>\tFile to add" << endl;
-	cerr << "-h <hash_rs>\tExisting hash translation RecordStore" << endl;
+	cerr << "\t-a <file>\tFile to add" << endl;
+	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 
 	cerr << endl;
 
@@ -429,6 +430,9 @@ static int list(int argc, char *argv[])
  * @param hash_filename[in]
  *	Reference to a string to store a path to a hash translation RecordStore,
  *	indicating that the keys should be hashed
+ * @param hash_contents[in]
+ *	Reference to a boolean that indicates if the contents or the filename
+ *	of a file should be hashed when hashing is to be performed.
  * @param type[in]
  *	Reference to a string that will represent the type of RecordStore to
  *	create.
@@ -443,7 +447,7 @@ static int list(int argc, char *argv[])
  *	returned from main().
  */
 static int procargs_make(int argc, char *argv[], string &hash_filename,
-    string &type, vector<string> &elements)
+    bool &hash_contents, string &type, vector<string> &elements)
 {
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -454,6 +458,9 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
 				return (EXIT_FAILURE);
 			}
 			elements.push_back(optarg);
+			break;
+		case 'c':	/* Hash contents, not filename */
+			hash_contents = true;
 			break;
 		case 'h':
 			hash_filename.assign(optarg);
@@ -489,6 +496,9 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
  *	The RecordStore into which the contents of filename should be inserted
  * @param hash_rs[in]
  *	The RecordStore into which hash translations should be stored
+ * @param hash_contents[in]
+ *	Whether the contents or the filename of a file should be hashed when
+ *	hashing is to be performed.
  *
  * @returns
  *	An exit status, either EXIT_FAILURE or EXIT_SUCCESS, depending on if
@@ -496,7 +506,8 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
  */
 static int make_insert_contents(const string &filename,
     const tr1::shared_ptr<IO::RecordStore> &rs,
-    const tr1::shared_ptr<IO::RecordStore> &hash_rs)
+    const tr1::shared_ptr<IO::RecordStore> &hash_rs,
+    bool hash_contents)
 {
 	static Utility::AutoArray<char> buffer;
 	static uint64_t buffer_size = 0;
@@ -525,7 +536,12 @@ static int make_insert_contents(const string &filename,
 		if (hash_rs.get() == NULL)
 			rs->insert(key, buffer, buffer_size);
 		else {
-			hash_value = Text::digest(key);
+			if (!hash_contents)
+				hash_value = Text::digest(key);
+			else {
+				hash_value.assign(buffer);
+				hash_value = Text::digest(hash_value);
+			}
 			rs->insert(hash_value, buffer, buffer_size);
 			hash_rs->insert(hash_value, key.c_str(), key.size());
 		}
@@ -551,6 +567,9 @@ static int make_insert_contents(const string &filename,
  *	The RecordStore into which files should be inserted
  * @param hash_rs[in]
  *	The RecordStore into which hash translations should be stored
+ * @param hash_contents[in]
+ *	Boolean to indicate if the contents or the filename should be hashed
+ *	when hashing is to be performed.
  *
  * @throws Error::ObjectDoesNotExist
  *	If the contents of the directory changes during the run
@@ -563,7 +582,7 @@ static int make_insert_contents(const string &filename,
  */
 static int make_insert_directory_contents(const string &directory,
     const string &prefix, const tr1::shared_ptr<IO::RecordStore> &rs,
-    const tr1::shared_ptr<IO::RecordStore> &hash_rs)
+    const tr1::shared_ptr<IO::RecordStore> &hash_rs, bool hash_contents)
     throw (Error::ObjectDoesNotExist, Error::StrategyError)
 {
 	struct dirent *entry;
@@ -589,11 +608,12 @@ static int make_insert_directory_contents(const string &directory,
 		/* Recursively remove subdirectories and files */
 		if (IO::Utility::pathIsDirectory(filename)) {
 			if (make_insert_directory_contents(entry->d_name,
-			    dirpath, rs, hash_rs) != EXIT_SUCCESS)
+			    dirpath, rs, hash_rs, hash_contents) !=
+			    EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		} else {
-			if (make_insert_contents(filename, rs, hash_rs) !=
-			    EXIT_SUCCESS)
+			if (make_insert_contents(filename, rs, hash_rs,
+			    hash_contents) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -623,9 +643,10 @@ static int make(int argc, char *argv[])
 {
 	string hash_filename = "", type = "";
 	vector<string> elements;
+	bool hash_contents = false;
 
-	if (procargs_make(argc, argv, hash_filename, type, elements) !=
-	    EXIT_SUCCESS)
+	if (procargs_make(argc, argv, hash_filename, hash_contents, type,
+	    elements) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	tr1::shared_ptr<IO::RecordStore> rs;
@@ -651,7 +672,7 @@ static int make(int argc, char *argv[])
 				if (make_insert_directory_contents(
 				    Text::filename(elements[i]),
 				    Text::dirname(elements[i]),
-				    rs, hash_rs) != EXIT_SUCCESS)
+				    rs, hash_rs, hash_contents) != EXIT_SUCCESS)
 			    		return (EXIT_FAILURE);
 			} catch (Error::Exception &e) {
 				cerr << "Could not add contents of dir " <<
@@ -671,7 +692,8 @@ static int make(int argc, char *argv[])
 					return (EXIT_FAILURE);
 				}
 
-				if (make_insert_contents(line, rs, hash_rs) !=
+				if (make_insert_contents(line, rs, hash_rs,
+				    hash_contents) !=
 				    EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 			}
@@ -703,13 +725,16 @@ static int make(int argc, char *argv[])
  * @param hash_filename[in]
  *	Reference to a string that will specify the name of the hash translation
  *	RecordStore, if one is desired.
+ * @param hash_contents[in]
+ *	Reference to a boolean that indicates if the contents or the filename
+ *	of a file should be hashed when hashing is to be performed.
  *
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
  */
 static int procargs_merge(int argc, char *argv[], string &type,
     Utility::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
-    int &num_child_rs, string &hash_filename)
+    int &num_child_rs, string &hash_filename, bool &hash_contents)
 {
 	char c;
 	num_child_rs = 0;
@@ -737,7 +762,10 @@ static int procargs_merge(int argc, char *argv[], string &type,
 				return (EXIT_FAILURE);
 			}
 			break;
-		case 'h':
+		case 'c':	/* Hash contents, not filename */
+			hash_contents = true;
+			break;
+		case 'h':	/* Hash translation RecordStore */
 			hash_filename.assign(optarg);
 			break;
 		}
@@ -779,6 +807,9 @@ static int procargs_merge(int argc, char *argv[], string &type,
  *	mergedName.
  * @param numRecordStores[in]
  * 	The number of RecordStore* in recordStores.
+ * @param hash_contents[in]
+ *	Whether the contents of the file or the filename should be hashed.
+ *
  * \throws Error::ObjectExists
  * 	A RecordStore with mergedNamed in parentDir
  * \throws Error::StrategyError
@@ -791,7 +822,8 @@ static void mergeAndHashRecordStores(
     const string &parentDir,
     const string &type,
     tr1::shared_ptr<IO::RecordStore> recordStores[],
-    size_t numRecordStores)
+    size_t numRecordStores,
+    bool hash_contents)
     throw (Error::ObjectExists, Error::StrategyError)
 {
 	auto_ptr<IO::RecordStore> merged_rs, hash_rs;
@@ -817,11 +849,10 @@ static void mergeAndHashRecordStores(
 	bool exhausted;
 	uint64_t record_size;
 	string key, hash;
-	Utility::AutoArray<uint8_t> buf;
+	Utility::AutoArray<char> buf;
 	for (size_t i = 0; i < numRecordStores; i++) {
 		exhausted = false;
 		while (!exhausted) {
-			hash = Text::digest(key);
 			try {
 				record_size = recordStores[i]->sequence(key);
 				buf.resize(record_size);
@@ -837,6 +868,12 @@ static void mergeAndHashRecordStores(
 				    key + " from RecordStore");
 			}
 
+			if (!hash_contents)
+				hash = Text::digest(key);
+			else {
+				hash.assign(buf);
+				hash = Text::digest(hash);
+			}
 			merged_rs->insert(hash, buf, record_size);
 			hash_rs->insert(hash, key.c_str(), key.size() + 1);
 		}
@@ -858,11 +895,12 @@ static void mergeAndHashRecordStores(
  */
 static int merge(int argc, char *argv[])
 {
+	bool hash_contents = false;
 	string type = "", hash_filename = "";
 	int num_rs = 0;
 	Utility::AutoArray< tr1::shared_ptr<IO::RecordStore> > child_rs;
-	if (procargs_merge(argc, argv, type, child_rs, num_rs, hash_filename) !=
-	    EXIT_SUCCESS)
+	if (procargs_merge(argc, argv, type, child_rs, num_rs, hash_filename,
+	    hash_contents) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	string description = "A merge of ";
@@ -881,7 +919,7 @@ static int merge(int argc, char *argv[])
 		} else {
 			mergeAndHashRecordStores(
 			    sflagval, description, hash_filename, oflagval,
-			    type, child_rs, num_rs);
+			    type, child_rs, num_rs, hash_contents);
 		}
 	} catch (Error::Exception &e) {
 		cerr << "Could not create " << sflagval << " - " <<
@@ -989,6 +1027,13 @@ static int unhash(int argc, char *argv[])
  * @param files[in]
  *	Reference to a vector that will be populated with paths to files that
  *	should be added to rs.
+ * @param hash_contents[in]
+ *	Reference to a boolean that indicates if the contents or the filename
+ *	of a file should be hashed when hashing is to be performed.
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
  */
 static int
 procargs_add(
@@ -996,7 +1041,8 @@ procargs_add(
     char *argv[],
     tr1::shared_ptr<IO::RecordStore> &rs,
     tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    vector<string> &files)
+    vector<string> &files,
+    bool &hash_contents)
 {
 	char c;
 	while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -1007,6 +1053,9 @@ procargs_add(
 				    "be skipped." << endl;
 			else
 				files.push_back(optarg);
+			break;
+		case 'c':	/* Hash contents, not filename */
+			hash_contents = true;
 			break;
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
@@ -1053,9 +1102,11 @@ add(
     int argc,
     char *argv[])
 {
+	bool hash_contents = false;
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
 	vector<string> files;
-	if (procargs_add(argc, argv, rs, hash_rs, files) != EXIT_SUCCESS)
+	if (procargs_add(argc, argv, rs, hash_rs, files, hash_contents) !=
+	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	for (vector<string>::const_iterator file_path = files.begin();
@@ -1065,7 +1116,7 @@ add(
 		 * when inserting because we may have multiple files we'd
 		 * like to add and there's no point in quitting halfway.
 		 */
-		make_insert_contents(*file_path, rs, hash_rs);
+		make_insert_contents(*file_path, rs, hash_rs, hash_contents);
 	}
 
 	return (EXIT_SUCCESS);

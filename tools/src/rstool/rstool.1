@@ -14,7 +14,7 @@ add
 .Fl a
 .Ar file
 .Op Fl a Ar ...
-.Op Fl h Ar hash_rs
+.Op Fl h Ar hash_rs Op Fl c
 .Pp
 .Nm
 dump
@@ -37,7 +37,7 @@ make
 .Fl a
 .Ar dir/file
 .Op Fl a Ar ...
-.Op Fl h Ar hash_rs
+.Op Fl h Ar hash_rs Op Fl c
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
 .Pp
@@ -49,7 +49,7 @@ merge
 .Fl a
 .Ar existing_rs
 .Op Fl a Ar ...
-.Op Fl h Ar hash_rs
+.Op Fl h Ar hash_rs Op Fl c
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
 .Pp
@@ -78,6 +78,12 @@ File to add to
 Multiple
 .Cm -a
 arguments may be specified.
+.It Cm -c
+If 
+.Fa hash_rs
+is specified, use the content of
+.Fa file
+instead of the name to form the hash.
 .It Cm -h Fa hash_rs
 Existing hash translation RecordStore.  Passing this argument indicates that
 .Fa file
@@ -127,6 +133,12 @@ or add the files whose file paths are listed in
 Multiple 
 .Cm -a
 arguments may be specified.
+.It Cm -c
+If 
+.Fa hash_rs
+is specified, use the content of
+.Fa dir/file
+instead of the name to form the hash.
 .It Cm -h Fa hash_rs
 Hash keys that will be added to 
 .Fa new_rs
@@ -168,6 +180,11 @@ to
 Multiple 
 .Cm -a
 arguments may be specified.
+.It Cm -c
+If 
+.Fa hash_rs
+is specified, use the content of the values in the existing RecordStores
+instead of the name to form the hash.
 .It Cm -h Fa hash_rs
 Hash the keys in
 .Fa existing_rs
