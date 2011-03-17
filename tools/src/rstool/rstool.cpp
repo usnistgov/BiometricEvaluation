@@ -35,6 +35,7 @@
 #include <be_io_recordstore.h>
 #include <be_io_utility.h>
 #include <be_text.h>
+#include <be_utility.h>
 #include <be_utility_autoarray.h>
 
 static string oflagval = ".";		/* Output directory */
@@ -538,10 +539,9 @@ static int make_insert_contents(const string &filename,
 		else {
 			if (!hash_contents)
 				hash_value = Text::digest(key);
-			else {
-				hash_value.assign(buffer);
-				hash_value = Text::digest(hash_value);
-			}
+			else
+				hash_value = Utility::digest(buffer,
+				    buffer_size);
 			rs->insert(hash_value, buffer, buffer_size);
 			hash_rs->insert(hash_value, key.c_str(), key.size());
 		}
@@ -870,10 +870,8 @@ static void mergeAndHashRecordStores(
 
 			if (!hash_contents)
 				hash = Text::digest(key);
-			else {
-				hash.assign(buf);
-				hash = Text::digest(hash);
-			}
+			else
+				hash = Utility::digest(buf, record_size);
 			merged_rs->insert(hash, buf, record_size);
 			hash_rs->insert(hash, key.c_str(), key.size() + 1);
 		}
