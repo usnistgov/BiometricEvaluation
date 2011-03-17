@@ -8,6 +8,15 @@
 .\"
 .Sh SYNOPSIS
 .Nm
+add
+.Fl s
+.Ar rs
+.Fl a
+.Ar file
+.Op Fl a Ar ...
+.Op Fl h Ar hash_rs
+.Pp
+.Nm
 dump
 .Fl s
 .Ar rs
@@ -60,6 +69,25 @@ command is used to manipulate any type of RecordStore supported by the Biometric
 The functions are as follows:
 .\"
 .Bl -tag -indent
+.It Cm add
+Add an individual file into an existing RecordStore.
+.Bl -tag -compact -width "hash_rs    "
+.It Cm -a Fa file
+File to add to 
+.Fa rs .
+Multiple
+.Cm -a
+arguments may be specified.
+.It Cm -h Fa hash_rs
+Existing hash translation RecordStore.  Passing this argument indicates that
+.Fa file
+should be hashed when inserted into
+.Fa rs .
+.It Cm -s Fa rs
+The existing RecordStore to which 
+.Fa file
+should be added.
+.El
 .It Cm dump
 Extract records from 
 .Fa rs .

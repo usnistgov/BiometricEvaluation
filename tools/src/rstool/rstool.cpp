@@ -42,12 +42,13 @@ static string sflagval = "";		/* Path to main RecordStore */
 static const char optstr[] = "a:h:k:m:o:r:s:t:";
 
 /* Possible actions performed by this utility */
+static const string ADD_ARG = "add";
 static const string DUMP_ARG = "dump";
 static const string LIST_ARG = "list";
 static const string MAKE_ARG = "make";
 static const string MERGE_ARG = "merge";
 static const string UNHASH_ARG = "unhash";
-typedef enum { DUMP, LIST, MAKE, MERGE, UNHASH, QUIT } Action;
+typedef enum { ADD, DUMP, LIST, MAKE, MERGE, UNHASH, QUIT } Action;
 
 using namespace BiometricEvaluation;
 using namespace std;
@@ -62,13 +63,19 @@ using namespace std;
 static void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
-	cerr << "Actions: dump, list, make, merge, unhash" << endl;
+	cerr << "Actions: add, dump, list, make, merge, unhash" << endl;
 
 	cerr << endl;
 
 	cerr << "Common:" << endl;
 	cerr << "\t-o <...>\tOutput directory" << endl;
 	cerr << "\t-s <path>\tRecordStore" << endl;
+
+	cerr << endl;
+
+	cerr << "Add Options:" << endl;
+	cerr << "-a <file>\tFile to add" << endl;
+	cerr << "-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 
 	cerr << endl;
 
@@ -157,6 +164,8 @@ static Action procargs(int argc, char *argv[])
 		action = MERGE;
 	else if (strcasecmp(argv[1], UNHASH_ARG.c_str()) == 0)
 		action = UNHASH;
+	else if (strcasecmp(argv[1], ADD_ARG.c_str()) == 0)
+		action = ADD;
 	else {
 		usage(argv[0]);
 		return (QUIT);
@@ -963,10 +972,111 @@ static int unhash(int argc, char *argv[])
 	return (EXIT_SUCCESS);
 }
 
+/**
+ * @brief
+ * Process command-line arguments specific to the ADD Action.
+ *
+ * @param argc[in]
+ *	argc from main()
+ * @param argv[in]
+ *	argv from main()
+ * @param rs[in]
+ *	Reference to a RecordStore shared pointer that will be allocated
+ *	to hold the main RecordStore passed with the -s flag on the command-line
+ * @param hash_rs[in]
+ *	Reference to a hash translation RecordStore shared pointer that will
+ *	be allocated to hold a hash translation of the file's contents.
+ * @param files[in]
+ *	Reference to a vector that will be populated with paths to files that
+ *	should be added to rs.
+ */
+static int
+procargs_add(
+    int argc,
+    char *argv[],
+    tr1::shared_ptr<IO::RecordStore> &rs,
+    tr1::shared_ptr<IO::RecordStore> &hash_rs,
+    vector<string> &files)
+{
+	char c;
+	while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 'a':	/* File to add */
+			if (!IO::Utility::fileExists(optarg))
+				cerr << optarg << " does not exist and will "
+				    "be skipped." << endl;
+			else
+				files.push_back(optarg);
+			break;
+		case 'h':	/* Existing hash translation RecordStore */
+			try {
+				hash_rs = IO::Factory::openRecordStore(
+				    Text::filename(optarg),
+				    Text::dirname(optarg));
+			} catch (Error::Exception &e) {
+				cerr << "Could not open " << optarg << " -- " <<
+				    e.getInfo() << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		}
+	}
+
+	/* sflagval is the RecordStore we will be adding to */
+	try {
+		rs = IO::Factory::openRecordStore(Text::filename(sflagval),
+		    Text::dirname(sflagval));
+	} catch (Error::Exception &e) {
+		cerr << "Could not open " << sflagval << " -- " <<
+		    e.getInfo() << endl;
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief
+ * Facilitates the addition of files to an existing RecordStore.
+ * 
+ * @param argc[in]
+ *	argc from main()
+ * @param argv[in]
+ *	argv from main()
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+add(
+    int argc,
+    char *argv[])
+{
+	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
+	vector<string> files;
+	if (procargs_add(argc, argv, rs, hash_rs, files) != EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+
+	for (vector<string>::const_iterator file_path = files.begin();
+	    file_path != files.end(); file_path++) {
+		/*
+		 * Conscious decision to not care about the return value
+		 * when inserting because we may have multiple files we'd
+		 * like to add and there's no point in quitting halfway.
+		 */
+		make_insert_contents(*file_path, rs, hash_rs);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
 	Action action = procargs(argc, argv);
 	switch (action) {
+	case ADD:
+		return (add(argc, argv));
 	case DUMP:
 		return (dump(argc, argv));
 	case LIST:
