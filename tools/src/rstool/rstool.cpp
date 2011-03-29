@@ -28,6 +28,7 @@
 
 #include <be_error.h>
 #include <be_error_exception.h>
+#include <be_framework.h>
 #include <be_io_archiverecstore.h>
 #include <be_io_dbrecstore.h>
 #include <be_io_factory.h>
@@ -48,8 +49,9 @@ static const string DUMP_ARG = "dump";
 static const string LIST_ARG = "list";
 static const string MAKE_ARG = "make";
 static const string MERGE_ARG = "merge";
+static const string VERSION_ARG = "version";
 static const string UNHASH_ARG = "unhash";
-typedef enum { ADD, DUMP, LIST, MAKE, MERGE, UNHASH, QUIT } Action;
+typedef enum { ADD, DUMP, LIST, MAKE, MERGE, VERSION, UNHASH, QUIT } Action;
 
 using namespace BiometricEvaluation;
 using namespace std;
@@ -64,7 +66,8 @@ using namespace std;
 static void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
-	cerr << "Actions: add, dump, list, make, merge, unhash" << endl;
+	cerr << "Actions: add, dump, list, make, merge, version, unhash" <<
+	    endl;
 
 	cerr << endl;
 
@@ -164,6 +167,8 @@ static Action procargs(int argc, char *argv[])
 		action = MAKE;
 	else if (strcasecmp(argv[1], MERGE_ARG.c_str()) == 0)
 		action = MERGE;
+	else if (strcasecmp(argv[1], VERSION_ARG.c_str()) == 0)
+		return VERSION;
 	else if (strcasecmp(argv[1], UNHASH_ARG.c_str()) == 0)
 		action = UNHASH;
 	else if (strcasecmp(argv[1], ADD_ARG.c_str()) == 0)
@@ -929,6 +934,31 @@ static int merge(int argc, char *argv[])
 
 /**
  * @brief
+ * Display version information.
+ *
+ * @param argc[in]
+ *	argc from main()
+ * @param argv[in]
+ *	argv from main()
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int version(int argc, char *argv[])
+{
+	cout << argv[0] << " v" << MAJOR_VERSION << "." << MINOR_VERSION <<
+	    " (Compiled " << __TIMESTAMP__ << ")" << endl;
+	cout << "BiometricEvaluation Framework v" << 
+	    Framework::getMajorVersion() << "." <<
+	    Framework::getMinorVersion() << " (" <<
+	    Framework::getCompiler() << " v" <<
+	    Framework::getCompilerVersion() << ")" << endl;
+	
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief
  * Process command-line arguments specific to the UNHASH Action.
  *
  * @param argc[in]
@@ -1134,6 +1164,8 @@ int main(int argc, char *argv[])
 		return (make(argc, argv));
 	case MERGE:
 		return (merge(argc, argv));
+	case VERSION:
+		return (version(argc, argv));
 	case UNHASH:
 		return (unhash(argc, argv));
 	case QUIT:

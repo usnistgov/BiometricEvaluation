@@ -9,6 +9,12 @@
 #
 # Builds rstool, a tool for manipulating RecordStores.
 #
+#
+# rstool versioning
+# 
+MAJOR_VERSION=1
+MINOR_VERSION=1
+#
 include ../common.mk
 LOCALMAN = ../../man
 #
@@ -29,6 +35,9 @@ $(PROGRAM): $(OBJECTS)
 	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
 	$(CP) $@ $(LOCALBIN)/$@
 	$(CP) $@.1 $(LOCALMAN)
+
+rstool.o: rstool.cpp
+	$(CXX) $(CXXFLAGS) -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) -c $< -o $@
 
 clean:
 	$(RM) $(PROGRAM) $(OBJECTS)
