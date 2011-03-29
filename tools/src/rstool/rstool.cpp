@@ -96,6 +96,7 @@ static void usage(char *exe)
 	cerr << endl;
 
 	cerr << "Display/Dump Options:" << endl;
+	cerr << "\t-h <hash_rs>\tWhen extracting, use unhashed keys" << endl;
 	cerr << "\t-k <key>\tKey to dump" << endl;
 	cerr << "\t-r <#-#>\tRange of keys" << endl;
 
@@ -249,6 +250,11 @@ static Action procargs(int argc, char *argv[])
  * @param rs[in]
  *	Reference to a RecordStore shared pointer that will be allocated
  *	to hold the main RecordStore passed with the -s flag on the command-line
+ * @param hash_rs[in]
+ *	Reference to a RecordStore shared pointer that will be allocated
+ *	to hold a hash translation RecordStore.  Instantiating this RecordStore
+ *	lets the driver know that the user would like the unhashed key to be
+ *	used when the extraction takes place.
  *
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
@@ -259,15 +265,27 @@ procargs_extract(
     char *argv[],
     string &key,
     string &range,
-    tr1::shared_ptr<IO::RecordStore> &rs)
+    tr1::shared_ptr<IO::RecordStore> &rs,
+    tr1::shared_ptr<IO::RecordStore> &hash_rs)
 {
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
-		case 'k':
+		case 'h':	/* Existing hash translation RecordStore */
+			try {
+				hash_rs = IO::Factory::openRecordStore(
+				    Text::filename(optarg),
+				    Text::dirname(optarg));
+			} catch (Error::Exception &e) {
+				cerr << "Could not open " << optarg << " -- " <<
+				    e.getInfo() << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'k':	/* Extract key */
 			key.assign(optarg);
 			break;
-		case 'r':
+		case 'r':	/* Extract range of keys */
 			range.assign(optarg);
 			break;
 		}
@@ -381,11 +399,13 @@ dump(
 static int extract(int argc, char *argv[], Action action)
 {
 	string key = "", range = "";
-	tr1::shared_ptr<IO::RecordStore> rs;
-	if (procargs_extract(argc, argv, key, range, rs) != EXIT_SUCCESS)
+	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
+	if (procargs_extract(argc, argv, key, range, rs, hash_rs) !=
+	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	Utility::AutoArray<uint8_t> buf;
+	Utility::AutoArray<char> hash_buf;
 	if (!key.empty()) {
 		try {
 			buf.resize(rs->length(key));
@@ -405,7 +425,20 @@ static int extract(int argc, char *argv[], Action action)
 			cerr << "Error extracting " << key << endl;	
 			return (EXIT_FAILURE);
 		}
-		
+	
+		/* Unhash, if desired */
+		if (hash_rs.get() != NULL) {
+			try {
+				hash_buf.resize(hash_rs->length(key));
+				hash_rs->read(key, hash_buf);
+				key.assign(hash_buf);
+			} catch (Error::Exception &e) {
+				cerr << "Could not unhash " << key << " - " <<
+				    e.getInfo() << endl;
+				return (EXIT_FAILURE);
+			}
+		}
+
 		switch (action) {
 		case DUMP:
 			if (dump(key, buf) != EXIT_SUCCESS)
@@ -443,7 +476,22 @@ static int extract(int argc, char *argv[], Action action)
 				    e.getInfo() << "." << endl;
 				return (EXIT_FAILURE);
 			}
-			
+
+			/* Unhash, if desired */
+			if (hash_rs.get() != NULL) {
+				try {
+					hash_buf.resize(hash_rs->length(
+					    next_key));
+					hash_rs->read(next_key, hash_buf);
+					next_key.assign(hash_buf);
+				} catch (Error::Exception &e) {
+					cerr << "Could not unhash " << 
+					    next_key << " - " << e.getInfo() <<
+					    endl;
+					return (EXIT_FAILURE);
+				}
+			}
+
 			switch (action) {
 			case DUMP:
 				if (dump(next_key, buf) != EXIT_SUCCESS)

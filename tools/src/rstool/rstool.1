@@ -21,6 +21,7 @@ display/dump
 .Fl s
 .Ar rs
 .Op Fl k Ar key | Fl r Ar #-#
+.Op Fl h Ar hash_rs
 .Op Fl o Ar dir
 .Pp
 .\"
@@ -101,10 +102,16 @@ should be added.
 Extract records from 
 .Fa rs .
 .\"
-.Bl -tag -compact -width "dir    "
+.Bl -tag -compact -width "hash_rs    "
 .It Cm -o Fa dir
 Place extracted records in
 .Fa dir .
+.It Cm -h Fa hash_rs
+When extracting, lookup the keys of
+.Fa rs
+and output their unhashed version, using
+.Fa hash_rs
+as a hash translation RecordStore.
 .It Cm -k Fa key
 The
 .Fa key
