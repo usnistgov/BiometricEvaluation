@@ -489,6 +489,11 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
 		return (EXIT_FAILURE);
 	}
 
+	if (hash_filename.empty() && hash_contents) {
+		cerr << "Specified -c without -h." << endl;
+		return (EXIT_FAILURE);
+	}
+
 	return (EXIT_SUCCESS);
 }
 
@@ -787,6 +792,11 @@ static int procargs_merge(int argc, char *argv[], string &type,
 	/* -s option in dump context refers to the source RecordStore */
 	if (IO::Utility::fileExists(sflagval)) {
 		cerr << sflagval << " already exists." << endl;
+		return (EXIT_FAILURE);
+	}
+
+	if (hash_filename.empty() && hash_contents) {
+		cerr << "Specified -c without -h." << endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -1106,6 +1116,11 @@ procargs_add(
 	} catch (Error::Exception &e) {
 		cerr << "Could not open " << sflagval << " -- " <<
 		    e.getInfo() << endl;
+		return (EXIT_FAILURE);
+	}
+
+	if (hash_rs.get() == NULL && hash_contents) {
+		cerr << "Specified -c without -h." << endl;
 		return (EXIT_FAILURE);
 	}
 
