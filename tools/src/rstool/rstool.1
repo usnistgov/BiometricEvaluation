@@ -17,7 +17,7 @@ add
 .Op Fl h Ar hash_rs Op Fl c
 .Pp
 .Nm
-dump
+display/dump
 .Fl s
 .Ar rs
 .Op Fl k Ar key | Fl r Ar #-#
@@ -71,7 +71,7 @@ command is used to manipulate any type of RecordStore supported by the Biometric
 .Pp
 The functions are as follows:
 .\"
-.Bl -tag -indent
+.Bl -tag -indent -width "display/dump  "
 .It Cm add
 Add an individual file into an existing RecordStore.
 .Bl -tag -compact -width "hash_rs    "
@@ -97,7 +97,7 @@ The existing RecordStore to which
 .Fa file
 should be added.
 .El
-.It Cm dump
+.It Cm display/dump
 Extract records from 
 .Fa rs .
 .\"

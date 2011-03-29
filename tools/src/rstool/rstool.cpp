@@ -45,13 +45,24 @@ static const char optstr[] = "a:ch:k:m:o:r:s:t:";
 
 /* Possible actions performed by this utility */
 static const string ADD_ARG = "add";
+static const string DISPLAY_ARG = "display";
 static const string DUMP_ARG = "dump";
 static const string LIST_ARG = "list";
 static const string MAKE_ARG = "make";
 static const string MERGE_ARG = "merge";
 static const string VERSION_ARG = "version";
 static const string UNHASH_ARG = "unhash";
-typedef enum { ADD, DUMP, LIST, MAKE, MERGE, VERSION, UNHASH, QUIT } Action;
+typedef enum {
+    ADD,
+    DISPLAY,
+    DUMP,
+    LIST,
+    MAKE,
+    MERGE,
+    VERSION,
+    UNHASH, 
+    QUIT
+} Action;
 
 using namespace BiometricEvaluation;
 using namespace std;
@@ -66,8 +77,8 @@ using namespace std;
 static void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
-	cerr << "Actions: add, dump, list, make, merge, version, unhash" <<
-	    endl;
+	cerr << "Actions: add, display, dump, list, make, merge, version, "
+	    "unhash" << endl;
 
 	cerr << endl;
 
@@ -84,7 +95,7 @@ static void usage(char *exe)
 
 	cerr << endl;
 
-	cerr << "Dump Options:" << endl;
+	cerr << "Display/Dump Options:" << endl;
 	cerr << "\t-k <key>\tKey to dump" << endl;
 	cerr << "\t-r <#-#>\tRange of keys" << endl;
 
@@ -161,6 +172,8 @@ static Action procargs(int argc, char *argv[])
 	Action action;
 	if (strcasecmp(argv[1], DUMP_ARG.c_str()) == 0)
 		action = DUMP;
+	else if (strcasecmp(argv[1], DISPLAY_ARG.c_str()) == 0)
+		action = DISPLAY;
 	else if (strcasecmp(argv[1], LIST_ARG.c_str()) == 0)
 		action = LIST;
 	else if (strcasecmp(argv[1], MAKE_ARG.c_str()) == 0)
@@ -221,7 +234,7 @@ static Action procargs(int argc, char *argv[])
 
 /**
  * @brief
- * Process command-line arguments specific to the DUMP Action.
+ * Process command-line arguments specific to the DISPLAY and DUMP Actions.
  *
  * @param argc[in]
  *	argc from main()
@@ -240,7 +253,12 @@ static Action procargs(int argc, char *argv[])
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
  */
-static int procargs_dump(int argc, char *argv[], string &key, string &range,
+static int
+procargs_extract(
+    int argc,
+    char *argv[],
+    string &key,
+    string &range,
     tr1::shared_ptr<IO::RecordStore> &rs)
 {
 	char c;
@@ -286,27 +304,88 @@ static int procargs_dump(int argc, char *argv[], string &key, string &range,
 
 /**
  * @brief
- * Facilitates the dumping of a single key or a range of records from a 
+ * Print a record to the screen.
+ *
+ * @param key[in]
+ *	The name of the record to display.
+ * @param value[in]
+ *	The contents of the record to display.
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+display(
+    const string &key,
+    Utility::AutoArray<uint8_t> &value)
+{
+	value.resize(value.size() + 1);
+	value[value.size() - 1] = '\0';
+
+	cout << key << " = " << value << endl;
+
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief
+ * Write a record to disk.
+ *
+ * @param key[in]
+ *	The name of the file to write.
+ * @param value[in]
+ *	The contents of the file to write.
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+dump(
+    const string &key,
+    Utility::AutoArray<uint8_t> &value)
+{
+	FILE *fp = fopen((oflagval + "/" + key).c_str(), "wb");
+	if (fp == NULL) {
+		cerr << "Could not create file." << endl;
+		return (EXIT_FAILURE);
+	}
+	if (fwrite(value, 1, value.size(), fp) != value.size()) {
+		cerr << "Could not write entry." << endl;
+		if (fp != NULL)
+			fclose(fp);
+		return (EXIT_FAILURE);
+	}
+	fclose(fp);
+	
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief
+ * Facilitates the extraction of a single key or a range of records from a 
  * RecordStore
  *
  * @param argc[in]
  *	argc from main()
  * @param argv[in]
  *	argv from main()
+ * @param action[in]
+ *	The Action to be performed with the extracted data.
  *
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
-static int dump(int argc, char *argv[])
+static int extract(int argc, char *argv[], Action action)
 {
 	string key = "", range = "";
 	tr1::shared_ptr<IO::RecordStore> rs;
-	if (procargs_dump(argc, argv, key, range, rs) != EXIT_SUCCESS)
+	if (procargs_extract(argc, argv, key, range, rs) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	Utility::AutoArray<uint8_t> buf;
-	FILE *fp;
 	if (!key.empty()) {
 		try {
 			buf.resize(rs->length(key));
@@ -318,27 +397,25 @@ static int dump(int argc, char *argv[])
 				buf.resize(rs->length(hash));
 				rs->read(hash, buf);
 			} catch (Error::Exception &e) {
-				cerr << "Error dumping " << key << " - " <<
+				cerr << "Error extracting " << key << " - " <<
 				    e.getInfo() << endl;	
 				return (EXIT_FAILURE);
 			}
 		} catch (Error::Exception &e) {
-			cerr << "Error dumping " << key << endl;	
+			cerr << "Error extracting " << key << endl;	
 			return (EXIT_FAILURE);
 		}
-		fp = fopen((oflagval + "/" + key).c_str(), "wb");
-		if (fp == NULL) {
-			cerr << "Could not create file." << endl;
-			return (EXIT_FAILURE);
+		
+		switch (action) {
+		case DUMP:
+			if (dump(key, buf) != EXIT_SUCCESS)
+				return (EXIT_FAILURE);
+			break;
+		case DISPLAY:
+			if (display(key, buf) != EXIT_SUCCESS)
+				return (EXIT_FAILURE);
+			break;
 		}
-		if (fwrite(buf, 1, buf.size(), fp) != buf.size()) {
-			cerr << "Could not write entry." << endl;
-			if (fp != NULL)
-				fclose(fp);
-			return (EXIT_FAILURE);
-		}
-		fclose(fp);
-
 	} else {
 		vector<string> ranges = Text::split(range, '-');
 		if (ranges.size() != 2) {
@@ -366,18 +443,17 @@ static int dump(int argc, char *argv[])
 				    e.getInfo() << "." << endl;
 				return (EXIT_FAILURE);
 			}
-			fp = fopen((oflagval + "/" + next_key).c_str(), "wb");
-			if (fp == NULL) {
-				cerr << "Could not create file." << endl;
-				return (EXIT_FAILURE);
+			
+			switch (action) {
+			case DUMP:
+				if (dump(next_key, buf) != EXIT_SUCCESS)
+					return (EXIT_FAILURE);
+				break;
+			case DISPLAY:
+				if (display(next_key, buf) != EXIT_SUCCESS)
+					return (EXIT_FAILURE);
+				break;
 			}
-			if (fwrite(buf, 1, buf.size(), fp) != buf.size()) {
-				cerr << "Could not write entry." << endl;
-				if (fp != NULL)
-					fclose(fp);
-				return (EXIT_FAILURE);
-			}
-			fclose(fp);
 		}
 	}
 
@@ -1171,8 +1247,10 @@ int main(int argc, char *argv[])
 	switch (action) {
 	case ADD:
 		return (add(argc, argv));
+	case DISPLAY:
+		/* FALLTHROUGH */
 	case DUMP:
-		return (dump(argc, argv));
+		return (extract(argc, argv, action));
 	case LIST:
 		return (list(argc, argv));
 	case MAKE:
