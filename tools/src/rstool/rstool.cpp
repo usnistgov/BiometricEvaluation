@@ -105,7 +105,8 @@ static void usage(char *exe)
 	cerr << endl;
 
 	cerr << "Display/Dump Options:" << endl;
-	cerr << "\t-h <hash_rs>\tHash keys and save translation RecordStore" <<
+	cerr << "\t-h <hash_rs>\tUnhash keys as found in existing translation "
+	    "RecordStore" <<
 	    endl;
 	cerr << "\t-k <key>\tKey to dump" << endl;
 	cerr << "\t-r <#-#>\tRange of keys" << endl;
