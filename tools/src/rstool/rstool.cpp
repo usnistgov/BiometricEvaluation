@@ -439,8 +439,9 @@ static int extract(int argc, char *argv[], Action action)
 		/* Unhash, if desired */
 		if (hash_rs.get() != NULL) {
 			try {
-				hash_buf.resize(hash_rs->length(key));
+				hash_buf.resize(hash_rs->length(key) + 1);
 				hash_rs->read(key, hash_buf);
+				hash_buf[hash_buf.size() - 1] = '\0';
 				key.assign(hash_buf);
 			} catch (Error::Exception &e) {
 				cerr << "Could not unhash " << key << " - " <<
@@ -491,8 +492,9 @@ static int extract(int argc, char *argv[], Action action)
 			if (hash_rs.get() != NULL) {
 				try {
 					hash_buf.resize(hash_rs->length(
-					    next_key));
+					    next_key) + 1);
 					hash_rs->read(next_key, hash_buf);
+					hash_buf[hash_buf.size() - 1] = '\0';
 					next_key.assign(hash_buf);
 				} catch (Error::Exception &e) {
 					cerr << "Could not unhash " << 
