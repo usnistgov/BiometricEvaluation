@@ -1,5 +1,5 @@
 .\"
-.Dd March 07, 2011
+.Dd March 30, 2011
 .Dt RSTOOL 1
 .Os "Mac OS X"
 .Sh NAME
@@ -14,7 +14,7 @@ add
 .Fl a
 .Ar file
 .Op Fl a Ar ...
-.Op Fl h Ar hash_rs Op Fl c
+.Op Fl h Ar hash_rs Op Fl c | Fl p
 .Pp
 .Nm
 display/dump
@@ -38,7 +38,7 @@ make
 .Fl a
 .Ar dir/file
 .Op Fl a Ar ...
-.Op Fl h Ar hash_rs Op Fl c
+.Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
 .Pp
@@ -93,6 +93,12 @@ Existing hash translation RecordStore.  Passing this argument indicates that
 .Fa file
 should be hashed when inserted into
 .Fa rs .
+.It Cm -p
+If 
+.Fa hash_rs
+is specified, use the path to
+.Fa file
+instead of the name to form the hash.
 .It Cm -s Fa rs
 The existing RecordStore to which 
 .Fa file
@@ -165,6 +171,12 @@ Place
 .Fa hash_rs )
 in
 .Fa dir .
+.It Cm -p
+If 
+.Fa hash_rs
+is specified, use the path to
+.Fa dir/file
+instead of the name to form the hash.
 .It Cm -s Fa new_rs
 The RecordStore that will be created.
 .It Cm -t Fa type
@@ -299,5 +311,8 @@ into a newly formed RecordStore named
 .El
 .\"
 .\"
+.Sh VERSION
+This man page is current for version 1.1 of
+.Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.
