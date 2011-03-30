@@ -1159,7 +1159,7 @@ static int merge(int argc, char *argv[])
 static int version(int argc, char *argv[])
 {
 	cout << argv[0] << " v" << MAJOR_VERSION << "." << MINOR_VERSION <<
-	    " (Compiled " << __TIMESTAMP__ << ")" << endl;
+	    " (Compiled " << __DATE__ << " " << __TIME__ << ")" << endl;
 	cout << "BiometricEvaluation Framework v" << 
 	    Framework::getMajorVersion() << "." <<
 	    Framework::getMinorVersion() << " (" <<
