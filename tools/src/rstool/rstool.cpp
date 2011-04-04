@@ -52,25 +52,29 @@ static const string MAKE_ARG = "make";
 static const string MERGE_ARG = "merge";
 static const string VERSION_ARG = "version";
 static const string UNHASH_ARG = "unhash";
-typedef enum {
-    ADD,
-    DISPLAY,
-    DUMP,
-    LIST,
-    MAKE,
-    MERGE,
-    VERSION,
-    UNHASH, 
-    QUIT
-} Action;
+namespace Action {
+	typedef enum {
+	    ADD,
+	    DISPLAY,
+	    DUMP,
+	    LIST,
+	    MAKE,
+	    MERGE,
+	    VERSION,
+	    UNHASH, 
+	    QUIT
+	} Type;
+}
 
 /* Things that could be hashed when hashing a key */
-typedef enum {
-	FILECONTENTS,
-	FILENAME,
-	FILEPATH,
-	NOTHING
-} HashablePart;
+namespace HashablePart {
+	typedef enum {
+		FILECONTENTS,
+		FILENAME,
+		FILEPATH,
+		NOTHING
+	} Type;
+}
 
 /* What to print as value in a hash translation RecordStore */
 namespace KeyFormat {
@@ -187,33 +191,33 @@ static string validate_rs_type(const string &type)
  * @returns
  *	The Action the user has indicated on the command-line.
  */
-static Action procargs(int argc, char *argv[])
+static Action::Type procargs(int argc, char *argv[])
 {
 	if (argc == 1) {
 		usage(argv[0]);
-		return (QUIT);
+		return (Action::QUIT);
 	}
 
-	Action action;
+	Action::Type action;
 	if (strcasecmp(argv[1], DUMP_ARG.c_str()) == 0)
-		action = DUMP;
+		action = Action::DUMP;
 	else if (strcasecmp(argv[1], DISPLAY_ARG.c_str()) == 0)
-		action = DISPLAY;
+		action = Action::DISPLAY;
 	else if (strcasecmp(argv[1], LIST_ARG.c_str()) == 0)
-		action = LIST;
+		action = Action::LIST;
 	else if (strcasecmp(argv[1], MAKE_ARG.c_str()) == 0)
-		action = MAKE;
+		action = Action::MAKE;
 	else if (strcasecmp(argv[1], MERGE_ARG.c_str()) == 0)
-		action = MERGE;
+		action = Action::MERGE;
 	else if (strcasecmp(argv[1], VERSION_ARG.c_str()) == 0)
-		return VERSION;
+		return Action::VERSION;
 	else if (strcasecmp(argv[1], UNHASH_ARG.c_str()) == 0)
-		action = UNHASH;
+		action = Action::UNHASH;
 	else if (strcasecmp(argv[1], ADD_ARG.c_str()) == 0)
-		action = ADD;
+		action = Action::ADD;
 	else {
 		usage(argv[0]);
-		return (QUIT);
+		return (Action::QUIT);
 	}
 
 
@@ -229,14 +233,14 @@ static Action procargs(int argc, char *argv[])
 				if (!IO::Utility::pathIsDirectory(optarg)) {
 					cerr << optarg << " is not a "
 					    "directory." << endl;
-					return (QUIT);
+					return (Action::QUIT);
 				}
 			} else {
 				if (mkdir(oflagval.c_str(), S_IRWXU) != 0) {
 					cerr << "Could not create " <<
 					    oflagval << " - " << 
 					    Error::errorStr();
-					return (QUIT);
+					return (Action::QUIT);
 				}
 			}
 			break;
@@ -251,7 +255,7 @@ static Action procargs(int argc, char *argv[])
 	/* Sanity check */
 	if (sflagval.empty()) {
 		cerr << "Missing required option (-s)." << endl;
-		return (QUIT);
+		return (Action::QUIT);
 	}
 
 	return (action);
@@ -431,7 +435,7 @@ dump(
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
-static int extract(int argc, char *argv[], Action action)
+static int extract(int argc, char *argv[], Action::Type action)
 {
 	string key = "", range = "";
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
@@ -476,11 +480,11 @@ static int extract(int argc, char *argv[], Action action)
 		}
 
 		switch (action) {
-		case DUMP:
+		case Action::DUMP:
 			if (dump(key, buf) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 			break;
-		case DISPLAY:
+		case Action::DISPLAY:
 			if (display(key, buf) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 			break;
@@ -530,11 +534,11 @@ static int extract(int argc, char *argv[], Action action)
 			}
 
 			switch (action) {
-			case DUMP:
+			case Action::DUMP:
 				if (dump(next_key, buf) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
-			case DISPLAY:
+			case Action::DISPLAY:
 				if (display(next_key, buf) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
@@ -621,12 +625,12 @@ procargs_make(
     int argc,
     char *argv[],
     string &hash_filename,
-    HashablePart &what_to_hash,
+    HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format,
     string &type,
     vector<string> &elements)
 {
-	what_to_hash = NOTHING;
+	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
@@ -640,8 +644,8 @@ procargs_make(
 			elements.push_back(optarg);
 			break;
 		case 'c':	/* Hash contents */
-			if (what_to_hash == NOTHING)
-				what_to_hash = FILECONTENTS;
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILECONTENTS;
 			else {
 				cerr << "More than one hash method selected." <<
 				    endl;
@@ -666,8 +670,8 @@ procargs_make(
 			}
 			break;
 		case 'p':	/* Hash file path */
-			if (what_to_hash == NOTHING)
-				what_to_hash = FILEPATH;
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILEPATH;
 			else {
 				cerr << "More than one hash method selected." <<
 				    endl;
@@ -695,14 +699,15 @@ procargs_make(
 		return (EXIT_FAILURE);
 	}
 	/* Sanity check -- don't hash without recording a translation */
-	if (hash_filename.empty() && (what_to_hash != NOTHING)) {
+	if (hash_filename.empty() && (what_to_hash != HashablePart::NOTHING)) {
 		cerr << "Specified hash method without -h." << endl;
 		return (EXIT_FAILURE);
 	}
 
 	/* Choose to hash filename by default */
-	if ((hash_filename.empty() == false) && (what_to_hash == NOTHING))
-		what_to_hash = FILENAME;
+	if ((hash_filename.empty() == false) && (what_to_hash ==
+	    HashablePart::NOTHING))
+		what_to_hash = HashablePart::FILENAME;
 
 	return (EXIT_SUCCESS);
 }
@@ -729,7 +734,7 @@ procargs_make(
 static int make_insert_contents(const string &filename,
     const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    const HashablePart what_to_hash,
+    const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format)
 {
 	static Utility::AutoArray<char> buffer;
@@ -760,17 +765,17 @@ static int make_insert_contents(const string &filename,
 			rs->insert(key, buffer, buffer_size);
 		else {
 			switch (what_to_hash) {
-			case FILECONTENTS:
+			case HashablePart::FILECONTENTS:
 				hash_value = Utility::digest(buffer,
 				    buffer_size);
 				break;
-			case FILENAME:
+			case HashablePart::FILENAME:
 				hash_value = Text::digest(key);
 				break;
-			case FILEPATH:
+			case HashablePart::FILEPATH:
 				hash_value = Text::digest(filename);
 				break;
-			case NOTHING:
+			case HashablePart::NOTHING:
 				/* FALLTHROUGH */
 			default:
 				/* Don't hash */
@@ -778,10 +783,10 @@ static int make_insert_contents(const string &filename,
 			}
 
 			switch (hashed_key_format) {
-			case FILENAME:
+			case KeyFormat::FILENAME:
 				/* Already done */
 				break;
-			case FILEPATH:
+			case KeyFormat::FILEPATH:
 				key = filename;
 				break;
 			}
@@ -831,7 +836,7 @@ make_insert_directory_contents(
     const string &prefix,
     const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    const HashablePart what_to_hash,
+    const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format)
     throw (Error::ObjectDoesNotExist, Error::StrategyError)
 {
@@ -893,7 +898,7 @@ static int make(int argc, char *argv[])
 {
 	string hash_filename = "", type = "";
 	vector<string> elements;
-	HashablePart what_to_hash = NOTHING;
+	HashablePart::Type what_to_hash = HashablePart::NOTHING;
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 
 	if (procargs_make(argc, argv, hash_filename, what_to_hash,
@@ -995,10 +1000,10 @@ procargs_merge(
     Utility::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
     int &num_child_rs,
     string &hash_filename,
-    HashablePart &what_to_hash,
+    HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format)
 {
-	what_to_hash = NOTHING;
+	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
@@ -1028,8 +1033,8 @@ procargs_merge(
 			}
 			break;
 		case 'c':	/* Hash contents */
-			if (what_to_hash == NOTHING)
-				what_to_hash = FILECONTENTS;
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILECONTENTS;
 			else {
 				cerr << "More than one hash method selected." <<
 				    endl;
@@ -1079,14 +1084,16 @@ procargs_merge(
 	}
 
 	/* Sanity check -- don't hash without recording a translation */
-	if (hash_filename.empty() && (what_to_hash != NOTHING)) {
+	if (hash_filename.empty() && (what_to_hash !=
+	    HashablePart::NOTHING)) {
 		cerr << "Specified hash method without -h." << endl;
 		return (EXIT_FAILURE);
 	}
 
 	/* Choose to hash filename by default */
-	if ((hash_filename.empty() == false) && (what_to_hash == NOTHING))
-		what_to_hash = FILENAME;
+	if ((hash_filename.empty() == false) && (what_to_hash ==
+	    HashablePart::NOTHING))
+		what_to_hash = HashablePart::FILENAME;
 
 	return (EXIT_SUCCESS);
 }
@@ -1128,7 +1135,7 @@ static void mergeAndHashRecordStores(
     const string &type,
     tr1::shared_ptr<IO::RecordStore> recordStores[],
     const size_t numRecordStores,
-    const HashablePart what_to_hash,
+    const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format)
     throw (Error::ObjectExists, Error::StrategyError)
 {
@@ -1175,19 +1182,19 @@ static void mergeAndHashRecordStores(
 			}
 
 			switch (what_to_hash) {
-			case FILECONTENTS:
+			case HashablePart::FILECONTENTS:
 				hash = Utility::digest(buf, record_size);
 				break;
-			case FILEPATH:
+			case HashablePart::FILEPATH:
 				/* 
 				 * We don't have a file's path here since
 				 * we're going from RecordStore to RecordStore.
 				 */
 				/* FALLTHROUGH */
-			case FILENAME:
+			case HashablePart::FILENAME:
 				hash = Text::digest(key);
 				break;
-			case NOTHING:
+			case HashablePart::NOTHING:
 				/* FALLTHROUGH */
 			default:
 				/* Don't hash */
@@ -1195,9 +1202,9 @@ static void mergeAndHashRecordStores(
 			}
 
 			switch (hashed_key_format) {
-			case FILENAME:
+			case KeyFormat::FILENAME:
 				/* FALLTHROUGH */
-			case FILEPATH:
+			case KeyFormat::FILEPATH:
 				/* FALLTHROUGH */
 			default:
 				/* 
@@ -1229,7 +1236,7 @@ static void mergeAndHashRecordStores(
  */
 static int merge(int argc, char *argv[])
 {
-	HashablePart what_to_hash = NOTHING;
+	HashablePart::Type what_to_hash = HashablePart::NOTHING;
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	string type = "", hash_filename = "";
 	int num_rs = 0;
@@ -1406,10 +1413,10 @@ procargs_add(
     tr1::shared_ptr<IO::RecordStore> &rs,
     tr1::shared_ptr<IO::RecordStore> &hash_rs,
     vector<string> &files,
-    HashablePart &what_to_hash,
+    HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format)
 {
-	what_to_hash = NOTHING;
+	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
@@ -1423,8 +1430,8 @@ procargs_add(
 				files.push_back(optarg);
 			break;
 		case 'c':	/* Hash contents */
-			if (what_to_hash == NOTHING)
-				what_to_hash = FILECONTENTS;
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILECONTENTS;
 			else {
 				cerr << "More than one hash method selected." <<
 				    endl;
@@ -1446,8 +1453,8 @@ procargs_add(
 			}
 			break;
 		case 'p':	/* Hash file path */
-			if (what_to_hash == NOTHING)
-				what_to_hash = FILEPATH;
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILEPATH;
 			else {
 				cerr << "More than one hash method selected." <<
 				    endl;
@@ -1482,14 +1489,16 @@ procargs_add(
 	}
 
 		/* Sanity check -- don't hash without recording a translation */
-		if ((hash_rs.get() == NULL) && (what_to_hash != NOTHING)) {
+		if ((hash_rs.get() == NULL) && (what_to_hash !=
+		    HashablePart::NOTHING)) {
 			cerr << "Specified hash method without -h." << endl;
 			return (EXIT_FAILURE);
 		}
 
 		/* Choose to hash filename by default */
-		if ((hash_rs.get() != NULL) && (what_to_hash == NOTHING))
-			what_to_hash = FILENAME;
+		if ((hash_rs.get() != NULL) && (what_to_hash ==
+		    HashablePart::NOTHING))
+			what_to_hash = HashablePart::FILENAME;
 
 	return (EXIT_SUCCESS);
 }
@@ -1512,7 +1521,7 @@ add(
     int argc,
     char *argv[])
 {
-	HashablePart what_to_hash = NOTHING;
+	HashablePart::Type what_to_hash = HashablePart::NOTHING;
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
 	vector<string> files;
@@ -1536,25 +1545,25 @@ add(
 
 int main(int argc, char *argv[])
 {
-	Action action = procargs(argc, argv);
+	Action::Type action = procargs(argc, argv);
 	switch (action) {
-	case ADD:
+	case Action::ADD:
 		return (add(argc, argv));
-	case DISPLAY:
+	case Action::DISPLAY:
 		/* FALLTHROUGH */
-	case DUMP:
+	case Action::DUMP:
 		return (extract(argc, argv, action));
-	case LIST:
+	case Action::LIST:
 		return (list(argc, argv));
-	case MAKE:
+	case Action::MAKE:
 		return (make(argc, argv));
-	case MERGE:
+	case Action::MERGE:
 		return (merge(argc, argv));
-	case VERSION:
+	case Action::VERSION:
 		return (version(argc, argv));
-	case UNHASH:
+	case Action::UNHASH:
 		return (unhash(argc, argv));
-	case QUIT:
+	case Action::QUIT:
 	default:
 		return (EXIT_FAILURE);
 	}
