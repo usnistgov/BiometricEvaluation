@@ -15,6 +15,7 @@ add
 .Ar file
 .Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c | Fl p
+.Op Fl k Ar (fp)
 .Pp
 .Nm
 display/dump
@@ -39,6 +40,7 @@ make
 .Ar dir/file
 .Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c | Fl p
+.Op Fl k Ar (fp)
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
 .Pp
@@ -93,6 +95,16 @@ Existing hash translation RecordStore.  Passing this argument indicates that
 .Fa file
 should be hashed when inserted into
 .Fa rs .
+.It Cm -k Fa (fp)
+If
+.Fa hash_rs
+is specified, print the file path (
+.Cm -kp 
+) or the file name (
+.Cm -kf 
+) as the value of the hash in the hash translation RecordStore (
+.Cm -kf
+is the default ).
 .It Cm -p
 If 
 .Fa hash_rs
@@ -164,6 +176,16 @@ at
 .Fa hash_rs 
 that can be used with
 .Cm unhash .
+.It Cm -k Fa (fp)
+If
+.Fa hash_rs
+is specified, print the file path (
+.Cm -kp 
+) or the file name (
+.Cm -kf 
+) as the value of the hash in the hash translation RecordStore (
+.Cm -kf
+is the default ).
 .It Cm -o Fa dir
 Place 
 .Fa new_rs

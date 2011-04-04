@@ -72,6 +72,15 @@ typedef enum {
 	NOTHING
 } HashablePart;
 
+/* What to print as value in a hash translation RecordStore */
+namespace KeyFormat {
+	typedef enum {
+		DEFAULT,
+		FILENAME,
+		FILEPATH
+	} Type;
+};
+
 using namespace BiometricEvaluation;
 using namespace std;
 
@@ -101,6 +110,8 @@ static void usage(char *exe)
 	cerr << "Add Options:" << endl;
 	cerr << "\t-a <file>\tFile to add" << endl;
 	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
+	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
+	    endl << "\t\t\tin hash translation RecordStore" << endl;
 
 	cerr << endl;
 
@@ -118,6 +129,8 @@ static void usage(char *exe)
 	    "(multiple)" << endl;
 	cerr << "\t-h <hash_rs>\tHash keys and save translation RecordStore" <<
 	    endl;
+	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
+	    endl << "\t\t\tin hash translation RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
 
@@ -375,6 +388,17 @@ dump(
     const string &key,
     Utility::AutoArray<uint8_t> &value)
 {
+	/* Possible that keys could have slashes */
+	if (key.find('/') != string::npos) {
+		if (IO::Utility::makePath(oflagval + "/" + Text::dirname(key),
+		    S_IRWXU)) {
+			cerr << "Could not create path to store file (" <<
+			    oflagval + "/" + Text::dirname(key) << ")." <<
+			    endl;
+			return (EXIT_FAILURE);
+		}
+	}
+
 	FILE *fp = fopen((oflagval + "/" + key).c_str(), "wb");
 	if (fp == NULL) {
 		cerr << "Could not create file." << endl;
@@ -576,6 +600,9 @@ static int list(int argc, char *argv[])
  * @param what_to_hash[in]
  *	Reference to a HashablePart enumeration that indicates what should be
  *	hashed when creating a hash for an entry.
+ * @param hashed_key_format[in]
+ *	Reference to a KeyFormat enumeration that indicates how the key (when
+ *	printed as a value) should appear in a hash translation RecordStore.
  * @param type[in]
  *	Reference to a string that will represent the type of RecordStore to
  *	create.
@@ -589,10 +616,18 @@ static int list(int argc, char *argv[])
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
-static int procargs_make(int argc, char *argv[], string &hash_filename,
-    HashablePart &what_to_hash, string &type, vector<string> &elements)
+static int
+procargs_make(
+    int argc,
+    char *argv[],
+    string &hash_filename,
+    HashablePart &what_to_hash,
+    KeyFormat::Type &hashed_key_format,
+    string &type,
+    vector<string> &elements)
 {
 	what_to_hash = NOTHING;
+	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -616,6 +651,20 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
 		case 'h':	/* Hash translation RecordStore */
 			hash_filename.assign(optarg);
 			break;
+		case 'k':	/* Hash key display type */
+			switch (optarg[0]) {
+			case 'f':	/* Display as file's name */
+				hashed_key_format = KeyFormat::FILENAME;
+				break;
+			case 'p':	/* Display as file's path */
+				hashed_key_format = KeyFormat::FILEPATH;
+				break;
+			default:
+				cerr << "Invalid format specifier for hashed "
+				    "key." << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
 		case 'p':	/* Hash file path */
 			if (what_to_hash == NOTHING)
 				what_to_hash = FILEPATH;
@@ -634,6 +683,9 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
 			break;
 		}
 	}
+
+	if (hashed_key_format == KeyFormat::DEFAULT)
+		hashed_key_format = KeyFormat::FILENAME;
 
 	if (type.empty())
 		type.assign(IO::RecordStore::BERKELEYDBTYPE);
@@ -667,6 +719,8 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
  *	The RecordStore into which hash translations should be stored
  * @param what_to_hash[in]
  *	What should be hashed when creating a hash for an entry.
+ * @param hashed_key_format[in]
+ *	How the key should be displayed in a hash translation RecordStore.
  *
  * @returns
  *	An exit status, either EXIT_FAILURE or EXIT_SUCCESS, depending on if
@@ -675,7 +729,8 @@ static int procargs_make(int argc, char *argv[], string &hash_filename,
 static int make_insert_contents(const string &filename,
     const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    const HashablePart what_to_hash)
+    const HashablePart what_to_hash,
+    const KeyFormat::Type hashed_key_format)
 {
 	static Utility::AutoArray<char> buffer;
 	static uint64_t buffer_size = 0;
@@ -722,6 +777,15 @@ static int make_insert_contents(const string &filename,
 				break;
 			}
 
+			switch (hashed_key_format) {
+			case FILENAME:
+				/* Already done */
+				break;
+			case FILEPATH:
+				key = filename;
+				break;
+			}
+
 			rs->insert(hash_value, buffer, buffer_size);
 			hash_rs->insert(hash_value, key.c_str(), key.size());
 		}
@@ -749,6 +813,8 @@ static int make_insert_contents(const string &filename,
  *	The RecordStore into which hash translations should be stored
  * @param what_to_hash[in]
  *	What should be hashed when creating a hash for an entry.
+ * @param hashed_key_value[in]
+ *	How the key should be displayed in the hash translation RecordStore.
  *
  * @throws Error::ObjectDoesNotExist
  *	If the contents of the directory changes during the run
@@ -759,10 +825,14 @@ static int make_insert_contents(const string &filename,
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
-static int make_insert_directory_contents(const string &directory,
-    const string &prefix, const tr1::shared_ptr<IO::RecordStore> &rs,
+static int
+make_insert_directory_contents(
+    const string &directory,
+    const string &prefix,
+    const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    const HashablePart what_to_hash)
+    const HashablePart what_to_hash,
+    const KeyFormat::Type hashed_key_format)
     throw (Error::ObjectDoesNotExist, Error::StrategyError)
 {
 	struct dirent *entry;
@@ -788,12 +858,12 @@ static int make_insert_directory_contents(const string &directory,
 		/* Recursively remove subdirectories and files */
 		if (IO::Utility::pathIsDirectory(filename)) {
 			if (make_insert_directory_contents(entry->d_name,
-			    dirpath, rs, hash_rs, what_to_hash) !=
-			    EXIT_SUCCESS)
+			    dirpath, rs, hash_rs, what_to_hash,
+			    hashed_key_format) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		} else {
 			if (make_insert_contents(filename, rs, hash_rs,
-			    what_to_hash) != EXIT_SUCCESS)
+			    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -824,9 +894,10 @@ static int make(int argc, char *argv[])
 	string hash_filename = "", type = "";
 	vector<string> elements;
 	HashablePart what_to_hash = NOTHING;
+	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 
-	if (procargs_make(argc, argv, hash_filename, what_to_hash, type,
-	    elements) != EXIT_SUCCESS)
+	if (procargs_make(argc, argv, hash_filename, what_to_hash,
+	    hashed_key_format, type, elements) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	tr1::shared_ptr<IO::RecordStore> rs;
@@ -852,7 +923,8 @@ static int make(int argc, char *argv[])
 				if (make_insert_directory_contents(
 				    Text::filename(elements[i]),
 				    Text::dirname(elements[i]),
-				    rs, hash_rs, what_to_hash) != EXIT_SUCCESS)
+				    rs, hash_rs, what_to_hash,
+				    hashed_key_format) != EXIT_SUCCESS)
 			    		return (EXIT_FAILURE);
 			} catch (Error::Exception &e) {
 				cerr << "Could not add contents of dir " <<
@@ -873,7 +945,8 @@ static int make(int argc, char *argv[])
 				}
 
 				if (make_insert_contents(line, rs, hash_rs,
-				    what_to_hash) != EXIT_SUCCESS)
+				    what_to_hash, hashed_key_format) !=
+				    EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 			}
 			input.close();
@@ -907,15 +980,26 @@ static int make(int argc, char *argv[])
  * @param what_to_hash[in]
  *	Reference to a HashablePart enumeration indicating what should be
  *	hashed when creating a hash for an entry.
+ * @param hashed_key_format[in]
+ *	Reference to a KeyFormat enumerating indicating how the key should be
+ *	printed (as a value) in a hash translation RecordStore.
  *
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
  */
-static int procargs_merge(int argc, char *argv[], string &type,
+static int
+procargs_merge(
+    int argc,
+    char *argv[],
+    string &type,
     Utility::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
-    int &num_child_rs, string &hash_filename, HashablePart &what_to_hash)
+    int &num_child_rs,
+    string &hash_filename,
+    HashablePart &what_to_hash,
+    KeyFormat::Type &hashed_key_format)
 {
 	what_to_hash = NOTHING;
+	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
 	num_child_rs = 0;
@@ -955,6 +1039,20 @@ static int procargs_merge(int argc, char *argv[], string &type,
 		case 'h':	/* Hash translation RecordStore */
 			hash_filename.assign(optarg);
 			break;
+		case 'k':	/* Hash key display type */
+			switch (optarg[0]) {
+			case 'f':	/* Display as file's name */
+				hashed_key_format = KeyFormat::FILENAME;
+				break;
+			case 'p':	/* Display as file's path */
+				hashed_key_format = KeyFormat::FILEPATH;
+				break;
+			default:
+				cerr << "Invalid format specifier for hashed "
+				    "key." << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
 		case 'p':	/* Hash file path */
 			/* Sanity check */
 			cerr << "Cannot hash file path when merging "
@@ -962,6 +1060,9 @@ static int procargs_merge(int argc, char *argv[], string &type,
 			return (EXIT_FAILURE);
 		}
 	}
+
+	if (hashed_key_format == KeyFormat::DEFAULT)
+		hashed_key_format = KeyFormat::FILENAME;
 
 	if (num_child_rs == 0) {
 		cerr << "Missing required option (-a)." << endl;
@@ -1011,6 +1112,8 @@ static int procargs_merge(int argc, char *argv[], string &type,
  * 	The number of RecordStore* in recordStores.
  * @param what_to_hash[in]
  *	What should be hashed when creating a hash for an entry.
+ * @param hashed_key_format[in]
+ *	How the key should be printed in a hash translation RecordStore
  *
  * \throws Error::ObjectExists
  * 	A RecordStore with mergedNamed in parentDir
@@ -1024,8 +1127,9 @@ static void mergeAndHashRecordStores(
     const string &parentDir,
     const string &type,
     tr1::shared_ptr<IO::RecordStore> recordStores[],
-    size_t numRecordStores,
-    HashablePart what_to_hash)
+    const size_t numRecordStores,
+    const HashablePart what_to_hash,
+    const KeyFormat::Type hashed_key_format)
     throw (Error::ObjectExists, Error::StrategyError)
 {
 	auto_ptr<IO::RecordStore> merged_rs, hash_rs;
@@ -1090,6 +1194,20 @@ static void mergeAndHashRecordStores(
 				break;
 			}
 
+			switch (hashed_key_format) {
+			case FILENAME:
+				/* FALLTHROUGH */
+			case FILEPATH:
+				/* FALLTHROUGH */
+			default:
+				/* 
+				 * We don't have a file's path here since
+				 * we're going from RecordStore to RecordStore,
+				 * so not much we can do.
+				 */
+				break;
+			}
+
 			merged_rs->insert(hash, buf, record_size);
 			hash_rs->insert(hash, key.c_str(), key.size() + 1);
 		}
@@ -1112,11 +1230,12 @@ static void mergeAndHashRecordStores(
 static int merge(int argc, char *argv[])
 {
 	HashablePart what_to_hash = NOTHING;
+	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	string type = "", hash_filename = "";
 	int num_rs = 0;
 	Utility::AutoArray< tr1::shared_ptr<IO::RecordStore> > child_rs;
 	if (procargs_merge(argc, argv, type, child_rs, num_rs, hash_filename,
-	    what_to_hash) != EXIT_SUCCESS)
+	    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	string description = "A merge of ";
@@ -1135,7 +1254,8 @@ static int merge(int argc, char *argv[])
 		} else {
 			mergeAndHashRecordStores(
 			    sflagval, description, hash_filename, oflagval,
-			    type, child_rs, num_rs, what_to_hash);
+			    type, child_rs, num_rs, what_to_hash,
+			    hashed_key_format);
 		}
 	} catch (Error::Exception &e) {
 		cerr << "Could not create " << sflagval << " - " <<
@@ -1269,8 +1389,11 @@ static int unhash(int argc, char *argv[])
  *	Reference to a vector that will be populated with paths to files that
  *	should be added to rs.
  * @param what_to_hash[in]
- *	Reference to a HashablePart enumeration that indicated what should be
+ *	Reference to a HashablePart enumeration that indicates what should be
  *	hashed when creating a hash for an entry.
+ * @param hashed_key_format[in]
+ *	Reference to a KeyFormat enumeration that indicates how the key (when
+ *	printed as a value) should appear in a hash translation RecordStore.
  *
  * @returns
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
@@ -1283,9 +1406,11 @@ procargs_add(
     tr1::shared_ptr<IO::RecordStore> &rs,
     tr1::shared_ptr<IO::RecordStore> &hash_rs,
     vector<string> &files,
-    HashablePart &what_to_hash)
+    HashablePart &what_to_hash,
+    KeyFormat::Type &hashed_key_format)
 {
 	what_to_hash = NOTHING;
+	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
 	while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -1303,6 +1428,20 @@ procargs_add(
 			else {
 				cerr << "More than one hash method selected." <<
 				    endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'k':	/* Hash key display type */
+			switch (optarg[0]) {
+			case 'f':	/* Display as file's name */
+				hashed_key_format = KeyFormat::FILENAME;
+				break;
+			case 'p':	/* Display as file's path */
+				hashed_key_format = KeyFormat::FILEPATH;
+				break;
+			default:
+				cerr << "Invalid format specifier for hashed "
+				    "key." << endl;
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -1328,6 +1467,9 @@ procargs_add(
 			break;
 		}
 	}
+
+	if (hashed_key_format == KeyFormat::DEFAULT)
+		hashed_key_format = KeyFormat::FILENAME;
 
 	/* sflagval is the RecordStore we will be adding to */
 	try {
@@ -1371,10 +1513,11 @@ add(
     char *argv[])
 {
 	HashablePart what_to_hash = NOTHING;
+	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
 	vector<string> files;
-	if (procargs_add(argc, argv, rs, hash_rs, files, what_to_hash) !=
-	    EXIT_SUCCESS)
+	if (procargs_add(argc, argv, rs, hash_rs, files, what_to_hash,
+	    hashed_key_format) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	for (vector<string>::const_iterator file_path = files.begin();
@@ -1384,7 +1527,8 @@ add(
 		 * when inserting because we may have multiple files we'd
 		 * like to add and there's no point in quitting halfway.
 		 */
-		make_insert_contents(*file_path, rs, hash_rs, what_to_hash);
+		make_insert_contents(*file_path, rs, hash_rs, what_to_hash,
+		    hashed_key_format);
 	}
 
 	return (EXIT_SUCCESS);
