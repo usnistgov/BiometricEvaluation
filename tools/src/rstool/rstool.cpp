@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
 
 #include <dirent.h>
@@ -947,6 +948,15 @@ static int make(int argc, char *argv[])
 					cerr << "Error reading " << input <<
 					    endl;
 					return (EXIT_FAILURE);
+				}
+				
+				/* Ignore comments and newlines */
+				try {
+					if (line.at(0) == '#' ||
+					    line.at(0) == '\n')
+					    	continue;
+				} catch (out_of_range) {
+					continue;
 				}
 
 				if (make_insert_contents(line, rs, hash_rs,
