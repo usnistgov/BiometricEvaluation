@@ -689,8 +689,14 @@ procargs_make(
 		}
 	}
 
-	if (hashed_key_format == KeyFormat::DEFAULT)
-		hashed_key_format = KeyFormat::FILENAME;
+	if (hashed_key_format == KeyFormat::DEFAULT) {
+		switch (what_to_hash) {
+		case HashablePart::FILEPATH:
+			hashed_key_format = KeyFormat::FILEPATH; break;
+		default:
+			hashed_key_format = KeyFormat::FILENAME; break;
+		}
+	}
 
 	if (type.empty())
 		type.assign(IO::RecordStore::BERKELEYDBTYPE);
@@ -1485,8 +1491,14 @@ procargs_add(
 		}
 	}
 
-	if (hashed_key_format == KeyFormat::DEFAULT)
-		hashed_key_format = KeyFormat::FILENAME;
+	if (hashed_key_format == KeyFormat::DEFAULT) {
+		switch (what_to_hash) {
+		case HashablePart::FILEPATH:
+			hashed_key_format = KeyFormat::FILEPATH; break;
+		default:
+			hashed_key_format = KeyFormat::FILENAME; break;
+		}
+	}
 
 	/* sflagval is the RecordStore we will be adding to */
 	try {
