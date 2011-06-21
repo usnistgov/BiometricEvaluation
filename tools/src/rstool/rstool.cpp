@@ -32,7 +32,6 @@
 #include <be_framework.h>
 #include <be_io_archiverecstore.h>
 #include <be_io_dbrecstore.h>
-#include <be_io_factory.h>
 #include <be_io_filerecstore.h>
 #include <be_io_recordstore.h>
 #include <be_io_utility.h>
@@ -302,7 +301,7 @@ procargs_extract(
 		switch (c) {
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
-				hash_rs = IO::Factory::openRecordStore(
+				hash_rs = IO::RecordStore::openRecordStore(
 				    Text::filename(optarg),
 				    Text::dirname(optarg));
 			} catch (Error::Exception &e) {
@@ -331,7 +330,7 @@ procargs_extract(
 		return (EXIT_FAILURE);
 	}
 	try {
-		rs = IO::Factory::openRecordStore(Text::filename(sflagval),
+		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READONLY);
 	} catch (Error::Exception &e) {
 		cerr << "Could not open " << sflagval << ".  " <<
@@ -567,7 +566,7 @@ static int list(int argc, char *argv[])
 {
 	tr1::shared_ptr<IO::RecordStore> rs;
 	try {
-		rs = IO::Factory::openRecordStore(Text::filename(sflagval),
+		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READONLY);
 	} catch (Error::Exception &e) {
 		cerr << "Could not open RecordStore - " << e.getInfo() << endl;
@@ -915,10 +914,11 @@ static int make(int argc, char *argv[])
 	tr1::shared_ptr<IO::RecordStore> rs;
 	tr1::shared_ptr<IO::RecordStore> hash_rs;
 	try {
-		rs = IO::Factory::createRecordStore(sflagval, "<Description>",
-		    type, oflagval);
+		rs = IO::RecordStore::createRecordStore(sflagval,
+		    "<Description>", type, oflagval);
 		if (!hash_filename.empty())
-			hash_rs = IO::Factory::createRecordStore(hash_filename,
+			hash_rs = IO::RecordStore::createRecordStore(
+			    hash_filename,
 			    "Hash Translation for " + sflagval, type, oflagval);
 	} catch (Error::Exception &e) {
 		cerr << "Could not create " << sflagval << " - " <<
@@ -1038,7 +1038,7 @@ procargs_merge(
 				/* Add to AutoArray */
 				child_rs.resize(num_child_rs + 1);
 				child_rs[num_child_rs++] =
-				    IO::Factory::openRecordStore(
+				    IO::RecordStore::openRecordStore(
 				    Text::filename(optarg),
 				    Text::dirname(optarg),
 				    IO::READONLY);
@@ -1349,7 +1349,7 @@ static int procargs_unhash(int argc, char *argv[], string &hash,
 
 	/* sflagval here is the hashed RecordStore */
 	try {
-		rs = IO::Factory::openRecordStore(Text::filename(sflagval),
+		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READONLY);
 	} catch (Error::Exception &e) {
 		cerr << "Could not open " << sflagval << " - " << e.getInfo() <<
@@ -1479,7 +1479,7 @@ procargs_add(
 			break;
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
-				hash_rs = IO::Factory::openRecordStore(
+				hash_rs = IO::RecordStore::openRecordStore(
 				    Text::filename(optarg),
 				    Text::dirname(optarg));
 			} catch (Error::Exception &e) {
@@ -1502,7 +1502,7 @@ procargs_add(
 
 	/* sflagval is the RecordStore we will be adding to */
 	try {
-		rs = IO::Factory::openRecordStore(Text::filename(sflagval),
+		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval));
 	} catch (Error::Exception &e) {
 		cerr << "Could not open " << sflagval << " -- " <<

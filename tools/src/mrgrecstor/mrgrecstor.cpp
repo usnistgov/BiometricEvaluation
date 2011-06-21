@@ -16,8 +16,7 @@
 #include <sys/stat.h>
 #include <libgen.h>
 #include <errno.h>
-#include <be_io_dbrecstore.h>
-#include <be_io_factory.h>
+#include <be_io_recordstore.h>
 
 #include "toolsutils.h"
 
@@ -117,7 +116,7 @@ main (int argc, char* argv[])
 	
 	/* Create new record store */
 	try {
-		rsout = Factory::createRecordStore
+		rsout = RecordStore::createRecordStore
 				(sName,
 				sDescription,
 				sRecordType,
@@ -133,7 +132,7 @@ main (int argc, char* argv[])
 				RecordStore::removeRecordStore(sName, sDestDir);
 				
 				try {
-					rsout = Factory::createRecordStore
+					rsout = RecordStore::createRecordStore
 							(sName,
 							sDescription,
 							sRecordType,
@@ -164,8 +163,7 @@ main (int argc, char* argv[])
 			pszRecStoreDir = dirname(szLine);
 			
 			try {
-				/* Open record store */				//rsin = new DBRecordStore(pszRecStoreName, pszRecStoreDir);
-				rsin = Factory::openRecordStore
+				rsin = RecordStore::openRecordStore
 						(pszRecStoreName,
 						pszRecStoreDir,
 						READONLY);

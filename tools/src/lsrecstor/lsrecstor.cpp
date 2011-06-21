@@ -15,7 +15,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <libgen.h>
-#include <be_io_factory.h>
+#include <be_io_recordstore.h>
 
 #include "toolsutils.h"
 
@@ -64,7 +64,7 @@ main (int argc, char* argv[])
 	
 	/* Open record store */
 	try {
-		rs = Factory::openRecordStore(sName, sParentDir, READONLY);
+		rs = RecordStore::openRecordStore(sName, sParentDir, READONLY);
 	} catch (Error::ObjectDoesNotExist) {
 		ERR_OUT("Failed to open record store %s", sName.c_str());
 	} catch (Error::StrategyError e) {

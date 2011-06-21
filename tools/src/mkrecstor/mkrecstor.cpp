@@ -16,7 +16,7 @@
 #include <sys/stat.h>
 #include <libgen.h>
 #include <errno.h>
-#include <be_io_factory.h>
+#include <be_io_recordstore.h>
 #include <be_text.h>
 #include "toolsutils.h"
 
@@ -225,13 +225,13 @@ main (int argc, char* argv[])
 	
 	/* Create new record store */
 	try {
-		rs = Factory::createRecordStore
+		rs = RecordStore::createRecordStore
 				(sName,
 				sDescription,
 				sRecordType,
 				sDestDir);
 		if (hash) {
-			hash_rs = Factory::createRecordStore(
+			hash_rs = RecordStore::createRecordStore(
 			    sName + "_hash", sDescription, sRecordType,
 			    sDestDir);
 		}
@@ -249,14 +249,14 @@ main (int argc, char* argv[])
 					    "_hash", sDestDir);
 				
 				try {
-					rs = Factory::createRecordStore
+					rs = RecordStore::createRecordStore
 							(sName,
 							sDescription,
 							sRecordType,
 							sDestDir);
 					if (hash) {
 						hash_rs = 
-						    Factory::createRecordStore(
+						    RecordStore::createRecordStore(
 						    sName + "_hash",
 						    sDescription,
 						    sRecordType,
@@ -299,7 +299,7 @@ main (int argc, char* argv[])
 		
 		/* Open record store */
 		try {
-			rs = Factory::openRecordStore
+			rs = RecordStore::openRecordStore
 					(sName,
 					sDestDir,
 					READONLY);
