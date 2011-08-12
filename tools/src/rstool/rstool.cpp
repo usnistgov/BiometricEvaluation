@@ -36,7 +36,7 @@
 #include <be_io_recordstore.h>
 #include <be_io_utility.h>
 #include <be_text.h>
-#include <be_utility_autoarray.h>
+#include <be_memory_autoarray.h>
 
 static string oflagval = ".";		/* Output directory */
 static string sflagval = "";		/* Path to main RecordStore */
@@ -363,7 +363,7 @@ procargs_extract(
 static int
 display(
     const string &key,
-    Utility::AutoArray<uint8_t> &value)
+    Memory::AutoArray<uint8_t> &value)
 {
 	value.resize(value.size() + 1);
 	value[value.size() - 1] = '\0';
@@ -389,7 +389,7 @@ display(
 static int
 dump(
     const string &key,
-    Utility::AutoArray<uint8_t> &value)
+    Memory::AutoArray<uint8_t> &value)
 {
 	/* Possible that keys could have slashes */
 	if (key.find('/') != string::npos) {
@@ -442,8 +442,8 @@ static int extract(int argc, char *argv[], Action::Type action)
 	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
-	Utility::AutoArray<uint8_t> buf;
-	Utility::AutoArray<char> hash_buf;
+	Memory::AutoArray<uint8_t> buf;
+	Memory::AutoArray<char> hash_buf;
 	if (!key.empty()) {
 		try {
 			buf.resize(rs->length(key));
@@ -742,7 +742,7 @@ static int make_insert_contents(const string &filename,
     const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format)
 {
-	static Utility::AutoArray<char> buffer;
+	static Memory::AutoArray<char> buffer;
 	static uint64_t buffer_size = 0;
 	static ifstream buffer_file;
 
@@ -1011,7 +1011,7 @@ procargs_merge(
     int argc,
     char *argv[],
     string &type,
-    Utility::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
+    Memory::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
     int &num_child_rs,
     string &hash_filename,
     HashablePart::Type &what_to_hash,
@@ -1176,7 +1176,7 @@ static void mergeAndHashRecordStores(
 	bool exhausted;
 	uint64_t record_size;
 	string key, hash;
-	Utility::AutoArray<char> buf;
+	Memory::AutoArray<char> buf;
 	for (size_t i = 0; i < numRecordStores; i++) {
 		exhausted = false;
 		while (!exhausted) {
@@ -1254,7 +1254,7 @@ static int merge(int argc, char *argv[])
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	string type = "", hash_filename = "";
 	int num_rs = 0;
-	Utility::AutoArray< tr1::shared_ptr<IO::RecordStore> > child_rs;
+	Memory::AutoArray< tr1::shared_ptr<IO::RecordStore> > child_rs;
 	if (procargs_merge(argc, argv, type, child_rs, num_rs, hash_filename,
 	    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
@@ -1379,7 +1379,7 @@ static int unhash(int argc, char *argv[])
 	if (procargs_unhash(argc, argv, hash, rs) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 	
-	Utility::AutoArray<char> buffer;
+	Memory::AutoArray<char> buffer;
 	try {
 		buffer.resize(rs->length(hash));
 		rs->read(hash, buffer);
