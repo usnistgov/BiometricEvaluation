@@ -40,7 +40,7 @@
 
 static string oflagval = ".";		/* Output directory */
 static string sflagval = "";		/* Path to main RecordStore */
-static const char optstr[] = "a:ch:k:m:o:pr:s:t:";
+static const char optstr[] = "a:cfh:k:m:o:pr:s:t:";
 
 /* Possible actions performed by this utility */
 static const string ADD_ARG = "add";
@@ -49,6 +49,7 @@ static const string DUMP_ARG = "dump";
 static const string LIST_ARG = "list";
 static const string MAKE_ARG = "make";
 static const string MERGE_ARG = "merge";
+static const string REMOVE_ARG = "remove";
 static const string VERSION_ARG = "version";
 static const string UNHASH_ARG = "unhash";
 namespace Action {
@@ -59,6 +60,7 @@ namespace Action {
 	    LIST,
 	    MAKE,
 	    MERGE,
+	    REMOVE,
 	    VERSION,
 	    UNHASH, 
 	    QUIT
@@ -89,6 +91,60 @@ using namespace std;
 
 /**
  * @brief
+ * Prompt the user to answer a yes or no question.
+ *
+ * @param prompt
+ *	The yes or no question.
+ * @param default_answer
+ *	Value that is the default answer if return is pressed but nothing
+ *	typed.
+ * @param show_options
+ *	Whether or not to show valid input values.
+ * @param allow_default_answer
+ *	Whether or not to allow default answer.
+ *
+ * @return
+ *	Answer to prompt (true if yes, false if no).
+ */
+static bool
+yesOrNo(
+    const string &prompt,
+    bool default_answer = true,
+    bool show_options = true,
+    bool allow_default_answer = true)
+{	
+	string input;
+	for (;;) {
+		cout << prompt;
+		if (show_options) {
+			if (allow_default_answer) {
+				if (default_answer == true)
+					cout << " ([Y]/n)";
+				else
+					cout << " (y/[N])";
+			} else
+				cout << " (y/n)";
+		}
+		cout << ": ";
+		getline(cin, input);
+		try {
+			switch (input.at(0)) {
+			case 'Y':
+			case 'y':
+				return (true);
+			case 'n':
+			case 'N':
+				return (false);
+			}
+		} catch (out_of_range) {
+			if (allow_default_answer)
+				return (default_answer);
+		}
+	}
+}
+
+/**
+ * @brief
  * Display command-line usage for the tool.
  * 
  * @param exe[in]
@@ -97,8 +153,8 @@ using namespace std;
 static void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
-	cerr << "Actions: add, display, dump, list, make, merge, version, "
-	    "unhash" << endl;
+	cerr << "Actions: add, display, dump, list, make, merge, remove, "
+	    "version, unhash" << endl;
 
 	cerr << endl;
 
@@ -147,6 +203,12 @@ static void usage(char *exe)
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
 
 	cerr << endl;
+	
+	cerr << "Remove Options:" << endl;
+	cerr << "\t-f\t\tForce removal, do not prompt" << endl;
+	cerr << "\t-k <key>\tThe key to remove" << endl;
+	
+	cout << endl;
 
 	cerr << "Unhash Options:" << endl;
 	cerr << "\t-h <hash>\tHash to unhash" << endl;
@@ -208,6 +270,8 @@ static Action::Type procargs(int argc, char *argv[])
 		action = Action::MAKE;
 	else if (strcasecmp(argv[1], MERGE_ARG.c_str()) == 0)
 		action = Action::MERGE;
+	else if (strcasecmp(argv[1], REMOVE_ARG.c_str()) == 0)
+		action = Action::REMOVE;
 	else if (strcasecmp(argv[1], VERSION_ARG.c_str()) == 0)
 		return Action::VERSION;
 	else if (strcasecmp(argv[1], UNHASH_ARG.c_str()) == 0)
@@ -1563,6 +1627,106 @@ add(
 	return (EXIT_SUCCESS);
 }
 
+/**
+ * @brief
+ * Process command-line arguments specific to the REMOVE Action.
+ *
+ * @param argc[in]
+ *	argc from main().
+ * @param argv[in]
+ *	argv from main().
+ * @param keys[in]
+ *	Reference to a vector that will hold the keys to remove.
+ * @param force_removal
+ *	Reference to a boolean that when true will not prompt before removal.
+ * @param rs[in]
+ *	Reference to a shared pointer that will hold the open RecordStore.
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+procargs_remove(
+    int argc,
+    char *argv[],
+    vector<string> &keys,
+    bool &force_removal,
+    tr1::shared_ptr<IO::RecordStore> &rs)
+{
+	char c;
+        while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 'f':	/* Force removal (do not prompt) */
+			force_removal = true;
+			break;
+		case 'k':	/* Keys to remove */
+			keys.push_back(optarg);
+			break;
+		}
+	}
+
+	if (keys.empty()) {
+		cerr << "Missing required option (-k)." << endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* sflagval here is the RecordStore */
+	try {
+		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
+		    Text::dirname(sflagval), IO::READWRITE);
+	} catch (Error::Exception &e) {
+		cerr << "Could not open " << sflagval << " - " << e.getInfo() <<
+		    endl;
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief
+ * Facilitates the removal of key/value pairs from an existing RecordStore.
+ * 
+ * @param argc[in]
+ *	argc from main()
+ * @param argv[in]
+ *	argv from main()
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+remove(
+    int argc,
+    char *argv[])
+{
+	bool force_removal = false;
+	int status = EXIT_SUCCESS;
+	tr1::shared_ptr<IO::RecordStore> rs;
+	vector<string> keys;
+	if (procargs_remove(argc, argv, keys, force_removal, rs) != 
+	    EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+
+	for (vector<string>::const_iterator key = keys.begin();
+	    key != keys.end(); key++) {
+		if ((force_removal == false && yesOrNo("Remove " + *key + "?",
+		    false)) || force_removal == true) {
+			try {
+				rs->remove(*key);
+			} catch (Error::Exception &e) {
+				cerr << "Could not remove " << *key << ": " <<
+				    e.getInfo() << endl;
+				status = EXIT_FAILURE;
+			}
+		}
+	}
+
+	return (status);
+}
+
 int main(int argc, char *argv[])
 {
 	Action::Type action = procargs(argc, argv);
@@ -1579,6 +1743,8 @@ int main(int argc, char *argv[])
 		return (make(argc, argv));
 	case Action::MERGE:
 		return (merge(argc, argv));
+	case Action::REMOVE:
+		return (remove(argc, argv));
 	case Action::VERSION:
 		return (version(argc, argv));
 	case Action::UNHASH:

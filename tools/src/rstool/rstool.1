@@ -57,6 +57,15 @@ merge
 .Op Fl t Ar rs_type
 .Pp
 .Nm
+remove
+.Op Fl f
+.Fl s
+.Ar rs
+.Fl k
+.Ar key
+.Op Fl k Ar ...
+.Pp
+.Nm
 version
 .Pp
 .\"
@@ -273,7 +282,22 @@ RecordStore, where type is:
 .It Fa BerkeleyDB
 (default)
 .It Fa File
-.El 
+.El
+.El
+.It Cm remove
+Remove
+.Fa key
+from
+.Fa rs .
+.Bl -tag -compact -width "-k key "
+.It Cm -f
+Force removal, do not prompt.
+.It Cm -k Fa key
+The key to remove.  Multiple
+.Cm -k
+may be specified.
+.It Cm -s Fa rs
+The RecordStore from which to remove.
 .El
 .It Cm version
 Display the version of
