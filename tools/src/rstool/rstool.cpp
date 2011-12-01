@@ -14,6 +14,7 @@
 
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,6 +46,7 @@ static const char optstr[] = "a:cfh:k:m:o:pr:s:t:";
 /* Possible actions performed by this utility */
 static const string ADD_ARG = "add";
 static const string DISPLAY_ARG = "display";
+static const string DIFF_ARG = "diff";
 static const string DUMP_ARG = "dump";
 static const string LIST_ARG = "list";
 static const string MAKE_ARG = "make";
@@ -56,6 +58,7 @@ namespace Action {
 	typedef enum {
 	    ADD,
 	    DISPLAY,
+	    DIFF,
 	    DUMP,
 	    LIST,
 	    MAKE,
@@ -88,6 +91,74 @@ namespace KeyFormat {
 
 using namespace BiometricEvaluation;
 using namespace std;
+
+/**
+ * @brief
+ * Read the contents of a text file into a vector (one line per entry).
+ *
+ * @param filePath
+ *	Complete path of the text file to read from.
+ * @param ignoreComments
+ *	Whether or not to ignore comment lines (lines beginning with '#')
+ * @param ignoreBlankLines
+ *	Whether or not to add blank entries (lines beginning with '\n')
+ *
+ * @return
+ *	Vector of the lines in the file
+ *
+ * @throw Error::FileError
+ *	Error opening or reading from filePath.
+ * @throw Error::ObjectDoesNotExist
+ *	filePath does not exist.
+ */
+static vector<string>
+readTextFileToVector(
+    const string &filePath,
+    bool ignoreComments = true,
+    bool ignoreBlankLines = true)
+    throw (Error::FileError,
+    Error::ObjectDoesNotExist)
+{
+	if (IO::Utility::fileExists(filePath) == false)
+		throw Error::ObjectDoesNotExist();
+	if (IO::Utility::pathIsDirectory(filePath))
+		throw Error::FileError(filePath + " is a directory");
+		
+	string line;
+	ifstream input;
+	vector<string> rv;
+	input.open(filePath.c_str(), ifstream::in);
+	for (;;) {
+		/* Read one path from text file */
+		input >> line;
+		if (input.eof())
+			break;
+		else if (input.bad())
+			throw Error::FileError(filePath + " bad bit set");
+		
+		/* Ignore comments and newlines */
+		try {
+			if (ignoreComments && line.at(0) == '#')
+				continue;
+			if (line.at(0) == '\n') {
+				if (ignoreBlankLines)
+					continue;
+				/* 
+				 * The newlines are stripped from the other
+				 * entries, so this should be the empty string.
+				 */
+				line = "";
+			}
+		} catch (out_of_range) {
+			continue;
+		}
+		
+		/* Add the line */
+		rv.push_back(line);
+	}
+	
+	return (rv);
+}
 
 /**
  * @brief
@@ -171,6 +242,14 @@ static void usage(char *exe)
 	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
+
+	cerr << endl;
+
+	cerr << "Diff Options:" << endl;
+	cerr << "\t-a <file>\tText file with keys to compare" << endl;
+	cerr << "\t-f\t\tCompare files byte for byte " <<
+	    "(as opposed to checksum)" << endl;
+	cerr << "\t-k <key>\tKey to compare" << endl;
 
 	cerr << endl;
 
@@ -262,6 +341,8 @@ static Action::Type procargs(int argc, char *argv[])
 	Action::Type action;
 	if (strcasecmp(argv[1], DUMP_ARG.c_str()) == 0)
 		action = Action::DUMP;
+	else if (strcasecmp(argv[1], DIFF_ARG.c_str()) == 0)
+		action = Action::DIFF;
 	else if (strcasecmp(argv[1], DISPLAY_ARG.c_str()) == 0)
 		action = Action::DISPLAY;
 	else if (strcasecmp(argv[1], LIST_ARG.c_str()) == 0)
@@ -1727,12 +1808,250 @@ remove(
 	return (status);
 }
 
+/**
+ * @brief
+ * Process command-line arguments specific to the DIFF Action.
+ *
+ * @param argc[in]
+ *	argc from main().
+ * @param argv[in]
+ *	argv from main().
+ * @param sourceRS[in]
+ *	Reference to a shared pointer that will hold the open
+ *	source-RecordStore.
+ * @param targetRS[in]
+ *	Reference to a shared pointer that will hold the open 
+ *	target-RecordStore.
+ * @param keys[in]
+ *	Reference to a vector that will hold the keys to compare.
+ * @param byte_for_byte[in]
+ *	Reference to a boolean that, when true, will perform the difference by
+ *	comparing buffers byte-for-byte instead of using an MD5 checksum.
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+procargs_diff(
+    int argc,
+    char *argv[],
+    tr1::shared_ptr<IO::RecordStore> &sourceRS,
+    tr1::shared_ptr<IO::RecordStore> &targetRS,
+    vector<string> &keys,
+    bool &byte_for_byte)
+{
+	int rsCount = 0;
+	char c;
+        while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 'a': {	/* Text file of keys to diff */
+			vector<string> fileKeys;
+			try {
+				string path;
+				if (IO::Utility::constructAndCheckPath(
+				    Text::filename(optarg),
+				    Text::dirname(optarg), path) == false)
+					throw Error::ObjectDoesNotExist(optarg);
+				fileKeys = readTextFileToVector(path);
+			} catch (Error::Exception &e) {
+				cerr << e.getInfo() << endl;
+				return (EXIT_FAILURE);
+			}
+			
+			/* Merge the two lists */
+			size_t capacity = keys.size();
+			keys.resize(capacity + fileKeys.size());
+			/* Use copy().  merge() implies sorted order */
+			copy(fileKeys.begin(), fileKeys.end(),
+			    keys.begin() + capacity);
+			break;
+		} case 'f':	/* Byte-for-byte diff method */
+			byte_for_byte = true;
+			break;
+		case 'k':	/* Individual keys to diff */
+			keys.push_back(optarg);
+			break;
+		case 's':	/* Source/target RecordStores */
+			/* 
+			 * Rescan for -s instead of using sflagval so that
+			 * we keep the source and target RecordStores in order.
+			 */
+			try {
+				/* Assign sourceRS first */
+				((rsCount == 1) ? sourceRS : targetRS) =
+				    IO::RecordStore::openRecordStore(
+				    Text::filename(optarg),
+				    Text::dirname(optarg),IO::READONLY);
+				rsCount++;
+			} catch (Error::Exception &e) {
+				cerr << "Could not open " <<
+				    Text::filename(optarg) << " - " << 
+				    e.getInfo() << endl;
+				return (EXIT_FAILURE);
+			}
+		}
+	}
+
+	if (rsCount != 2) {
+		cerr << "Must specify only two RecordStores " <<
+		    "(-s <rs> -s <rs>)." << endl;
+		return (EXIT_FAILURE);
+	}
+	
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * @brief
+ * Facilitates a diff between two RecordStores.
+ * 
+ * @param argc[in]
+ *	argc from main()
+ * @param argv[in]
+ *	argv from main()
+ *
+ * @returns
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+static int
+diff(
+    int argc,
+    char *argv[])
+{
+	bool byte_for_byte = false;
+	int status = EXIT_SUCCESS;
+	tr1::shared_ptr<IO::RecordStore> sourceRS, targetRS;
+	vector<string> keys;
+	if (procargs_diff(argc, argv, sourceRS, targetRS, keys,
+	    byte_for_byte) != EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+
+	string sourceName = sourceRS->getName();
+	string targetName = targetRS->getName();
+
+	/* Don't attempt diff if either RecordStore is empty */
+	if (sourceRS->getCount() == 0) {
+		cerr << "No entries in " << sourceName << '.' << endl;
+		return (EXIT_FAILURE);
+	} else if (targetRS->getCount() == 0) {
+		cerr << "No entries in " << targetName << '.' << endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* If no keys passed, compare every key */
+	if (keys.empty()) {	
+		string key;
+		for (;;) {
+			try {
+				sourceRS->sequence(key, NULL);
+				keys.push_back(key);
+			} catch (Error::ObjectDoesNotExist) {
+				/* End of sequence */
+				break;
+			}
+		}
+	}
+	
+	bool sourceExists, targetExists;
+	Memory::AutoArray<uint8_t> sourceBuf, targetBuf;
+	uint64_t sourceLength, targetLength;
+	vector<string>::const_iterator key;
+	for (key = keys.begin(); key != keys.end(); key++) {		
+		/* Get sizes to check existance */
+		try {
+			sourceLength = sourceRS->length(*key);
+			sourceExists = true;
+		} catch (Error::ObjectDoesNotExist) {
+			sourceExists = false;
+		}
+		try {
+			targetLength = targetRS->length(*key);
+			targetExists = true;
+		} catch (Error::ObjectDoesNotExist) {
+			targetExists = false;
+		}
+		
+		/* Difference based on existance */
+		if ((sourceExists == false) && (targetExists == false)) {
+			cout << *key << ": not found." << endl;
+			status = EXIT_FAILURE;
+			continue;
+		} else if ((sourceExists == true) && (targetExists == false)) {
+			cout << *key << ": only in " << sourceName << endl;
+			status = EXIT_FAILURE;
+			continue;
+		} else if ((sourceExists == false) && (targetExists == true)) {
+			cout << *key << ": only in " << targetName << endl;
+			status = EXIT_FAILURE;
+			continue;
+		}
+		
+		/* Difference based on size */
+		if (sourceLength != targetLength) {
+			cout << *key << ':' << sourceName << " and " << *key <<
+			    ':' << targetName << " differ (size)" << endl;
+			status = EXIT_FAILURE;
+			continue;
+		}
+		
+		/* Difference based on content */
+		sourceBuf.resize(sourceLength);
+		targetBuf.resize(targetLength);
+		try {
+			if (sourceRS->read(*key, sourceBuf) != sourceLength)
+				throw Error::StrategyError("Source size");
+			if (targetRS->read(*key, targetBuf) != targetLength)
+				throw Error::StrategyError("Target size");
+		} catch (Error::Exception &e) {
+			cerr << "Could not diff " << *key << " (" << 
+			    e.getInfo() << ')' << endl;
+			status = EXIT_FAILURE;
+			continue;
+		}
+		
+		if (byte_for_byte) {
+			for (uint64_t i = 0; i < sourceLength; i++) {
+				if (sourceBuf[i] != targetBuf[i]) {
+					cout << *key << ':' << sourceName <<
+					    " and " << *key << ':' <<
+					    targetName << " differ " <<
+					    "(byte for byte)" << endl;
+					status = EXIT_FAILURE;
+					break;
+				}
+			}
+		} else { /* MD5 */
+			try {
+				if (Text::digest(sourceBuf, sourceLength) !=
+				    Text::digest(targetBuf, targetLength)) {
+					cout << *key << ':' << sourceName <<
+					    " and " << *key << ':' <<
+					    targetName << " differ " <<
+					    "(MD5)" << endl;
+					status = EXIT_FAILURE;
+				}
+			} catch (Error::Exception &e) {
+				cerr << "Could not diff " << *key << " (" << 
+				    e.getInfo() << ')' << endl;
+				status = EXIT_FAILURE;
+				continue;
+			}
+		}
+	}
+
+	return (status);
+}
+
 int main(int argc, char *argv[])
 {
 	Action::Type action = procargs(argc, argv);
 	switch (action) {
 	case Action::ADD:
 		return (add(argc, argv));
+	case Action::DIFF:
+		return (diff(argc, argv));
 	case Action::DISPLAY:
 		/* FALLTHROUGH */
 	case Action::DUMP:

@@ -18,6 +18,16 @@ add
 .Op Fl k Ar (fp)
 .Pp
 .Nm
+diff
+.Fl s
+.Ar rs1
+.Fl s
+.Ar rs2
+.Op Fl a Ar file
+.Op Fl f
+.Op Fl k Ar key Op Fl k Ar ...
+.Pp
+.Nm
 display/dump
 .Fl s
 .Ar rs
@@ -131,6 +141,35 @@ The existing RecordStore to which
 .Fa file
 should be added.
 .El
+
+.It Cm diff
+See if differences exist between keys of RecordStores.
+.\"
+.Bl -tag -compact -width "file    "
+.It Cm -a Fa file
+Compare all keys found in
+.Fa file 
+(one per line, with #comments and blank lines ignored).
+.It Cm -f
+Perform the comparison using a byte-for-byte comparison rather than comparing
+checksums.
+.It Cm -k Fa key
+The
+.Fa key
+to compare.  Note that if no
+.Cm -k
+or
+.Cm -a
+option is given, all keys from
+.Fa rs1
+will be compared.
+.It Cm -s Fa rs1
+A RecordStore containing keys to compare.
+.It Cm -s Fa rs2
+The RecordStore whose contents will be compared to the contents of
+.Fa rs1 .
+.El
+
 .It Cm display/dump
 Extract records from 
 .Fa rs .
