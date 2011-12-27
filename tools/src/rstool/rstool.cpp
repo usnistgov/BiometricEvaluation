@@ -447,7 +447,7 @@ procargs_extract(
 			try {
 				hash_rs = IO::RecordStore::openRecordStore(
 				    Text::filename(optarg),
-				    Text::dirname(optarg));
+				    Text::dirname(optarg), IO::READONLY);
 			} catch (Error::Exception &e) {
 				cerr << "Could not open " << optarg << " -- " <<
 				    e.getInfo() << endl;
