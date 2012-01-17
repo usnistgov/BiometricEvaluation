@@ -296,6 +296,54 @@ static void usage(char *exe)
 }
 
 /**
+ * @brief 
+ * Check access to core RecordStore files.
+ *
+ * @param name
+ *	RecordStore name
+ * @param parentDir
+ *	Directory holding RecordStore.
+ * @param mode
+ *	How attempting to open the RecordStore (IO::READONLY, IO::READWRITE)
+ *
+ * @return
+ *	true if access to file exists, false otherwise.
+ *
+ * @note
+ *	This function could return true if core RecordStore files do not
+ *	exist.  See related functions for more information.
+ *
+ * @see BiometricEvaluation::IO::Utility::isReadable()
+ * @see BiometricEvaluation::IO::Utility::isWritable()
+ */
+static bool
+isRecordStoreAccessible(
+    const string &name,
+    const string &parentDir,
+    const uint8_t mode = IO::READWRITE)
+{
+	bool (*isAccessible)(const string&) = NULL;
+	switch (mode) {
+	case IO::READONLY:
+		isAccessible = IO::Utility::isReadable;
+		break;
+	case IO::READWRITE:
+		/* FALLTHROUGH */
+	default:
+		isAccessible = IO::Utility::isWritable;
+		break;
+	}
+	
+	string path;
+	IO::Utility::constructAndCheckPath(name, parentDir, path);
+	
+	/* Test if the generic RecordStore files have the correct permissions */
+	return ((isAccessible(path) && 
+	    isAccessible(path + '/' + IO::RecordStore::CONTROLFILENAME) &&
+	    isAccessible(path + '/' + name)));
+}
+
+/**
  * @brief
  * Validate a RecordStore type string.
  *
@@ -449,8 +497,15 @@ procargs_extract(
 				    Text::filename(optarg),
 				    Text::dirname(optarg), IO::READONLY);
 			} catch (Error::Exception &e) {
-				cerr << "Could not open " << optarg << " -- " <<
-				    e.getInfo() << endl;
+				if (isRecordStoreAccessible(
+				    Text::filename(optarg),
+				    Text::dirname(optarg),
+				    IO::READONLY))
+    					cerr << "Could not open " << optarg <<
+					    " -- " << e.getInfo() << endl;
+				else
+					cerr << optarg << ": Permission "
+					    "denied." << endl;
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -477,8 +532,12 @@ procargs_extract(
 		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READONLY);
 	} catch (Error::Exception &e) {
-		cerr << "Could not open " << sflagval << ".  " <<
-		    e.getInfo() << endl;
+  		if (isRecordStoreAccessible(Text::filename(sflagval),
+		    Text::dirname(sflagval), IO::READONLY))
+			cerr << "Could not open " << sflagval << ".  " <<
+			    e.getInfo() << endl;
+		else
+		    	cerr << sflagval << ": Permission denied." << endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -713,7 +772,12 @@ static int list(int argc, char *argv[])
 		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READONLY);
 	} catch (Error::Exception &e) {
-		cerr << "Could not open RecordStore - " << e.getInfo() << endl;
+		if (isRecordStoreAccessible(Text::filename(sflagval),
+		    Text::dirname(sflagval), IO::READONLY))
+			cerr << "Could not open RecordStore - " <<
+			    e.getInfo() << endl;
+		else
+		    	cerr << sflagval << ": Permission denied." << endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -1186,8 +1250,15 @@ procargs_merge(
 				    Text::dirname(optarg),
 				    IO::READONLY);
 			} catch (Error::Exception &e) {
-				cerr << "Could not open " << optarg << " - " <<
-				    e.getInfo() << endl;
+    				if (isRecordStoreAccessible(
+				    Text::filename(optarg),
+				    Text::dirname(optarg),
+				    IO::READONLY))
+					cerr << "Could not open " << optarg <<
+					    " - " << e.getInfo() << endl;
+				else
+				    	cerr << optarg << ": Permission "
+					    "denied." << endl;
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -1495,8 +1566,12 @@ static int procargs_unhash(int argc, char *argv[], string &hash,
 		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READONLY);
 	} catch (Error::Exception &e) {
-		cerr << "Could not open " << sflagval << " - " << e.getInfo() <<
-		    endl;
+		if (isRecordStoreAccessible(Text::filename(sflagval),
+		    Text::dirname(sflagval), IO::READONLY))
+			cerr << "Could not open " << sflagval << " - " << 
+			    e.getInfo() << endl;
+		else
+			cerr << sflagval << ": Permission denied." << endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -1626,8 +1701,14 @@ procargs_add(
 				    Text::filename(optarg),
 				    Text::dirname(optarg));
 			} catch (Error::Exception &e) {
-				cerr << "Could not open " << optarg << " -- " <<
-				    e.getInfo() << endl;
+				if (isRecordStoreAccessible(
+				    Text::filename(optarg),
+				    Text::dirname(optarg)))
+					cerr << "Could not open " << optarg << 
+					    " -- " << e.getInfo() << endl;
+				else
+				    	cerr << optarg << ": Permission "
+					    "denied." << endl;
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -1648,8 +1729,12 @@ procargs_add(
 		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval));
 	} catch (Error::Exception &e) {
-		cerr << "Could not open " << sflagval << " -- " <<
-		    e.getInfo() << endl;
+		if (isRecordStoreAccessible(Text::filename(sflagval),
+		    Text::dirname(sflagval)))
+			cerr << "Could not open " << sflagval << " -- " <<
+			    e.getInfo() << endl;
+		else
+		    	cerr << sflagval << ": Permission denied." << endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -1757,8 +1842,12 @@ procargs_remove(
 		rs = IO::RecordStore::openRecordStore(Text::filename(sflagval),
 		    Text::dirname(sflagval), IO::READWRITE);
 	} catch (Error::Exception &e) {
-		cerr << "Could not open " << sflagval << " - " << e.getInfo() <<
-		    endl;
+		if (isRecordStoreAccessible(Text::filename(sflagval),
+		    Text::dirname(sflagval), IO::READWRITE))
+			cerr << "Could not open " << sflagval << " - " <<
+			    e.getInfo() << endl;
+		else
+			cerr << sflagval << ": Permission denied." << endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -1882,12 +1971,19 @@ procargs_diff(
 				((rsCount == 1) ? sourceRS : targetRS) =
 				    IO::RecordStore::openRecordStore(
 				    Text::filename(optarg),
-				    Text::dirname(optarg),IO::READONLY);
+				    Text::dirname(optarg), IO::READONLY);
 				rsCount++;
 			} catch (Error::Exception &e) {
-				cerr << "Could not open " <<
-				    Text::filename(optarg) << " - " << 
-				    e.getInfo() << endl;
+				if (isRecordStoreAccessible(
+				    Text::filename(optarg),
+				    Text::dirname(optarg),
+				    IO::READONLY))
+					cerr << "Could not open " <<
+					    Text::filename(optarg) << " - " << 
+					    e.getInfo() << endl;
+				else
+				    	cerr << optarg << ": Permission "
+					    "denied." << endl;
 				return (EXIT_FAILURE);
 			}
 		}
