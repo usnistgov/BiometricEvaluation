@@ -263,14 +263,15 @@ static void usage(char *exe)
 	cerr << endl;
 
 	cerr << "Make Options:" << endl;
-	cerr << "\t-a <file/dir>\tText file with paths, or a directory "
-	    "(multiple)" << endl;
+	cerr << "\t-a <text>\tText file with paths to files or directories "
+	    "to\n\t\t\tinitially add as reords (multiple)" << endl;
 	cerr << "\t-h <hash_rs>\tHash keys and save translation RecordStore" <<
 	    endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
+	cerr << "\t[<file>] [...]\tFiles/dirs to add as a record" << endl;
 
 	cerr << endl;
 
@@ -844,13 +845,50 @@ procargs_make(
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
-		case 'a':	/* RecordStore to be created */
-			if (!IO::Utility::fileExists(optarg)) {
+		case 'a': {	/* Text file with paths to be added */
+			string path = Text::dirname(optarg) + '/' + 
+			    Text::filename(optarg);
+			if (!IO::Utility::fileExists(path)) {
 				cerr << optarg << " does not exist." << endl;
 				return (EXIT_FAILURE);
 			}
-			elements.push_back(optarg);
+			
+			/* -a used to take a directory (backwards compat) */
+			if (IO::Utility::pathIsDirectory(path)) {
+				elements.push_back(path);
+				break;
+			}
+			
+			/* Parse the paths in the text file */
+			ifstream input;
+			string line;
+			input.open(optarg, ifstream::in);
+			for (;;) {
+				/* Read one path from text file */
+				input >> line;
+				if (input.eof())
+					break;
+				else if (input.bad()) {
+					cerr << "Error reading paths (" << 
+					    input << ')' << endl;
+					return (EXIT_FAILURE);
+				}
+				
+				/* Ignore comments and newlines */
+				try {
+					if (line.at(0) == '#' ||
+					    line.at(0) == '\n')
+					    	continue;
+				} catch (out_of_range) {
+					continue;
+				}
+				
+				elements.push_back(Text::dirname(line) + '/' +
+				    Text::filename(line));
+			}
+			input.close();
 			break;
+		}
 		case 'c':	/* Hash contents */
 			if (what_to_hash == HashablePart::NOTHING)
 				what_to_hash = HashablePart::FILECONTENTS;
@@ -895,7 +933,11 @@ procargs_make(
 			break;
 		}
 	}
-
+	/* Remaining arguments are files or directories to add */
+	for (int i = optind; i < argc; i++)
+		elements.push_back(Text::dirname(argv[i]) + "/" +
+		    Text::filename(argv[i]));
+	
 	if (hashed_key_format == KeyFormat::DEFAULT) {
 		switch (what_to_hash) {
 		case HashablePart::FILEPATH:
@@ -908,10 +950,6 @@ procargs_make(
 	if (type.empty())
 		type.assign(IO::RecordStore::BERKELEYDBTYPE);
 
-	if (elements.empty()) {
-		cerr << "Missing required option (-a)." << endl;
-		return (EXIT_FAILURE);
-	}
 	/* Sanity check -- don't hash without recording a translation */
 	if (hash_filename.empty() && (what_to_hash != HashablePart::NOTHING)) {
 		cerr << "Specified hash method without -h." << endl;
@@ -967,7 +1005,7 @@ static int make_insert_contents(const string &filename,
 	buffer_file.open(filename.c_str(), ifstream::binary);
 	buffer_file.read(buffer, buffer_size);
 	if (buffer_file.bad()) {
-		cerr << "Error reading file." << endl;
+		cerr << "Error reading file (" << filename << ')' << endl;
 		return (EXIT_FAILURE);
 	}
 	buffer_file.close();
@@ -1008,7 +1046,7 @@ static int make_insert_contents(const string &filename,
 			hash_rs->insert(hash_value, key.c_str(), key.size());
 		}
 	} catch (Error::Exception &e) {
-		cerr << "Could not add conents of " << filename <<
+		cerr << "Could not add contents of " << filename <<
 		    " to RecordStore - " << e.getInfo() << endl;
 		return (EXIT_FAILURE);
 	}
@@ -1133,8 +1171,6 @@ static int make(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 
-	string line;
-	ifstream input;
 	for (unsigned int i = 0; i < elements.size(); i++) {
 		if (IO::Utility::pathIsDirectory(elements[i])) {
 			try {
@@ -1151,33 +1187,10 @@ static int make(int argc, char *argv[])
 				return (EXIT_FAILURE);
 			}
 		} else {
-			input.open(elements[i].c_str(), ifstream::in);
-			for (;;) {
-				/* Read one path from text file */
-				input >> line;
-				if (input.eof())
-					break;
-				else if (input.bad()) {
-					cerr << "Error reading " << input <<
-					    endl;
-					return (EXIT_FAILURE);
-				}
-				
-				/* Ignore comments and newlines */
-				try {
-					if (line.at(0) == '#' ||
-					    line.at(0) == '\n')
-					    	continue;
-				} catch (out_of_range) {
-					continue;
-				}
-
-				if (make_insert_contents(line, rs, hash_rs,
-				    what_to_hash, hashed_key_format) !=
-				    EXIT_SUCCESS)
-					return (EXIT_FAILURE);
-			}
-			input.close();
+			if (make_insert_contents(elements[i], rs, hash_rs,
+			    what_to_hash, hashed_key_format) !=
+			    EXIT_SUCCESS)
+				return (EXIT_FAILURE);
 		}
 	}
 

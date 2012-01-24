@@ -41,19 +41,21 @@ list
 .Fl s
 .Ar rs
 .Pp
+
+\# "rstool make" example
 .\"
 .Nm
 make
 .Fl s
 .Ar new_rs
-.Fl a
-.Ar dir/file
-.Op Fl a Ar ...
+.Op Fl a Ar text Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
+.Op file/dir ...
 .Pp
+
 .\"
 .Nm
 merge
@@ -203,23 +205,22 @@ List all keys contained in
 .It Cm -s Fa rs
 The RecordStore to list.
 .El
+
+\# "rstool make" usage
 .It Cm make
 Create a new RecordStore named
 .Fa new_rs .
-.Bl -tag -compact -width "dir/file    "
-.It Cm -a Fa dir/file
-Recursively add the files within
-.Fa dir ,
-or add the files whose file paths are listed in
-.Fa file .
+.Bl -tag -compact -width "file/dir ...   "
+.It Cm -a Fa text
+Add the files/dirs whose paths are listed in
+.Fa text .
 Multiple 
 .Cm -a
 arguments may be specified.
 .It Cm -c
 If 
 .Fa hash_rs
-is specified, use the content of
-.Fa dir/file
+is specified, use the content of files added
 instead of the name to form the hash.
 .It Cm -h Fa hash_rs
 Hash keys that will be added to 
@@ -253,7 +254,7 @@ in
 If 
 .Fa hash_rs
 is specified, use the path to
-.Fa dir/file
+.Fa dir/text/file
 instead of the name to form the hash.  This will set 
 .Cm -kp
 by default if no other
@@ -270,7 +271,11 @@ RecordStore, where type is:
 .It Fa BerkeleyDB
 (default)
 .It Fa File
-.El 
+.El
+.It Fa file/dir ...
+Files/dirs to initially add to
+.Fa new_rs .
+ 
 .El
 .It Cm merge
 Merge one or more existing RecordStores into 
