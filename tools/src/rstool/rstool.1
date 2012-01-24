@@ -7,16 +7,18 @@
 .Nd manipulate RecordStores
 .\"
 .Sh SYNOPSIS
+
+\# "rstool add" usage
 .Nm
 add
 .Fl s
 .Ar rs
-.Fl a
-.Ar file
-.Op Fl a Ar ...
+.Op Fl a Ar file/dir Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
+.Op file/dir ...
 .Pp
+
 .Nm
 diff
 .Fl s
@@ -96,10 +98,12 @@ command is used to manipulate any type of RecordStore supported by the Biometric
 The functions are as follows:
 .\"
 .Bl -tag -indent -width "display/dump  "
+
+\# "rstool add" details
 .It Cm add
 Add an individual file into an existing RecordStore.
-.Bl -tag -compact -width "hash_rs    "
-.It Cm -a Fa file
+.Bl -tag -compact -width "file/dir ...    "
+.It Cm -a Fa file/dir
 File to add to 
 .Fa rs .
 Multiple
@@ -142,6 +146,9 @@ option is specified.
 The existing RecordStore to which 
 .Fa file
 should be added.
+.It Fa file/dir ...
+Files or directories to be added to
+.Fa rs .
 .El
 
 .It Cm diff

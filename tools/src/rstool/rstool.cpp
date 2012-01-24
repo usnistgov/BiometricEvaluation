@@ -238,10 +238,12 @@ static void usage(char *exe)
 	cerr << endl;
 
 	cerr << "Add Options:" << endl;
-	cerr << "\t-a <file>\tFile to add" << endl;
+	cerr << "\t-a <file/dir>\tFile/directory contents to add" << endl;
 	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
+	cerr << "\tfile/dir ...\tFiles/directory contents to add as a " <<
+	    "record" << endl;
 
 	cerr << endl;
 
@@ -271,7 +273,7 @@ static void usage(char *exe)
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
-	cerr << "\t[<file>] [...]\tFiles/dirs to add as a record" << endl;
+	cerr << "\t<file> ...\tFiles/dirs to add as a record" << endl;
 
 	cerr << endl;
 
@@ -1727,6 +1729,14 @@ procargs_add(
 			break;
 		}
 	}
+	/* Remaining arguments are files to add (same as -a) */
+	for (int i = optind; i < argc; i++) {
+		if (IO::Utility::fileExists(argv[i]) == false)
+			cerr << optarg << " does not exist and will be " <<
+			    "skipped." << endl;
+		else
+			files.push_back(argv[i]);
+	}
 
 	if (hashed_key_format == KeyFormat::DEFAULT) {
 		switch (what_to_hash) {
@@ -1751,17 +1761,16 @@ procargs_add(
 		return (EXIT_FAILURE);
 	}
 
-		/* Sanity check -- don't hash without recording a translation */
-		if ((hash_rs.get() == NULL) && (what_to_hash !=
-		    HashablePart::NOTHING)) {
-			cerr << "Specified hash method without -h." << endl;
+	/* Sanity check -- don't hash without recording a translation */
+	if ((hash_rs.get() == NULL) && (what_to_hash !=
+	    HashablePart::NOTHING)) {
+		cerr << "Specified hash method without -h." << endl;
 			return (EXIT_FAILURE);
-		}
+	}
 
-		/* Choose to hash filename by default */
-		if ((hash_rs.get() != NULL) && (what_to_hash ==
-		    HashablePart::NOTHING))
-			what_to_hash = HashablePart::FILENAME;
+	/* Choose to hash filename by default */
+	if ((hash_rs.get() != NULL) && (what_to_hash == HashablePart::NOTHING))
+		what_to_hash = HashablePart::FILENAME;
 
 	return (EXIT_SUCCESS);
 }
@@ -1799,8 +1808,14 @@ add(
 		 * when inserting because we may have multiple files we'd
 		 * like to add and there's no point in quitting halfway.
 		 */
-		make_insert_contents(*file_path, rs, hash_rs, what_to_hash,
-		    hashed_key_format);
+		if (IO::Utility::pathIsDirectory(*file_path))
+			make_insert_directory_contents(
+			    Text::filename(*file_path),
+			    Text::dirname(*file_path), rs, hash_rs,
+			    what_to_hash, hashed_key_format);
+		else
+			make_insert_contents(*file_path, rs, hash_rs,
+			    what_to_hash, hashed_key_format);
 	}
 
 	return (EXIT_SUCCESS);
