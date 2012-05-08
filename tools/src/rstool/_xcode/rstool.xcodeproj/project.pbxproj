@@ -1,0 +1,127 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		084A71EA1559927900C84756 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../Makefile; sourceTree = "<group>"; };
+		084A71EB1559927900C84756 /* rstool.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; name = rstool.1; path = ../rstool.1; sourceTree = "<group>"; };
+		084A71EC1559927900C84756 /* rstool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rstool.cpp; path = ../rstool.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		084A71DA1559924800C84756 = {
+			isa = PBXGroup;
+			children = (
+				084A71EC1559927900C84756 /* rstool.cpp */,
+				084A71EA1559927900C84756 /* Makefile */,
+				084A71EE1559928100C84756 /* docs */,
+			);
+			sourceTree = "<group>";
+		};
+		084A71EE1559928100C84756 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				084A71EB1559927900C84756 /* rstool.1 */,
+			);
+			name = docs;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		084A71E11559924800C84756 /* rstool */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION) $(MAKE_VARS)";
+			buildConfigurationList = 084A71E41559924800C84756 /* Build configuration list for PBXLegacyTarget "rstool" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = ../;
+			dependencies = (
+			);
+			name = rstool;
+			passBuildSettingsInEnvironment = 0;
+			productName = _rstool;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		084A71DC1559924800C84756 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = 084A71DF1559924800C84756 /* Build configuration list for PBXProject "rstool" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 084A71DA1559924800C84756;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				084A71E11559924800C84756 /* rstool */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		084A71E21559924800C84756 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CXX = "clang++";
+				MAKE_VARS = "CXX=$(CXX) $(DEBUG)";
+			};
+			name = Debug;
+		};
+		084A71E31559924800C84756 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CXX = "clang++";
+				MAKE_VARS = "CXX=$(CXX) $(DEBUG)";
+			};
+			name = Release;
+		};
+		084A71E51559924800C84756 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		084A71E61559924800C84756 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		084A71DF1559924800C84756 /* Build configuration list for PBXProject "rstool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				084A71E21559924800C84756 /* Debug */,
+				084A71E31559924800C84756 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		084A71E41559924800C84756 /* Build configuration list for PBXLegacyTarget "rstool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				084A71E51559924800C84756 /* Debug */,
+				084A71E61559924800C84756 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 084A71DC1559924800C84756 /* Project object */;
+}
