@@ -33,6 +33,7 @@
 #include <be_framework.h>
 #include <be_io_archiverecstore.h>
 #include <be_io_dbrecstore.h>
+#include <be_io_compressor.h>
 #include <be_io_filerecstore.h>
 #include <be_io_recordstore.h>
 #include <be_io_utility.h>
@@ -41,7 +42,7 @@
 
 static string oflagval = ".";		/* Output directory */
 static string sflagval = "";		/* Path to main RecordStore */
-static const char optstr[] = "a:cfh:k:m:o:pr:s:t:";
+static const char optstr[] = "a:cfh:k:m:o:pr:s:t:zZ:";
 
 /* Possible actions performed by this utility */
 static const string ADD_ARG = "add";
@@ -87,7 +88,7 @@ namespace KeyFormat {
 		FILENAME,
 		FILEPATH
 	} Type;
-};
+}
 
 using namespace BiometricEvaluation;
 using namespace std;
@@ -96,11 +97,11 @@ using namespace std;
  * @brief
  * Read the contents of a text file into a vector (one line per entry).
  *
- * @param filePath
+ * @param[in] filePath
  *	Complete path of the text file to read from.
- * @param ignoreComments
+ * @param[in] ignoreComments
  *	Whether or not to ignore comment lines (lines beginning with '#')
- * @param ignoreBlankLines
+ * @param[in] ignoreBlankLines
  *	Whether or not to add blank entries (lines beginning with '\n')
  *
  * @return
@@ -164,14 +165,14 @@ readTextFileToVector(
  * @brief
  * Prompt the user to answer a yes or no question.
  *
- * @param prompt
+ * @param[in] prompt
  *	The yes or no question.
- * @param default_answer
+ * @param[in] default_answer
  *	Value that is the default answer if return is pressed but nothing
  *	typed.
- * @param show_options
+ * @param[in] show_options
  *	Whether or not to show valid input values.
- * @param allow_default_answer
+ * @param[in] allow_default_answer
  *	Whether or not to allow default answer.
  *
  * @return
@@ -218,7 +219,7 @@ yesOrNo(
  * @brief
  * Display command-line usage for the tool.
  * 
- * @param exe[in]
+ * @param[in] exe
  *	Name of executable.
  */
 static void usage(char *exe)
@@ -242,6 +243,10 @@ static void usage(char *exe)
 	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
+	cerr << "\t-z\t\tCompress records with default strategy\n" <<
+	"\t\t\t(same as -Z GZIP)" << endl;
+	cerr << "\t-Z <type>\tCompress records with <type> compression" <<
+	    "\n\t\t\tWhere type is GZIP" << endl;
 	cerr << "\tfile/dir ...\tFiles/directory contents to add as a " <<
 	    "record" << endl;
 
@@ -261,6 +266,10 @@ static void usage(char *exe)
 	    endl;
 	cerr << "\t-k <key>\tKey to dump" << endl;
 	cerr << "\t-r <#-#>\tRange of keys" << endl;
+	cerr << "\t-z\t\tDecompress records with default strategy\n" <<
+	"\t\t\t(same as -Z GZIP)" << endl;
+	cerr << "\t-Z <type>\tDecompress records with <type> compression" <<
+	    "\n\t\t\tWhere type is GZIP" << endl;
 
 	cerr << endl;
 
@@ -273,6 +282,10 @@ static void usage(char *exe)
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
+	cerr << "\t-z\t\tCompress records with default strategy\n" <<
+	"\t\t\t(same as -Z GZIP)" << endl;
+	cerr << "\t-Z <type>\tCompress records with <type> compression" <<
+	    "\n\t\t\tWhere type is GZIP" << endl;
 	cerr << "\t<file> ...\tFiles/dirs to add as a record" << endl;
 
 	cerr << endl;
@@ -302,11 +315,11 @@ static void usage(char *exe)
  * @brief 
  * Check access to core RecordStore files.
  *
- * @param name
+ * @param[in] name
  *	RecordStore name
- * @param parentDir
+ * @param[in] parentDir
  *	Directory holding RecordStore.
- * @param mode
+ * @param[in] mode
  *	How attempting to open the RecordStore (IO::READONLY, IO::READWRITE)
  *
  * @return
@@ -350,10 +363,10 @@ isRecordStoreAccessible(
  * @brief
  * Validate a RecordStore type string.
  *
- * @param type[in]
+ * @param[in] type
  *	String (likely entered by user) to check for validity.
  *
- * @returns
+ * @return
  *	RecordStore type string, if one can be identified, or "" on error.
  */
 static string validate_rs_type(const string &type)
@@ -374,12 +387,12 @@ static string validate_rs_type(const string &type)
  * @brief
  * Process command-line arguments for the tool.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	The Action the user has indicated on the command-line.
  */
 static Action::Type procargs(int argc, char *argv[])
@@ -460,26 +473,30 @@ static Action::Type procargs(int argc, char *argv[])
  * @brief
  * Process command-line arguments specific to the DISPLAY and DUMP Actions.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @param key[in]
+ * @param[in/out] key
  *	Reference to a string that will be populated with any value
  *	following the "key" flag on the command-line
- * @param range[in]
+ * @param[in/out] range
  *	Reference to a string that will be populated with any value
  *	following the "range" flag on the command-line
- * @param rs[in]
+ * @param[in/out] rs
  *	Reference to a RecordStore shared pointer that will be allocated
  *	to hold the main RecordStore passed with the -s flag on the command-line
- * @param hash_rs[in]
+ * @param[in/out] hash_rs
  *	Reference to a RecordStore shared pointer that will be allocated
  *	to hold a hash translation RecordStore.  Instantiating this RecordStore
  *	lets the driver know that the user would like the unhashed key to be
  *	used when the extraction takes place.
+ * @param[in/out] decompress
+ *	Whether or not to decompress record contents.
+ * @param[in/out] decompressorKind
+ *	The type of decompression used to decompress record contents.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
  */
 static int
@@ -489,8 +506,13 @@ procargs_extract(
     string &key,
     string &range,
     tr1::shared_ptr<IO::RecordStore> &rs,
-    tr1::shared_ptr<IO::RecordStore> &hash_rs)
+    tr1::shared_ptr<IO::RecordStore> &hash_rs,
+    bool &decompress,
+    IO::Compressor::Kind &decompressorKind)
 {
+	decompress = false;
+	decompressorKind = IO::Compressor::GZIP;
+	
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
@@ -518,6 +540,21 @@ procargs_extract(
 		case 'r':	/* Extract range of keys */
 			range.assign(optarg);
 			break;
+		case 'z':	/* Decompress */
+			decompress = true;
+			decompressorKind = IO::Compressor::GZIP;
+			break;
+		case 'Z':	/* Decompression strategy */
+			decompress = true;
+			if (strcasecmp("GZIP", optarg) == 0)
+				decompressorKind = IO::Compressor::GZIP;
+			else {
+				cerr << "Invalid decompression kind -- " <<
+				    optarg << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+
 		}
 	}
 
@@ -558,21 +595,37 @@ procargs_extract(
  * @brief
  * Print a record to the screen.
  *
- * @param key[in]
+ * @param[in] key
  *	The name of the record to display.
- * @param value[in]
+ * @param[in] value
  *	The contents of the record to display.
+ * @param[in] decompress
+ *	Whether or not to decompress record contents.
+ * @param[in] decompressorKind
+ *	The type of decompression used to decompress record contents.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
 static int
 display(
     const string &key,
-    Memory::AutoArray<uint8_t> &value)
+    Memory::AutoArray<uint8_t> &value,
+    bool &decompress,
+    IO::Compressor::Kind &decompressorKind)
 {
-	value.resize(value.size() + 1);
+	if (decompress) {
+		static tr1::shared_ptr<IO::Compressor> decompressor = 
+		    IO::Compressor::createCompressor(decompressorKind);
+		try {
+			value = decompressor->decompress(value);
+		} catch (Error::Exception &e) {
+			cerr << "Could not decompress record (" <<
+			    e.getInfo() << ')' << endl;
+		}
+	} else
+		value.resize(value.size() + 1);
 	value[value.size() - 1] = '\0';
 
 	cout << key << " = " << value << endl;
@@ -584,19 +637,25 @@ display(
  * @brief
  * Write a record to disk.
  *
- * @param key[in]
+ * @param[in] key
  *	The name of the file to write.
- * @param value[in]
+ * @param[in] value
  *	The contents of the file to write.
+ * @param[in] decompress
+ *	Whether or not to decompress record contents.
+ * @param[in] decompressorKind
+ *	The type of decompression used to decompress record contents.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
 static int
 dump(
     const string &key,
-    Memory::AutoArray<uint8_t> &value)
+    Memory::AutoArray<uint8_t> &value,
+    bool &decompress,
+    IO::Compressor::Kind &decompressorKind)
 {
 	/* Possible that keys could have slashes */
 	if (key.find('/') != string::npos) {
@@ -609,18 +668,30 @@ dump(
 		}
 	}
 
-	FILE *fp = fopen((oflagval + "/" + key).c_str(), "wb");
-	if (fp == NULL) {
-		cerr << "Could not create file." << endl;
-		return (EXIT_FAILURE);
+	if (decompress) {
+		static tr1::shared_ptr<IO::Compressor> decompressor = 
+		    IO::Compressor::createCompressor(decompressorKind);
+		try {
+			decompressor->decompress(value, oflagval + "/" + key);
+		} catch (Error::Exception &e) {
+			cerr << "Could not decompress entry (" <<
+			    e.getInfo() << ')' << endl;
+			return (EXIT_FAILURE);
+		}
+	} else {
+		FILE *fp = fopen((oflagval + "/" + key).c_str(), "wb");
+		if (fp == NULL) {
+			cerr << "Could not create file." << endl;
+			return (EXIT_FAILURE);
+		}
+		if (fwrite(value, 1, value.size(), fp) != value.size()) {
+			cerr << "Could not write entry." << endl;
+			if (fp != NULL)
+				fclose(fp);
+			return (EXIT_FAILURE);
+		}
+		fclose(fp);
 	}
-	if (fwrite(value, 1, value.size(), fp) != value.size()) {
-		cerr << "Could not write entry." << endl;
-		if (fp != NULL)
-			fclose(fp);
-		return (EXIT_FAILURE);
-	}
-	fclose(fp);
 	
 	return (EXIT_SUCCESS);
 }
@@ -630,22 +701,25 @@ dump(
  * Facilitates the extraction of a single key or a range of records from a 
  * RecordStore
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @param action[in]
+ * @param[in] action
  *	The Action to be performed with the extracted data.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
 static int extract(int argc, char *argv[], Action::Type action)
 {
+	bool decompress = false;
+	IO::Compressor::Kind decompressorKind;
 	string key = "", range = "";
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
-	if (procargs_extract(argc, argv, key, range, rs, hash_rs) !=
+	if (procargs_extract(argc, argv, key, range, rs, hash_rs,
+	    decompress, decompressorKind) !=
 	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
@@ -687,13 +761,19 @@ static int extract(int argc, char *argv[], Action::Type action)
 
 		switch (action) {
 		case Action::DUMP:
-			if (dump(key, buf) != EXIT_SUCCESS)
+			if (dump(key, buf, decompress, decompressorKind) !=
+			    EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 			break;
 		case Action::DISPLAY:
-			if (display(key, buf) != EXIT_SUCCESS)
+			if (display(key, buf, decompress, decompressorKind) !=
+			    EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 			break;
+		default:
+			cerr << "Invalid action received (" <<
+			    action << ')' << endl;
+			return (EXIT_FAILURE);
 		}
 	} else {
 		vector<string> ranges = Text::split(range, '-');
@@ -741,13 +821,19 @@ static int extract(int argc, char *argv[], Action::Type action)
 
 			switch (action) {
 			case Action::DUMP:
-				if (dump(next_key, buf) != EXIT_SUCCESS)
+				if (dump(next_key, buf, decompress,
+				    decompressorKind) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
 			case Action::DISPLAY:
-				if (display(next_key, buf) != EXIT_SUCCESS)
+				if (display(next_key, buf, decompress,
+				    decompressorKind) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
+			default:
+				cerr << "Invalid action received (" <<
+				    action << ')' << endl;
+				return (EXIT_FAILURE);
 			}
 		}
 	}
@@ -759,12 +845,12 @@ static int extract(int argc, char *argv[], Action::Type action)
  * @brief
  * Facilitates the listing of the keys stored within a RecordStore.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -805,29 +891,33 @@ static int list(int argc, char *argv[])
  * @brief
  * Process command-line arguments specific to the MAKE Action.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @param hash_filename[in]
+ * @param[in/out] hash_filename
  *	Reference to a string to store a path to a hash translation RecordStore,
  *	indicating that the keys should be hashed
- * @param what_to_hash[in]
+ * @param[in/out] what_to_hash
  *	Reference to a HashablePart enumeration that indicates what should be
  *	hashed when creating a hash for an entry.
- * @param hashed_key_format[in]
+ * @param[in/out] hashed_key_format
  *	Reference to a KeyFormat enumeration that indicates how the key (when
  *	printed as a value) should appear in a hash translation RecordStore.
- * @param type[in]
+ * @param[in/out] type
  *	Reference to a string that will represent the type of RecordStore to
  *	create.
- * @param elements[in]
+ * @param[in/out] elements
  *	Reference to a vector that will hold paths to elements that should
  *	be added to the target RecordStore.  The paths may be to text
  *	files, whose contents are lines of paths that should be added, or
  *	directories, whose contents should be added.
+ * @param[in/out] compress
+ *	Whether or not to compress record contents.
+ * @param[in/out] compressorKind
+ *	The type of compression used to compress record contents.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -839,10 +929,14 @@ procargs_make(
     HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format,
     string &type,
-    vector<string> &elements)
+    vector<string> &elements,
+    bool &compress,
+    IO::Compressor::Kind &compressorKind)
 {
 	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
+	compress = false;
+	compressorKind = IO::Compressor::GZIP;
 
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -933,6 +1027,20 @@ procargs_make(
 				return (EXIT_FAILURE);
 			}
 			break;
+		case 'z':	/* Compress */
+			compress = true;
+			compressorKind = IO::Compressor::GZIP;
+			break;
+		case 'Z':	/* Compression strategy */
+			compress = true;
+			if (strcasecmp("GZIP", optarg) == 0)
+				compressorKind = IO::Compressor::GZIP;
+			else {
+				cerr << "Invalid compression kind -- " <<
+				    optarg << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
 		}
 	}
 	/* Remaining arguments are files or directories to add */
@@ -970,18 +1078,18 @@ procargs_make(
  * @brief
  * Helper function to insert the contents of a file into a RecordStore.
  *
- * @param filename[in]
+ * @param[in] filename
  *	The name of the file whose contents should be inserted into rs.
- * @param rs[in]
+ * @param[in] rs
  *	The RecordStore into which the contents of filename should be inserted
- * @param hash_rs[in]
+ * @param[in] hash_rs
  *	The RecordStore into which hash translations should be stored
- * @param what_to_hash[in]
+ * @param[in] what_to_hash
  *	What should be hashed when creating a hash for an entry.
- * @param hashed_key_format[in]
+ * @param[in] hashed_key_format
  *	How the key should be displayed in a hash translation RecordStore.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_FAILURE or EXIT_SUCCESS, depending on if
  *	the contents of filename could be inserted.
  */
@@ -989,11 +1097,15 @@ static int make_insert_contents(const string &filename,
     const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
     const HashablePart::Type what_to_hash,
-    const KeyFormat::Type hashed_key_format)
+    const KeyFormat::Type hashed_key_format,
+    bool compress,
+    const IO::Compressor::Kind compressorKind)
 {
-	static Memory::AutoArray<char> buffer;
+	static Memory::uint8Array buffer;
 	static uint64_t buffer_size = 0;
 	static ifstream buffer_file;
+	static tr1::shared_ptr<IO::Compressor> compressor = 
+	    IO::Compressor::createCompressor(compressorKind);
 
 	try {
 		buffer_size = IO::Utility::getFileSize(filename);
@@ -1005,7 +1117,7 @@ static int make_insert_contents(const string &filename,
 
 	/* Extract file into buffer */
 	buffer_file.open(filename.c_str(), ifstream::binary);
-	buffer_file.read(buffer, buffer_size);
+	buffer_file.read((char *)&(*buffer), buffer_size);
 	if (buffer_file.bad()) {
 		cerr << "Error reading file (" << filename << ')' << endl;
 		return (EXIT_FAILURE);
@@ -1015,9 +1127,12 @@ static int make_insert_contents(const string &filename,
 	static string key = "", hash_value = "";
 	try {
 		key = Text::filename(filename);
-		if (hash_rs.get() == NULL)
-			rs->insert(key, buffer, buffer_size);
-		else {
+		if (hash_rs.get() == NULL) {
+			if (compress)
+				rs->insert(key, compressor->compress(buffer));
+			else
+				rs->insert(key, buffer, buffer_size);
+		} else {
 			switch (what_to_hash) {
 			case HashablePart::FILECONTENTS:
 				hash_value = Text::digest(buffer, buffer_size);
@@ -1042,9 +1157,17 @@ static int make_insert_contents(const string &filename,
 			case KeyFormat::FILEPATH:
 				key = filename;
 				break;
+			default:
+				cerr << "Invalid key format received (" <<
+				    hashed_key_format << ')' << endl;
+				return (EXIT_FAILURE);
 			}
 
-			rs->insert(hash_value, buffer, buffer_size);
+			if (compress)
+				rs->insert(hash_value,
+				    compressor->compress(buffer));
+			else
+				rs->insert(hash_value, buffer, buffer_size);
 			hash_rs->insert(hash_value, key.c_str(), key.size());
 		}
 	} catch (Error::Exception &e) {
@@ -1061,25 +1184,29 @@ static int make_insert_contents(const string &filename,
  * Recursive helper function to insert the contents of a directory into
  * a RecordStore.
  * 
- * @param directory[in]
+ * @param[in] directory
  *	Path of the directory to search through
- * @param prefix[in]
+ * @param[in] prefix
  *	The parent directories of directory
- * @param rs[in]
+ * @param[in] rs
  *	The RecordStore into which files should be inserted
- * @param hash_rs[in]
+ * @param[in] hash_rs
  *	The RecordStore into which hash translations should be stored
- * @param what_to_hash[in]
+ * @param[in] what_to_hash
  *	What should be hashed when creating a hash for an entry.
- * @param hashed_key_value[in]
+ * @param[in] hashed_key_value
  *	How the key should be displayed in the hash translation RecordStore.
+ * @param[in] compress
+ *	Whether or not to compress record contents.
+ * @param[in] compressorKind
+ *	The type of compression used to compress record contents.
  *
  * @throws Error::ObjectDoesNotExist
  *	If the contents of the directory changes during the run
  * @throws Error::StrategyError
  *	Underlying problem in storage system
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1090,7 +1217,9 @@ make_insert_directory_contents(
     const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
     const HashablePart::Type what_to_hash,
-    const KeyFormat::Type hashed_key_format)
+    const KeyFormat::Type hashed_key_format,
+    bool compress,
+    IO::Compressor::Kind compressorKind)
     throw (Error::ObjectDoesNotExist, Error::StrategyError)
 {
 	struct dirent *entry;
@@ -1117,11 +1246,13 @@ make_insert_directory_contents(
 		if (IO::Utility::pathIsDirectory(filename)) {
 			if (make_insert_directory_contents(entry->d_name,
 			    dirpath, rs, hash_rs, what_to_hash,
-			    hashed_key_format) != EXIT_SUCCESS)
+			    hashed_key_format, compress, compressorKind) != 
+			    EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		} else {
 			if (make_insert_contents(filename, rs, hash_rs,
-			    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
+			    what_to_hash, hashed_key_format, compress,
+			    compressorKind) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -1138,12 +1269,12 @@ make_insert_directory_contents(
  * @brief
  * Facilitates creation of a RecordStore.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1153,9 +1284,12 @@ static int make(int argc, char *argv[])
 	vector<string> elements;
 	HashablePart::Type what_to_hash = HashablePart::NOTHING;
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
+	bool compress = false;
+	IO::Compressor::Kind compressorKind;
 
 	if (procargs_make(argc, argv, hash_filename, what_to_hash,
-	    hashed_key_format, type, elements) != EXIT_SUCCESS)
+	    hashed_key_format, type, elements, compress, compressorKind) !=
+	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	tr1::shared_ptr<IO::RecordStore> rs;
@@ -1181,7 +1315,8 @@ static int make(int argc, char *argv[])
 				    Text::filename(elements[i]),
 				    Text::dirname(elements[i]),
 				    rs, hash_rs, what_to_hash,
-				    hashed_key_format) != EXIT_SUCCESS)
+				    hashed_key_format, compress,
+				    compressorKind) != EXIT_SUCCESS)
 			    		return (EXIT_FAILURE);
 			} catch (Error::Exception &e) {
 				cerr << "Could not add contents of dir " <<
@@ -1190,8 +1325,8 @@ static int make(int argc, char *argv[])
 			}
 		} else {
 			if (make_insert_contents(elements[i], rs, hash_rs,
-			    what_to_hash, hashed_key_format) !=
-			    EXIT_SUCCESS)
+			    what_to_hash, hashed_key_format, compress,
+			    compressorKind) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -1203,31 +1338,31 @@ static int make(int argc, char *argv[])
  * @brief
  * Process command-line arguments specific to the MERGE Action.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @param type[in]
+ * @param[in/out] type
  *	Reference to a string that will represent the type of RecordStore
  *	to create.
- * @param child_rs[in]
+ * @param[in/out] child_rs
  * 	Reference to an AutoArray of RecordStore pointers that will hold 
  *	open RecordStore shared pointers to the RecordStores that should 
  *	be merged
- * @param num_child_rs[in]
+ * @param[in/out] num_child_rs
  *	Reference to an integer that will specify the contents of the child_rs
  *	array.
- * @param hash_filename[in]
+ * @param[in/out] hash_filename
  *	Reference to a string that will specify the name of the hash translation
  *	RecordStore, if one is desired.
- * @param what_to_hash[in]
+ * @param[in/out] what_to_hash
  *	Reference to a HashablePart enumeration indicating what should be
  *	hashed when creating a hash for an entry.
- * @param hashed_key_format[in]
+ * @param[in/out] hashed_key_format
  *	Reference to a KeyFormat enumerating indicating how the key should be
  *	printed (as a value) in a hash translation RecordStore.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
  */
 static int
@@ -1347,29 +1482,29 @@ procargs_merge(
  * Create a new RecordStore that contains the contents of several RecordStores,
  * hashing the keys of the child RecordStores before adding them to the merged.
  *  
- * @param mergedName[in]
+ * @param[in] mergedName
  * 	The name of the new RecordStore that will be created.
- * @param mergedDescription[in]
+ * @param[in] mergedDescription
  * 	The text used to describe the RecordStore.
- * @hashName[in]
+ * @param[in] hashName
  *	The name of the new hash translation RecordStore that will be created.
- * @param parentDir[in]
+ * @param[in] parentDir
  * 	Where, in the file system, the new store should be rooted.
- * @param type[in]
+ * @param[in] type
  * 	The type of RecordStore that mergedName should be.
- * @param recordStores[in]
+ * @param[in] recordStores
  * 	An array of shared pointers to RecordStore that should be merged into
  *	mergedName.
- * @param numRecordStores[in]
+ * @param[in] numRecordStores
  * 	The number of RecordStore* in recordStores.
- * @param what_to_hash[in]
+ * @param[in] what_to_hash
  *	What should be hashed when creating a hash for an entry.
- * @param hashed_key_format[in]
+ * @param[in] hashed_key_format
  *	How the key should be printed in a hash translation RecordStore
  *
- * \throws Error::ObjectExists
+ * @throws Error::ObjectExists
  * 	A RecordStore with mergedNamed in parentDir
- * \throws Error::StrategyError
+ * @throws Error::StrategyError
  * 	An error occurred when using the underlying storage system
  */
 static void mergeAndHashRecordStores(
@@ -1470,12 +1605,12 @@ static void mergeAndHashRecordStores(
  * @brief
  * Facilitates the merging of multiple RecordStores.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1521,11 +1656,12 @@ static int merge(int argc, char *argv[])
  * @brief
  * Display version information.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @returns
+ *
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1546,16 +1682,16 @@ static int version(int argc, char *argv[])
  * @brief
  * Process command-line arguments specific to the UNHASH Action.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @param hash[in]
+ * @param[in/out] hash
  *	Reference to a string that will hold the hash to unhash
- * @param hash_rs[in]
+ * @param[in/out] hash_rs
  *	Reference to a shared pointer that will hold the open hashed RecordStore
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1598,12 +1734,12 @@ static int procargs_unhash(int argc, char *argv[], string &hash,
  * Facilitates the unhashing of an MD5 hashed key from a RecordStore, given
  * a RecordStore of hash values.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1631,27 +1767,31 @@ static int unhash(int argc, char *argv[])
  * @brief
  * Process command-line arguments specific to the ADD Action.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
- * @param rs[in]
+ * @param[in/out] rs
  *	Reference to a RecordStore shared pointer that will be allocated
  *	to hold the main RecordStore passed with the -s flag on the command-line
- * @param hash_rs[in]
+ * @param[in/out] hash_rs
  *	Reference to a hash translation RecordStore shared pointer that will
  *	be allocated to hold a hash translation of the file's contents.
- * @param files[in]
+ * @param[in/out] files
  *	Reference to a vector that will be populated with paths to files that
  *	should be added to rs.
- * @param what_to_hash[in]
+ * @param[in/out] what_to_hash
  *	Reference to a HashablePart enumeration that indicates what should be
  *	hashed when creating a hash for an entry.
- * @param hashed_key_format[in]
+ * @param[in/out] hashed_key_format
  *	Reference to a KeyFormat enumeration that indicates how the key (when
  *	printed as a value) should appear in a hash translation RecordStore.
+ * @param[in/out] compress
+ *	Whether or not to compress record contents.
+ * @param[in/out] compressorKind
+ *	The type of compression used to compress record contents.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1663,10 +1803,14 @@ procargs_add(
     tr1::shared_ptr<IO::RecordStore> &hash_rs,
     vector<string> &files,
     HashablePart::Type &what_to_hash,
-    KeyFormat::Type &hashed_key_format)
+    KeyFormat::Type &hashed_key_format,
+    bool &compress,
+    IO::Compressor::Kind &compressorKind)
 {
 	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
+	compress = false;
+	compressorKind = IO::Compressor::GZIP;
 
 	char c;
 	while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -1727,6 +1871,20 @@ procargs_add(
 				return (EXIT_FAILURE);
 			}
 			break;
+		case 'z':	/* Compress */
+			compress = true;
+			compressorKind = IO::Compressor::GZIP;
+			break;
+		case 'Z':	/* Compression strategy */
+			compress = true;
+			if (strcasecmp("GZIP", optarg) == 0)
+				compressorKind = IO::Compressor::GZIP;
+			else {
+				cerr << "Invalid compression kind -- " <<
+				    optarg << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
 		}
 	}
 	/* Remaining arguments are files to add (same as -a) */
@@ -1779,12 +1937,12 @@ procargs_add(
  * @brief
  * Facilitates the addition of files to an existing RecordStore.
  * 
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1797,8 +1955,10 @@ add(
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
 	vector<string> files;
+	bool compress = false;
+	IO::Compressor::Kind compressorKind;
 	if (procargs_add(argc, argv, rs, hash_rs, files, what_to_hash,
-	    hashed_key_format) != EXIT_SUCCESS)
+	    hashed_key_format, compress, compressorKind) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	for (vector<string>::const_iterator file_path = files.begin();
@@ -1812,10 +1972,12 @@ add(
 			make_insert_directory_contents(
 			    Text::filename(*file_path),
 			    Text::dirname(*file_path), rs, hash_rs,
-			    what_to_hash, hashed_key_format);
+			    what_to_hash, hashed_key_format, compress,
+			    compressorKind);
 		else
 			make_insert_contents(*file_path, rs, hash_rs,
-			    what_to_hash, hashed_key_format);
+			    what_to_hash, hashed_key_format, compress,
+			    compressorKind);
 	}
 
 	return (EXIT_SUCCESS);
@@ -1825,18 +1987,18 @@ add(
  * @brief
  * Process command-line arguments specific to the REMOVE Action.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main().
- * @param argv[in]
+ * @param[in] argv
  *	argv from main().
- * @param keys[in]
+ * @param[in/out] keys
  *	Reference to a vector that will hold the keys to remove.
- * @param force_removal
+ * @param[in/out] force_removal
  *	Reference to a boolean that when true will not prompt before removal.
- * @param rs[in]
+ * @param[in/out] rs
  *	Reference to a shared pointer that will hold the open RecordStore.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1886,12 +2048,12 @@ procargs_remove(
  * @brief
  * Facilitates the removal of key/value pairs from an existing RecordStore.
  * 
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -1929,23 +2091,23 @@ remove(
  * @brief
  * Process command-line arguments specific to the DIFF Action.
  *
- * @param argc[in]
+ * @param[in] argc
  *	argc from main().
- * @param argv[in]
+ * @param[in] argv
  *	argv from main().
- * @param sourceRS[in]
+ * @param[in/out] sourceRS
  *	Reference to a shared pointer that will hold the open
  *	source-RecordStore.
- * @param targetRS[in]
+ * @param[in/out] targetRS
  *	Reference to a shared pointer that will hold the open 
  *	target-RecordStore.
- * @param keys[in]
+ * @param[in/out] keys
  *	Reference to a vector that will hold the keys to compare.
- * @param byte_for_byte[in]
+ * @param[in/out] byte_for_byte
  *	Reference to a boolean that, when true, will perform the difference by
  *	comparing buffers byte-for-byte instead of using an MD5 checksum.
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */
@@ -2030,12 +2192,12 @@ procargs_diff(
  * @brief
  * Facilitates a diff between two RecordStores.
  * 
- * @param argc[in]
+ * @param[in] argc
  *	argc from main()
- * @param argv[in]
+ * @param[in] argv
  *	argv from main()
  *
- * @returns
+ * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
  *	returned from main().
  */

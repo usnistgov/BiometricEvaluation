@@ -16,6 +16,8 @@ add
 .Op Fl a Ar file/dir Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
+.Op Fl z
+.Op Fl Z Ar compressor
 .Op file/dir ...
 .Pp
 
@@ -36,6 +38,8 @@ display/dump
 .Op Fl k Ar key | Fl r Ar #-#
 .Op Fl h Ar hash_rs
 .Op Fl o Ar dir
+.Op Fl z
+.Op Fl Z Ar decompressor
 .Pp
 .\"
 .Nm
@@ -55,6 +59,8 @@ make
 .Op Fl k Ar (fp)
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
+.Op Fl z
+.Op Fl Z Ar compressor
 .Op file/dir ...
 .Pp
 
@@ -146,6 +152,17 @@ option is specified.
 The existing RecordStore to which 
 .Fa file
 should be added.
+.It Cm -z
+Compress records using the default strategy.
+.It Cm -Z Fa compressor
+Compress records using the
+.Fa compressor
+strategy, where
+.Fa compressor
+is:
+.Bl -tag -compact
+.It Fa GZIP
+.El
 .It Fa file/dir ...
 Files or directories to be added to
 .Fa rs .
@@ -183,7 +200,7 @@ The RecordStore whose contents will be compared to the contents of
 Extract records from 
 .Fa rs .
 .\"
-.Bl -tag -compact -width "hash_rs    "
+.Bl -tag -compact -width "-Z compressor "
 .It Cm -o Fa dir
 Place extracted records in
 .Fa dir .
@@ -204,7 +221,19 @@ The RecordStore from which to dump
 .Fa key
 or
 .Fa #-# .
+.It Cm -z
+Decompress records using the default strategy.
+.It Cm -Z Fa compressor
+Decompress records using the
+.Fa decompressor
+strategy, where
+.Fa decompressor
+is:
+.Bl -tag -compact
+.It Fa GZIP
 .El
+.El
+
 .It Cm list
 List all keys contained in
 .Fa rs .
@@ -278,6 +307,17 @@ RecordStore, where type is:
 .It Fa BerkeleyDB
 (default)
 .It Fa File
+.El
+.It Cm -z
+Compress records using the default strategy.
+.It Cm -Z Fa compressor
+Compress records using the
+.Fa compressor
+strategy, where
+.Fa compressor
+is:
+.Bl -tag -compact
+.It Fa GZIP
 .El
 .It Fa file/dir ...
 Files/dirs to initially add to
@@ -421,7 +461,7 @@ into a newly formed RecordStore named
 .\"
 .\"
 .Sh VERSION
-This man page is current for version 1.1 of
+This man page is current for version 1.2 of
 .Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.

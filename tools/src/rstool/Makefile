@@ -13,7 +13,7 @@
 # rstool versioning
 # 
 MAJOR_VERSION=1
-MINOR_VERSION=1
+MINOR_VERSION=2
 #
 include ../common.mk
 LOCALMAN = ../../man
