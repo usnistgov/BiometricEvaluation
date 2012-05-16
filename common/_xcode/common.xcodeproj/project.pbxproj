@@ -296,7 +296,7 @@
 				08CFC4C61545E1D600BA89B2 /* implementation */,
 				086A2A541547359C00464DC5 /* test */,
 			);
-			indentWidth = 4;
+			indentWidth = 8;
 			sourceTree = "<group>";
 		};
 		08CFC4C41545E14D00BA89B2 /* include */ = {
