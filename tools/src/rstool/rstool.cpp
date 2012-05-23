@@ -296,6 +296,7 @@ static void usage(char *exe)
 	    "RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
 	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
+	cerr << "\t<RS> ...\tRecordStore(s) to be merged " << endl;
 
 	cerr << endl;
 	
@@ -1444,6 +1445,16 @@ procargs_merge(
 			    "RecordStores -- there are no paths." << endl;
 			return (EXIT_FAILURE);
 		}
+	}
+	
+	/* Remaining arguments are RecordStores to merge */
+	if ((argc - optind) > 0) {
+		child_rs.resize(num_child_rs + (argc - optind));
+		for (int i = optind; i < argc; i++)
+			child_rs[num_child_rs++] = 
+			    IO::RecordStore::openRecordStore(
+			    Text::filename(argv[i]), Text::dirname(argv[i]),
+			    IO::READONLY);
 	}
 
 	if (hashed_key_format == KeyFormat::DEFAULT)

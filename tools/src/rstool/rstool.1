@@ -75,6 +75,7 @@ merge
 .Op Fl h Ar hash_rs Op Fl c
 .Op Fl o Ar dir
 .Op Fl t Ar rs_type
+.Op RS ...
 .Pp
 .Nm
 remove
@@ -374,7 +375,13 @@ RecordStore, where type is:
 (default)
 .It Fa File
 .El
+.It Fa RS ...
+Additional RecordStores to merge into
+.Fa new_rs
+(same as 
+.Cm -a).
 .El
+
 .It Cm remove
 Remove
 .Fa key
