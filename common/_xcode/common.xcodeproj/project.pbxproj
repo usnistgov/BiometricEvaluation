@@ -43,6 +43,10 @@
 		086A2A7A154735EA00464DC5 /* test_be_time_timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_time_timer.cpp; path = ../src/test/test_be_time_timer.cpp; sourceTree = "<group>"; };
 		086A2A7B154735EA00464DC5 /* test_be_time_watchdog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_time_watchdog.cpp; path = ../src/test/test_be_time_watchdog.cpp; sourceTree = "<group>"; };
 		086A2A7C154735EA00464DC5 /* test_be_time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_time.cpp; path = ../src/test/test_be_time.cpp; sourceTree = "<group>"; };
+		08C0465A156E9E4B00E2A097 /* be_io_gzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_gzip.h; path = ../src/include/be_io_gzip.h; sourceTree = "<group>"; };
+		08C0465B156E9E5A00E2A097 /* be_io_compressor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressor.h; path = ../src/include/be_io_compressor.h; sourceTree = "<group>"; };
+		08C0465C156E9E8D00E2A097 /* be_io_compressor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressor.cpp; path = ../src/libbiomeval/be_io_compressor.cpp; sourceTree = "<group>"; };
+		08C0465D156E9E8D00E2A097 /* be_io_gzip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_gzip.cpp; path = ../src/libbiomeval/be_io_gzip.cpp; sourceTree = "<group>"; };
 		08CFC4891545E14800BA89B2 /* be_data_interchange_an2k.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_data_interchange_an2k.h; path = ../src/include/be_data_interchange_an2k.h; sourceTree = "<group>"; };
 		08CFC48A1545E14800BA89B2 /* be_error_exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_error_exception.h; path = ../src/include/be_error_exception.h; sourceTree = "<group>"; };
 		08CFC48B1545E14800BA89B2 /* be_error_signal_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_error_signal_manager.h; path = ../src/include/be_error_signal_manager.h; sourceTree = "<group>"; };
@@ -412,8 +416,10 @@
 			children = (
 				08CFC4AF1545E14800BA89B2 /* be_io.h */,
 				08CFC4A51545E14800BA89B2 /* be_io_archiverecstore.h */,
+				08C0465B156E9E5A00E2A097 /* be_io_compressor.h */,
 				08CFC4A61545E14800BA89B2 /* be_io_dbrecstore.h */,
 				08CFC4A71545E14800BA89B2 /* be_io_filerecstore.h */,
+				08C0465A156E9E4B00E2A097 /* be_io_gzip.h */,
 				08CFC4A81545E14800BA89B2 /* be_io_logcabinet.h */,
 				08CFC4A91545E14800BA89B2 /* be_io_logsheet.h */,
 				08CFC4AA1545E14800BA89B2 /* be_io_properties.h */,
@@ -551,8 +557,10 @@
 			isa = PBXGroup;
 			children = (
 				08CFC4E41545E1F500BA89B2 /* be_io_archiverecstore.cpp */,
+				08C0465C156E9E8D00E2A097 /* be_io_compressor.cpp */,
 				08CFC4E51545E1F500BA89B2 /* be_io_dbrecstore.cpp */,
 				08CFC4E61545E1F500BA89B2 /* be_io_filerecstore.cpp */,
+				08C0465D156E9E8D00E2A097 /* be_io_gzip.cpp */,
 				08CFC4E71545E1F500BA89B2 /* be_io_logcabinet.cpp */,
 				08CFC4E81545E1F500BA89B2 /* be_io_logsheet.cpp */,
 				08CFC4E91545E1F500BA89B2 /* be_io_properties.cpp */,
