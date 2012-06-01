@@ -14,6 +14,7 @@ add
 .Fl s
 .Ar rs
 .Op Fl a Ar file/dir Op Fl a Ar ...
+.Op Fl f
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
 .Op Fl z
@@ -55,6 +56,7 @@ make
 .Fl s
 .Ar new_rs
 .Op Fl a Ar text Op Fl a Ar ...
+.Op Fl f
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
 .Op Fl o Ar dir
@@ -122,6 +124,9 @@ If
 is specified, use the content of
 .Fa file
 instead of the name to form the hash.
+.It Cm -f
+Force insertion into the RecordStore even if the same key already exists
+(perform a replacement).
 .It Cm -h Fa hash_rs
 Existing hash translation RecordStore.  Passing this argument indicates that
 .Fa file
@@ -259,6 +264,9 @@ If
 .Fa hash_rs
 is specified, use the content of files added
 instead of the name to form the hash.
+.It Cm -f
+Force insertion into the RecordStore even if the same key already exists
+(perform a replacement).
 .It Cm -h Fa hash_rs
 Hash keys that will be added to 
 .Fa new_rs

@@ -240,6 +240,8 @@ static void usage(char *exe)
 
 	cerr << "Add Options:" << endl;
 	cerr << "\t-a <file/dir>\tFile/directory contents to add" << endl;
+	cerr << "\t-f\t\tForce insertion even if the same key already exists" <<
+	    endl;
 	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
@@ -277,6 +279,8 @@ static void usage(char *exe)
 	cerr << "\t-a <text>\tText file with paths to files or directories "
 	    "to\n\t\t\tinitially add as reords (multiple)" << endl;
 	cerr << "\t-h <hash_rs>\tHash keys and save translation RecordStore" <<
+	    endl;
+	cerr << "\t-f\t\tForce insertion even if the same key already exists" <<
 	    endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
@@ -917,6 +921,9 @@ static int list(int argc, char *argv[])
  *	Whether or not to compress record contents.
  * @param[in/out] compressorKind
  *	The type of compression used to compress record contents.
+ * @param[in] stopOnDuplicate
+ *	Whether or not to stop when attempting to add a duplicate key into
+ *	the data RecordStore.
  *
  * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
@@ -932,12 +939,14 @@ procargs_make(
     string &type,
     vector<string> &elements,
     bool &compress,
-    IO::Compressor::Kind &compressorKind)
+    IO::Compressor::Kind &compressorKind,
+    bool &stopOnDuplicate)
 {
 	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
 	compress = false;
 	compressorKind = IO::Compressor::GZIP;
+	stopOnDuplicate = true;
 
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -994,6 +1003,9 @@ procargs_make(
 				    endl;
 				return (EXIT_FAILURE);
 			}
+			break;
+		case 'f':	/* Force -- don't stop on duplicate */
+			stopOnDuplicate = false;
 			break;
 		case 'h':	/* Hash translation RecordStore */
 			hash_filename.assign(optarg);
@@ -1089,6 +1101,9 @@ procargs_make(
  *	What should be hashed when creating a hash for an entry.
  * @param[in] hashed_key_format
  *	How the key should be displayed in a hash translation RecordStore.
+ * @param[in] stopOnDuplicate
+ *	Whether or not to stop when attempting to add a duplicate key into
+ *	the data RecordStore.
  *
  * @return
  *	An exit status, either EXIT_FAILURE or EXIT_SUCCESS, depending on if
@@ -1100,7 +1115,8 @@ static int make_insert_contents(const string &filename,
     const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format,
     bool compress,
-    const IO::Compressor::Kind compressorKind)
+    const IO::Compressor::Kind compressorKind,
+    bool stopOnDuplicate)
 {
 	static Memory::uint8Array buffer;
 	static uint64_t buffer_size = 0;
@@ -1129,10 +1145,25 @@ static int make_insert_contents(const string &filename,
 	try {
 		key = Text::filename(filename);
 		if (hash_rs.get() == NULL) {
-			if (compress)
-				rs->insert(key, compressor->compress(buffer));
-			else
-				rs->insert(key, buffer, buffer_size);
+			try {
+				if (compress)
+					rs->insert(key,
+					    compressor->compress(buffer));
+				else
+					rs->insert(key, buffer, buffer_size);
+			} catch (Error::ObjectExists &e) {
+				if (stopOnDuplicate)
+					throw e;
+					
+				cerr << "Could not insert " + filename + " "
+				    "(key = \"" + key + "\") because "
+				    "it already exists.  Replacing..." << endl;
+				if (compress)
+					rs->replace(key,
+					    compressor->compress(buffer));
+				else
+					rs->replace(key, buffer, buffer_size);
+			}
 		} else {
 			switch (what_to_hash) {
 			case HashablePart::FILECONTENTS:
@@ -1164,12 +1195,42 @@ static int make_insert_contents(const string &filename,
 				return (EXIT_FAILURE);
 			}
 
-			if (compress)
-				rs->insert(hash_value,
-				    compressor->compress(buffer));
-			else
-				rs->insert(hash_value, buffer, buffer_size);
-			hash_rs->insert(hash_value, key.c_str(), key.size());
+			try {
+				if (compress)
+					rs->insert(hash_value,
+					    compressor->compress(buffer));
+				else
+					rs->insert(hash_value, buffer,
+					    buffer_size);
+			} catch (Error::ObjectExists &e) {
+				if (stopOnDuplicate)
+					throw e;
+					
+				cerr << "Could not insert " + filename + " "
+				    "(key: \"" + hash_value + "\") because "
+				    "it already exists.  Replacing..." << endl;
+				if (compress)
+					rs->replace(hash_value,
+					    compressor->compress(buffer));
+				else
+					rs->replace(hash_value, buffer,
+					    buffer_size);
+			}
+			
+			try {
+				hash_rs->insert(hash_value, key.c_str(),
+				    key.size());
+			} catch (Error::ObjectExists &e) {
+				if (stopOnDuplicate)
+					throw e;
+					
+				cerr << "Could not insert " + filename + " "
+				    "(key: \"" + hash_value + "\") into hash "
+				    "translation RecordStore because it "
+				    "already exists.  Replacing..." << endl;
+				hash_rs->replace(hash_value, key.c_str(),
+				    key.size());
+			}
 		}
 	} catch (Error::Exception &e) {
 		cerr << "Could not add contents of " << filename <<
@@ -1201,6 +1262,8 @@ static int make_insert_contents(const string &filename,
  *	Whether or not to compress record contents.
  * @param[in] compressorKind
  *	The type of compression used to compress record contents.
+ * @param[in] stopOnDuplicate
+ *	Whether or not to stop if a duplicate key is detected.
  *
  * @throws Error::ObjectDoesNotExist
  *	If the contents of the directory changes during the run
@@ -1220,7 +1283,8 @@ make_insert_directory_contents(
     const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format,
     bool compress,
-    IO::Compressor::Kind compressorKind)
+    IO::Compressor::Kind compressorKind,
+    bool stopOnDuplicate)
     throw (Error::ObjectDoesNotExist, Error::StrategyError)
 {
 	struct dirent *entry;
@@ -1247,13 +1311,13 @@ make_insert_directory_contents(
 		if (IO::Utility::pathIsDirectory(filename)) {
 			if (make_insert_directory_contents(entry->d_name,
 			    dirpath, rs, hash_rs, what_to_hash,
-			    hashed_key_format, compress, compressorKind) != 
-			    EXIT_SUCCESS)
+			    hashed_key_format, compress, compressorKind,
+			    stopOnDuplicate) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		} else {
 			if (make_insert_contents(filename, rs, hash_rs,
 			    what_to_hash, hashed_key_format, compress,
-			    compressorKind) != EXIT_SUCCESS)
+			    compressorKind, stopOnDuplicate) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -1287,10 +1351,11 @@ static int make(int argc, char *argv[])
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	bool compress = false;
 	IO::Compressor::Kind compressorKind;
+	bool stopOnDuplicate = true;
 
 	if (procargs_make(argc, argv, hash_filename, what_to_hash,
-	    hashed_key_format, type, elements, compress, compressorKind) !=
-	    EXIT_SUCCESS)
+	    hashed_key_format, type, elements, compress, compressorKind,
+	    stopOnDuplicate) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	tr1::shared_ptr<IO::RecordStore> rs;
@@ -1317,7 +1382,8 @@ static int make(int argc, char *argv[])
 				    Text::dirname(elements[i]),
 				    rs, hash_rs, what_to_hash,
 				    hashed_key_format, compress,
-				    compressorKind) != EXIT_SUCCESS)
+				    compressorKind, stopOnDuplicate) !=
+				    EXIT_SUCCESS)
 			    		return (EXIT_FAILURE);
 			} catch (Error::Exception &e) {
 				cerr << "Could not add contents of dir " <<
@@ -1327,7 +1393,7 @@ static int make(int argc, char *argv[])
 		} else {
 			if (make_insert_contents(elements[i], rs, hash_rs,
 			    what_to_hash, hashed_key_format, compress,
-			    compressorKind) != EXIT_SUCCESS)
+			    compressorKind, stopOnDuplicate) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -1801,6 +1867,9 @@ static int unhash(int argc, char *argv[])
  *	Whether or not to compress record contents.
  * @param[in/out] compressorKind
  *	The type of compression used to compress record contents.
+ * @param[in] stopOnDuplicate
+ *	Whether or not to stop when attempting to add a duplicate key into
+ *	the data RecordStore.
  *
  * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
@@ -1816,12 +1885,14 @@ procargs_add(
     HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format,
     bool &compress,
-    IO::Compressor::Kind &compressorKind)
+    IO::Compressor::Kind &compressorKind,
+    bool &stopOnDuplicate)
 {
 	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
 	compress = false;
 	compressorKind = IO::Compressor::GZIP;
+	stopOnDuplicate = true;
 
 	char c;
 	while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -1841,6 +1912,9 @@ procargs_add(
 				    endl;
 				return (EXIT_FAILURE);
 			}
+			break;
+		case 'f':	/* Force -- don't stop on duplicate */
+			stopOnDuplicate = false;
 			break;
 		case 'k':	/* Hash key display type */
 			switch (optarg[0]) {
@@ -1968,8 +2042,11 @@ add(
 	vector<string> files;
 	bool compress = false;
 	IO::Compressor::Kind compressorKind;
+	bool stopOnDuplicate = true;
+	
 	if (procargs_add(argc, argv, rs, hash_rs, files, what_to_hash,
-	    hashed_key_format, compress, compressorKind) != EXIT_SUCCESS)
+	    hashed_key_format, compress, compressorKind, stopOnDuplicate) !=
+	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	for (vector<string>::const_iterator file_path = files.begin();
@@ -1984,11 +2061,11 @@ add(
 			    Text::filename(*file_path),
 			    Text::dirname(*file_path), rs, hash_rs,
 			    what_to_hash, hashed_key_format, compress,
-			    compressorKind);
+			    compressorKind, stopOnDuplicate);
 		else
 			make_insert_contents(*file_path, rs, hash_rs,
 			    what_to_hash, hashed_key_format, compress,
-			    compressorKind);
+			    compressorKind, stopOnDuplicate);
 	}
 
 	return (EXIT_SUCCESS);
