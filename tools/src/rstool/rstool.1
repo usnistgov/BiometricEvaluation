@@ -7,7 +7,7 @@
 .Nd manipulate RecordStores
 .\"
 .Sh SYNOPSIS
-
+\#
 \# "rstool add" usage
 .Nm
 add
@@ -21,7 +21,7 @@ add
 .Op Fl Z Ar compressor
 .Op file/dir ...
 .Pp
-
+\#
 .Nm
 diff
 .Fl s
@@ -48,7 +48,7 @@ list
 .Fl s
 .Ar rs
 .Pp
-
+\#
 \# "rstool make" example
 .\"
 .Nm
@@ -65,7 +65,7 @@ make
 .Op Fl Z Ar compressor
 .Op file/dir ...
 .Pp
-
+\#
 .\"
 .Nm
 merge
@@ -106,8 +106,8 @@ command is used to manipulate any type of RecordStore supported by the Biometric
 .Pp
 The functions are as follows:
 .\"
-.Bl -tag -indent -width "display/dump  "
-
+.Bl -tag -width "display/dump  "
+\#
 \# "rstool add" details
 .It Cm add
 Add an individual file into an existing RecordStore.
@@ -173,7 +173,7 @@ is:
 Files or directories to be added to
 .Fa rs .
 .El
-
+\#
 .It Cm diff
 See if differences exist between keys of RecordStores.
 .\"
@@ -201,7 +201,7 @@ A RecordStore containing keys to compare.
 The RecordStore whose contents will be compared to the contents of
 .Fa rs1 .
 .El
-
+\#
 .It Cm display/dump
 Extract records from 
 .Fa rs .
@@ -239,7 +239,7 @@ is:
 .It Fa GZIP
 .El
 .El
-
+\#
 .It Cm list
 List all keys contained in
 .Fa rs .
@@ -247,7 +247,7 @@ List all keys contained in
 .It Cm -s Fa rs
 The RecordStore to list.
 .El
-
+\#
 \# "rstool make" usage
 .It Cm make
 Create a new RecordStore named
@@ -331,7 +331,7 @@ is:
 .It Fa file/dir ...
 Files/dirs to initially add to
 .Fa new_rs .
- 
+\# 
 .El
 .It Cm merge
 Merge one or more existing RecordStores into 
@@ -389,7 +389,7 @@ Additional RecordStores to merge into
 (same as 
 .Cm -a).
 .El
-
+\#
 .It Cm remove
 Remove
 .Fa key
@@ -418,8 +418,9 @@ The hash to unhash.
 .It Cm -s Fa hash_rs
 The hash translation RecordStore.
 .El
+.El
 .Sh EXAMPLES
-.Bl -tag -width -indend
+.Bl -tag -width
 .It Li rstool merge -s 3B -a templates/3B-00001 -a templates/3B-00002
 .Pp
 Merge the RecordStores
