@@ -33,6 +33,7 @@
 #include <be_framework.h>
 #include <be_io_archiverecstore.h>
 #include <be_io_dbrecstore.h>
+#include <be_io_compressedrecstore.h>
 #include <be_io_compressor.h>
 #include <be_io_filerecstore.h>
 #include <be_io_recordstore.h>
@@ -245,10 +246,6 @@ static void usage(char *exe)
 	cerr << "\t-h <hash_rs>\tExisting hash translation RecordStore" << endl;
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
-	cerr << "\t-z\t\tCompress records with default strategy\n" <<
-	"\t\t\t(same as -Z GZIP)" << endl;
-	cerr << "\t-Z <type>\tCompress records with <type> compression" <<
-	    "\n\t\t\tWhere type is GZIP" << endl;
 	cerr << "\tfile/dir ...\tFiles/directory contents to add as a " <<
 	    "record" << endl;
 
@@ -268,10 +265,6 @@ static void usage(char *exe)
 	    endl;
 	cerr << "\t-k <key>\tKey to dump" << endl;
 	cerr << "\t-r <#-#>\tRange of keys" << endl;
-	cerr << "\t-z\t\tDecompress records with default strategy\n" <<
-	"\t\t\t(same as -Z GZIP)" << endl;
-	cerr << "\t-Z <type>\tDecompress records with <type> compression" <<
-	    "\n\t\t\tWhere type is GZIP" << endl;
 
 	cerr << endl;
 
@@ -384,6 +377,9 @@ static string validate_rs_type(const string &type)
 	else if (strcasecmp(type.c_str(),
 	    IO::RecordStore::ARCHIVETYPE.c_str()) == 0)
 		return (IO::RecordStore::ARCHIVETYPE);
+	else if (strcasecmp(type.c_str(),
+	    IO::RecordStore::SQLITETYPE.c_str()) == 0)
+		return (IO::RecordStore::SQLITETYPE);
 
 	return ("");
 }
@@ -496,10 +492,6 @@ static Action::Type procargs(int argc, char *argv[])
  *	to hold a hash translation RecordStore.  Instantiating this RecordStore
  *	lets the driver know that the user would like the unhashed key to be
  *	used when the extraction takes place.
- * @param[in/out] decompress
- *	Whether or not to decompress record contents.
- * @param[in/out] decompressorKind
- *	The type of decompression used to decompress record contents.
  *
  * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
@@ -511,13 +503,8 @@ procargs_extract(
     string &key,
     string &range,
     tr1::shared_ptr<IO::RecordStore> &rs,
-    tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    bool &decompress,
-    IO::Compressor::Kind &decompressorKind)
-{
-	decompress = false;
-	decompressorKind = IO::Compressor::GZIP;
-	
+    tr1::shared_ptr<IO::RecordStore> &hash_rs)
+{	
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
@@ -545,21 +532,6 @@ procargs_extract(
 		case 'r':	/* Extract range of keys */
 			range.assign(optarg);
 			break;
-		case 'z':	/* Decompress */
-			decompress = true;
-			decompressorKind = IO::Compressor::GZIP;
-			break;
-		case 'Z':	/* Decompression strategy */
-			decompress = true;
-			if (strcasecmp("GZIP", optarg) == 0)
-				decompressorKind = IO::Compressor::GZIP;
-			else {
-				cerr << "Invalid decompression kind -- " <<
-				    optarg << endl;
-				return (EXIT_FAILURE);
-			}
-			break;
-
 		}
 	}
 
@@ -604,10 +576,6 @@ procargs_extract(
  *	The name of the record to display.
  * @param[in] value
  *	The contents of the record to display.
- * @param[in] decompress
- *	Whether or not to decompress record contents.
- * @param[in] decompressorKind
- *	The type of decompression used to decompress record contents.
  *
  * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
@@ -616,21 +584,9 @@ procargs_extract(
 static int
 display(
     const string &key,
-    Memory::AutoArray<uint8_t> &value,
-    bool &decompress,
-    IO::Compressor::Kind &decompressorKind)
+    Memory::AutoArray<uint8_t> &value)
 {
-	if (decompress) {
-		static tr1::shared_ptr<IO::Compressor> decompressor = 
-		    IO::Compressor::createCompressor(decompressorKind);
-		try {
-			value = decompressor->decompress(value);
-		} catch (Error::Exception &e) {
-			cerr << "Could not decompress record (" <<
-			    e.getInfo() << ')' << endl;
-		}
-	} else
-		value.resize(value.size() + 1);
+	value.resize(value.size() + 1);
 	value[value.size() - 1] = '\0';
 
 	cout << key << " = " << value << endl;
@@ -646,10 +602,6 @@ display(
  *	The name of the file to write.
  * @param[in] value
  *	The contents of the file to write.
- * @param[in] decompress
- *	Whether or not to decompress record contents.
- * @param[in] decompressorKind
- *	The type of decompression used to decompress record contents.
  *
  * @return
  *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
@@ -658,9 +610,7 @@ display(
 static int
 dump(
     const string &key,
-    Memory::AutoArray<uint8_t> &value,
-    bool &decompress,
-    IO::Compressor::Kind &decompressorKind)
+    Memory::AutoArray<uint8_t> &value)
 {
 	/* Possible that keys could have slashes */
 	if (key.find('/') != string::npos) {
@@ -673,30 +623,19 @@ dump(
 		}
 	}
 
-	if (decompress) {
-		static tr1::shared_ptr<IO::Compressor> decompressor = 
-		    IO::Compressor::createCompressor(decompressorKind);
-		try {
-			decompressor->decompress(value, oflagval + "/" + key);
-		} catch (Error::Exception &e) {
-			cerr << "Could not decompress entry (" <<
-			    e.getInfo() << ')' << endl;
-			return (EXIT_FAILURE);
-		}
-	} else {
-		FILE *fp = fopen((oflagval + "/" + key).c_str(), "wb");
-		if (fp == NULL) {
-			cerr << "Could not create file." << endl;
-			return (EXIT_FAILURE);
-		}
-		if (fwrite(value, 1, value.size(), fp) != value.size()) {
-			cerr << "Could not write entry." << endl;
-			if (fp != NULL)
-				fclose(fp);
-			return (EXIT_FAILURE);
-		}
-		fclose(fp);
+	FILE *fp = fopen((oflagval + "/" + key).c_str(), "wb");
+	if (fp == NULL) {
+		cerr << "Could not create file." << endl;
+		return (EXIT_FAILURE);
 	}
+	if (fwrite(value, 1, value.size(), fp) != value.size()) {
+		cerr << "Could not write entry." << endl;
+		if (fp != NULL)
+			fclose(fp);
+		return (EXIT_FAILURE);
+	}
+	fclose(fp);
+
 	
 	return (EXIT_SUCCESS);
 }
@@ -719,12 +658,9 @@ dump(
  */
 static int extract(int argc, char *argv[], Action::Type action)
 {
-	bool decompress = false;
-	IO::Compressor::Kind decompressorKind;
 	string key = "", range = "";
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
-	if (procargs_extract(argc, argv, key, range, rs, hash_rs,
-	    decompress, decompressorKind) !=
+	if (procargs_extract(argc, argv, key, range, rs, hash_rs) !=
 	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
@@ -766,13 +702,11 @@ static int extract(int argc, char *argv[], Action::Type action)
 
 		switch (action) {
 		case Action::DUMP:
-			if (dump(key, buf, decompress, decompressorKind) !=
-			    EXIT_SUCCESS)
+			if (dump(key, buf) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 			break;
 		case Action::DISPLAY:
-			if (display(key, buf, decompress, decompressorKind) !=
-			    EXIT_SUCCESS)
+			if (display(key, buf) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 			break;
 		default:
@@ -826,13 +760,11 @@ static int extract(int argc, char *argv[], Action::Type action)
 
 			switch (action) {
 			case Action::DUMP:
-				if (dump(next_key, buf, decompress,
-				    decompressorKind) != EXIT_SUCCESS)
+				if (dump(next_key, buf) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
 			case Action::DISPLAY:
-				if (display(next_key, buf, decompress,
-				    decompressorKind) != EXIT_SUCCESS)
+				if (display(next_key, buf) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
 			default:
@@ -1114,15 +1046,11 @@ static int make_insert_contents(const string &filename,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
     const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format,
-    bool compress,
-    const IO::Compressor::Kind compressorKind,
     bool stopOnDuplicate)
 {
 	static Memory::uint8Array buffer;
 	static uint64_t buffer_size = 0;
 	static ifstream buffer_file;
-	static tr1::shared_ptr<IO::Compressor> compressor = 
-	    IO::Compressor::createCompressor(compressorKind);
 
 	try {
 		buffer_size = IO::Utility::getFileSize(filename);
@@ -1146,11 +1074,7 @@ static int make_insert_contents(const string &filename,
 		key = Text::filename(filename);
 		if (hash_rs.get() == NULL) {
 			try {
-				if (compress)
-					rs->insert(key,
-					    compressor->compress(buffer));
-				else
-					rs->insert(key, buffer, buffer_size);
+				rs->insert(key, buffer, buffer_size);
 			} catch (Error::ObjectExists &e) {
 				if (stopOnDuplicate)
 					throw e;
@@ -1158,11 +1082,7 @@ static int make_insert_contents(const string &filename,
 				cerr << "Could not insert " + filename + " "
 				    "(key = \"" + key + "\") because "
 				    "it already exists.  Replacing..." << endl;
-				if (compress)
-					rs->replace(key,
-					    compressor->compress(buffer));
-				else
-					rs->replace(key, buffer, buffer_size);
+				rs->replace(key, buffer, buffer_size);
 			}
 		} else {
 			switch (what_to_hash) {
@@ -1196,12 +1116,7 @@ static int make_insert_contents(const string &filename,
 			}
 
 			try {
-				if (compress)
-					rs->insert(hash_value,
-					    compressor->compress(buffer));
-				else
-					rs->insert(hash_value, buffer,
-					    buffer_size);
+				rs->insert(hash_value, buffer, buffer_size);
 			} catch (Error::ObjectExists &e) {
 				if (stopOnDuplicate)
 					throw e;
@@ -1209,17 +1124,11 @@ static int make_insert_contents(const string &filename,
 				cerr << "Could not insert " + filename + " "
 				    "(key: \"" + hash_value + "\") because "
 				    "it already exists.  Replacing..." << endl;
-				if (compress)
-					rs->replace(hash_value,
-					    compressor->compress(buffer));
-				else
-					rs->replace(hash_value, buffer,
-					    buffer_size);
+				rs->replace(hash_value, buffer, buffer_size);
 			}
-			
+
 			try {
-				hash_rs->insert(hash_value, key.c_str(),
-				    key.size());
+				hash_rs->insert(hash_value, key.c_str(), key.size());
 			} catch (Error::ObjectExists &e) {
 				if (stopOnDuplicate)
 					throw e;
@@ -1258,10 +1167,6 @@ static int make_insert_contents(const string &filename,
  *	What should be hashed when creating a hash for an entry.
  * @param[in] hashed_key_value
  *	How the key should be displayed in the hash translation RecordStore.
- * @param[in] compress
- *	Whether or not to compress record contents.
- * @param[in] compressorKind
- *	The type of compression used to compress record contents.
  * @param[in] stopOnDuplicate
  *	Whether or not to stop if a duplicate key is detected.
  *
@@ -1282,8 +1187,6 @@ make_insert_directory_contents(
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
     const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format,
-    bool compress,
-    IO::Compressor::Kind compressorKind,
     bool stopOnDuplicate)
     throw (Error::ObjectDoesNotExist, Error::StrategyError)
 {
@@ -1311,13 +1214,13 @@ make_insert_directory_contents(
 		if (IO::Utility::pathIsDirectory(filename)) {
 			if (make_insert_directory_contents(entry->d_name,
 			    dirpath, rs, hash_rs, what_to_hash,
-			    hashed_key_format, compress, compressorKind,
-			    stopOnDuplicate) != EXIT_SUCCESS)
+			    hashed_key_format, stopOnDuplicate) !=
+			    EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		} else {
 			if (make_insert_contents(filename, rs, hash_rs,
-			    what_to_hash, hashed_key_format, compress,
-			    compressorKind, stopOnDuplicate) != EXIT_SUCCESS)
+			    what_to_hash, hashed_key_format,
+			    stopOnDuplicate) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -1361,9 +1264,14 @@ static int make(int argc, char *argv[])
 	tr1::shared_ptr<IO::RecordStore> rs;
 	tr1::shared_ptr<IO::RecordStore> hash_rs;
 	try {
-		rs = IO::RecordStore::createRecordStore(sflagval,
-		    "<Description>", type, oflagval);
+		if (compress)
+			rs.reset(new IO::CompressedRecordStore(sflagval,
+			    "<Description>", type, oflagval, compressorKind));
+		else
+			rs = IO::RecordStore::createRecordStore(sflagval,
+			    "<Description>", type, oflagval);
 		if (!hash_filename.empty())
+			/* No need to compress hash translation RS */
 			hash_rs = IO::RecordStore::createRecordStore(
 			    hash_filename,
 			    "Hash Translation for " + sflagval, type, oflagval);
@@ -1381,9 +1289,8 @@ static int make(int argc, char *argv[])
 				    Text::filename(elements[i]),
 				    Text::dirname(elements[i]),
 				    rs, hash_rs, what_to_hash,
-				    hashed_key_format, compress,
-				    compressorKind, stopOnDuplicate) !=
-				    EXIT_SUCCESS)
+				    hashed_key_format,
+				    stopOnDuplicate) != EXIT_SUCCESS)
 			    		return (EXIT_FAILURE);
 			} catch (Error::Exception &e) {
 				cerr << "Could not add contents of dir " <<
@@ -1392,8 +1299,8 @@ static int make(int argc, char *argv[])
 			}
 		} else {
 			if (make_insert_contents(elements[i], rs, hash_rs,
-			    what_to_hash, hashed_key_format, compress,
-			    compressorKind, stopOnDuplicate) != EXIT_SUCCESS)
+			    what_to_hash, hashed_key_format,
+			    stopOnDuplicate) != EXIT_SUCCESS)
 				return (EXIT_FAILURE);
 		}
 	}
@@ -1863,10 +1770,6 @@ static int unhash(int argc, char *argv[])
  * @param[in/out] hashed_key_format
  *	Reference to a KeyFormat enumeration that indicates how the key (when
  *	printed as a value) should appear in a hash translation RecordStore.
- * @param[in/out] compress
- *	Whether or not to compress record contents.
- * @param[in/out] compressorKind
- *	The type of compression used to compress record contents.
  * @param[in] stopOnDuplicate
  *	Whether or not to stop when attempting to add a duplicate key into
  *	the data RecordStore.
@@ -1884,14 +1787,10 @@ procargs_add(
     vector<string> &files,
     HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format,
-    bool &compress,
-    IO::Compressor::Kind &compressorKind,
     bool &stopOnDuplicate)
 {
 	what_to_hash = HashablePart::NOTHING;
 	hashed_key_format = KeyFormat::DEFAULT;
-	compress = false;
-	compressorKind = IO::Compressor::GZIP;
 	stopOnDuplicate = true;
 
 	char c;
@@ -1953,20 +1852,6 @@ procargs_add(
 				else
 				    	cerr << optarg << ": Permission "
 					    "denied." << endl;
-				return (EXIT_FAILURE);
-			}
-			break;
-		case 'z':	/* Compress */
-			compress = true;
-			compressorKind = IO::Compressor::GZIP;
-			break;
-		case 'Z':	/* Compression strategy */
-			compress = true;
-			if (strcasecmp("GZIP", optarg) == 0)
-				compressorKind = IO::Compressor::GZIP;
-			else {
-				cerr << "Invalid compression kind -- " <<
-				    optarg << endl;
 				return (EXIT_FAILURE);
 			}
 			break;
@@ -2040,13 +1925,10 @@ add(
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
 	vector<string> files;
-	bool compress = false;
-	IO::Compressor::Kind compressorKind;
 	bool stopOnDuplicate = true;
 	
 	if (procargs_add(argc, argv, rs, hash_rs, files, what_to_hash,
-	    hashed_key_format, compress, compressorKind, stopOnDuplicate) !=
-	    EXIT_SUCCESS)
+	    hashed_key_format, stopOnDuplicate) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	for (vector<string>::const_iterator file_path = files.begin();
@@ -2060,12 +1942,12 @@ add(
 			make_insert_directory_contents(
 			    Text::filename(*file_path),
 			    Text::dirname(*file_path), rs, hash_rs,
-			    what_to_hash, hashed_key_format, compress,
-			    compressorKind, stopOnDuplicate);
+			    what_to_hash, hashed_key_format,
+			    stopOnDuplicate);
 		else
 			make_insert_contents(*file_path, rs, hash_rs,
-			    what_to_hash, hashed_key_format, compress,
-			    compressorKind, stopOnDuplicate);
+			    what_to_hash, hashed_key_format,
+			    stopOnDuplicate);
 	}
 
 	return (EXIT_SUCCESS);

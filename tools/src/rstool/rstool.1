@@ -17,8 +17,6 @@ add
 .Op Fl f
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
-.Op Fl z
-.Op Fl Z Ar compressor
 .Op file/dir ...
 .Pp
 \#
@@ -39,8 +37,6 @@ display/dump
 .Op Fl k Ar key | Fl r Ar #-#
 .Op Fl h Ar hash_rs
 .Op Fl o Ar dir
-.Op Fl z
-.Op Fl Z Ar decompressor
 .Pp
 .\"
 .Nm
@@ -158,17 +154,6 @@ option is specified.
 The existing RecordStore to which 
 .Fa file
 should be added.
-.It Cm -z
-Compress records using the default strategy.
-.It Cm -Z Fa compressor
-Compress records using the
-.Fa compressor
-strategy, where
-.Fa compressor
-is:
-.Bl -tag -compact
-.It Fa GZIP
-.El
 .It Fa file/dir ...
 Files or directories to be added to
 .Fa rs .
@@ -206,7 +191,7 @@ The RecordStore whose contents will be compared to the contents of
 Extract records from 
 .Fa rs .
 .\"
-.Bl -tag -compact -width "-Z compressor "
+.Bl -tag -compact -width "-h hash_rs "
 .It Cm -o Fa dir
 Place extracted records in
 .Fa dir .
@@ -227,17 +212,6 @@ The RecordStore from which to dump
 .Fa key
 or
 .Fa #-# .
-.It Cm -z
-Decompress records using the default strategy.
-.It Cm -Z Fa compressor
-Decompress records using the
-.Fa decompressor
-strategy, where
-.Fa decompressor
-is:
-.Bl -tag -compact
-.It Fa GZIP
-.El
 .El
 \#
 .It Cm list
