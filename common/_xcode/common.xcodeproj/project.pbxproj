@@ -17,6 +17,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		084AB2CD15A1F540000DD259 /* be_io_compressedrecstore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressedrecstore.h; path = ../src/include/be_io_compressedrecstore.h; sourceTree = "<group>"; };
+		084AB2CF15A1F5D9000DD259 /* be_io_compressedrecstore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressedrecstore.cpp; path = ../src/libbiomeval/be_io_compressedrecstore.cpp; sourceTree = "<group>"; };
 		086A2A63154735EA00464DC5 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/test/Makefile; sourceTree = "<group>"; };
 		086A2A64154735EA00464DC5 /* test_be_data_interchange_an2k.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_data_interchange_an2k.cpp; path = ../src/test/test_be_data_interchange_an2k.cpp; sourceTree = "<group>"; };
 		086A2A65154735EA00464DC5 /* test_be_error_signal_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_error_signal_manager.cpp; path = ../src/test/test_be_error_signal_manager.cpp; sourceTree = "<group>"; };
@@ -416,6 +418,7 @@
 			children = (
 				08CFC4AF1545E14800BA89B2 /* be_io.h */,
 				08CFC4A51545E14800BA89B2 /* be_io_archiverecstore.h */,
+				084AB2CD15A1F540000DD259 /* be_io_compressedrecstore.h */,
 				08C0465B156E9E5A00E2A097 /* be_io_compressor.h */,
 				08CFC4A61545E14800BA89B2 /* be_io_dbrecstore.h */,
 				08CFC4A71545E14800BA89B2 /* be_io_filerecstore.h */,
@@ -557,6 +560,7 @@
 			isa = PBXGroup;
 			children = (
 				08CFC4E41545E1F500BA89B2 /* be_io_archiverecstore.cpp */,
+				084AB2CF15A1F5D9000DD259 /* be_io_compressedrecstore.cpp */,
 				08C0465C156E9E8D00E2A097 /* be_io_compressor.cpp */,
 				08CFC4E51545E1F500BA89B2 /* be_io_dbrecstore.cpp */,
 				08CFC4E61545E1F500BA89B2 /* be_io_filerecstore.cpp */,
