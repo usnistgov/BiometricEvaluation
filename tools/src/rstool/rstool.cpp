@@ -37,6 +37,7 @@
 #include <be_io_compressor.h>
 #include <be_io_filerecstore.h>
 #include <be_io_recordstore.h>
+#include <be_io_sqliterecstore.h>
 #include <be_io_utility.h>
 #include <be_text.h>
 #include <be_memory_autoarray.h>
@@ -1320,12 +1321,8 @@ static int make(int argc, char *argv[])
  *	Reference to a string that will represent the type of RecordStore
  *	to create.
  * @param[in/out] child_rs
- * 	Reference to an AutoArray of RecordStore pointers that will hold 
- *	open RecordStore shared pointers to the RecordStores that should 
- *	be merged
- * @param[in/out] num_child_rs
- *	Reference to an integer that will specify the contents of the child_rs
- *	array.
+ * 	Reference to an vector of strings that will hold the paths to the 
+ *	RecordStores that should be merged.
  * @param[in/out] hash_filename
  *	Reference to a string that will specify the name of the hash translation
  *	RecordStore, if one is desired.
@@ -1344,8 +1341,7 @@ procargs_merge(
     int argc,
     char *argv[],
     string &type,
-    Memory::AutoArray< tr1::shared_ptr< IO::RecordStore > > &child_rs,
-    int &num_child_rs,
+    vector<string> &child_rs,
     string &hash_filename,
     HashablePart::Type &what_to_hash,
     KeyFormat::Type &hashed_key_format)
@@ -1354,7 +1350,7 @@ procargs_merge(
 	hashed_key_format = KeyFormat::DEFAULT;
 
 	char c;
-	num_child_rs = 0;
+	child_rs.empty();
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
 		case 't':	/* Destination RecordStore type */
@@ -1365,26 +1361,7 @@ procargs_merge(
 			}
 			break;
 		case 'a':	/* RecordStore to be merged */
-			try {
-				/* Add to AutoArray */
-				child_rs.resize(num_child_rs + 1);
-				child_rs[num_child_rs++] =
-				    IO::RecordStore::openRecordStore(
-				    Text::filename(optarg),
-				    Text::dirname(optarg),
-				    IO::READONLY);
-			} catch (Error::Exception &e) {
-    				if (isRecordStoreAccessible(
-				    Text::filename(optarg),
-				    Text::dirname(optarg),
-				    IO::READONLY))
-					cerr << "Could not open " << optarg <<
-					    " - " << e.getInfo() << endl;
-				else
-				    	cerr << optarg << ": Permission "
-					    "denied." << endl;
-				return (EXIT_FAILURE);
-			}
+			child_rs.push_back(optarg);
 			break;
 		case 'c':	/* Hash contents */
 			if (what_to_hash == HashablePart::NOTHING)
@@ -1421,19 +1398,14 @@ procargs_merge(
 	}
 	
 	/* Remaining arguments are RecordStores to merge */
-	if ((argc - optind) > 0) {
-		child_rs.resize(num_child_rs + (argc - optind));
+	if ((argc - optind) > 0)
 		for (int i = optind; i < argc; i++)
-			child_rs[num_child_rs++] = 
-			    IO::RecordStore::openRecordStore(
-			    Text::filename(argv[i]), Text::dirname(argv[i]),
-			    IO::READONLY);
-	}
+			child_rs.push_back(argv[i]);
 
 	if (hashed_key_format == KeyFormat::DEFAULT)
 		hashed_key_format = KeyFormat::FILENAME;
 
-	if (num_child_rs == 0) {
+	if (child_rs.size() == 0) {
 		cerr << "Missing required option (-a)." << endl;
 		return (EXIT_FAILURE);
 	}
@@ -1477,10 +1449,8 @@ procargs_merge(
  * @param[in] type
  * 	The type of RecordStore that mergedName should be.
  * @param[in] recordStores
- * 	An array of shared pointers to RecordStore that should be merged into
+ * 	An vector of string paths to RecordStore that should be merged into
  *	mergedName.
- * @param[in] numRecordStores
- * 	The number of RecordStore* in recordStores.
  * @param[in] what_to_hash
  *	What should be hashed when creating a hash for an entry.
  * @param[in] hashed_key_format
@@ -1497,8 +1467,7 @@ static void mergeAndHashRecordStores(
     const string &hashName,
     const string &parentDir,
     const string &type,
-    tr1::shared_ptr<IO::RecordStore> recordStores[],
-    const size_t numRecordStores,
+    vector<string> &recordStores,
     const HashablePart::Type what_to_hash,
     const KeyFormat::Type hashed_key_format)
     throw (Error::ObjectExists, Error::StrategyError)
@@ -1520,67 +1489,87 @@ static void mergeAndHashRecordStores(
 		    mergedDescription, parentDir));
 		hash_rs.reset(new IO::FileRecordStore(hashName,
 		    hash_description, parentDir));
-	} else
+	} else if (type == IO::RecordStore::SQLITETYPE) {
+		merged_rs.reset(new IO::SQLiteRecordStore(mergedName,
+		    mergedDescription, parentDir));
+    		hash_rs.reset(new IO::SQLiteRecordStore(hashName,
+		    hash_description, parentDir));
+	} else if (type == IO::RecordStore::COMPRESSEDTYPE)
+		throw Error::StrategyError("Invalid RecordStore type");
+	else
 		throw Error::StrategyError("Unknown RecordStore type");
 
 	bool exhausted;
 	uint64_t record_size;
 	string key, hash;
 	Memory::AutoArray<char> buf;
-	for (size_t i = 0; i < numRecordStores; i++) {
+	tr1::shared_ptr<IO::RecordStore> rs;
+	for (size_t i = 0; i < recordStores.size(); i++) {
+		try {
+			rs = IO::RecordStore::openRecordStore(
+			    Text::filename(recordStores[i]),
+			     Text::dirname(recordStores[i]), IO::READONLY);
+		} catch (Error::Exception &e) {
+			throw Error::StrategyError(e.getInfo());
+		}
+		
 		exhausted = false;
 		while (!exhausted) {
 			try {
-				record_size = recordStores[i]->sequence(key);
+				record_size = rs->sequence(key);
 				buf.resize(record_size);
+				
+				try {
+					rs->read(key, buf);
+				} catch (Error::ObjectDoesNotExist) {
+					throw Error::StrategyError(
+					    "Could not read " + key +
+					    " from RecordStore");
+				}
+				
+				switch (what_to_hash) {
+				case HashablePart::FILECONTENTS:
+					hash = Text::digest(buf,
+					    record_size);
+					break;
+				case HashablePart::FILEPATH:
+					/*
+					 * We don't have a file's path
+					 * here since we're going from
+					 * RecordStore to RecordStore.
+					 */
+					/* FALLTHROUGH */
+				case HashablePart::FILENAME:
+					hash = Text::digest(key);
+					break;
+				case HashablePart::NOTHING:
+					/* FALLTHROUGH */
+				default:
+					/* Don't hash */
+					break;
+				}
+				
+				switch (hashed_key_format) {
+				case KeyFormat::FILENAME:
+					/* FALLTHROUGH */
+				case KeyFormat::FILEPATH:
+					/* FALLTHROUGH */
+				default:
+					/*
+					 * We don't have a file's path
+					 * here since we're going from
+					 * RecordStore to RecordStore,
+					 * so not much we can do.
+					 */
+					break;
+				}
+				
+				merged_rs->insert(hash, buf, record_size);
+				hash_rs->insert(hash, key.c_str(),
+				    key.size() + 1);
 			} catch (Error::ObjectDoesNotExist) {
 				exhausted = true;
-				continue;
 			}
-
-			try {
-				recordStores[i]->read(key, buf);
-			} catch (Error::ObjectDoesNotExist) {
-				throw Error::StrategyError("Could not read " +
-				    key + " from RecordStore");
-			}
-
-			switch (what_to_hash) {
-			case HashablePart::FILECONTENTS:
-				hash = Text::digest(buf, record_size);
-				break;
-			case HashablePart::FILEPATH:
-				/* 
-				 * We don't have a file's path here since
-				 * we're going from RecordStore to RecordStore.
-				 */
-				/* FALLTHROUGH */
-			case HashablePart::FILENAME:
-				hash = Text::digest(key);
-				break;
-			case HashablePart::NOTHING:
-				/* FALLTHROUGH */
-			default:
-				/* Don't hash */
-				break;
-			}
-
-			switch (hashed_key_format) {
-			case KeyFormat::FILENAME:
-				/* FALLTHROUGH */
-			case KeyFormat::FILEPATH:
-				/* FALLTHROUGH */
-			default:
-				/* 
-				 * We don't have a file's path here since
-				 * we're going from RecordStore to RecordStore,
-				 * so not much we can do.
-				 */
-				break;
-			}
-
-			merged_rs->insert(hash, buf, record_size);
-			hash_rs->insert(hash, key.c_str(), key.size() + 1);
 		}
 	}
 }
@@ -1603,30 +1592,25 @@ static int merge(int argc, char *argv[])
 	HashablePart::Type what_to_hash = HashablePart::NOTHING;
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
 	string type = "", hash_filename = "";
-	int num_rs = 0;
-	Memory::AutoArray< tr1::shared_ptr<IO::RecordStore> > child_rs;
-	if (procargs_merge(argc, argv, type, child_rs, num_rs, hash_filename,
+	vector<string> child_rs;
+	if (procargs_merge(argc, argv, type, child_rs, hash_filename,
 	    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	string description = "A merge of ";
-	for (int i = 0; i < num_rs; i++) {
-		if (child_rs[i] != NULL) {
-			description += child_rs[i]->getName();
-			if (i != (num_rs - 1)) description += ", ";
-		}
+	for (int i = 0; i < child_rs.size(); i++) {
+		description += Text::filename(child_rs[i]);
+		if (i != (child_rs.size() - 1)) description += ", ";
 	}
 
 	try {
 		if (hash_filename.empty()) {
 			IO::RecordStore::mergeRecordStores(
-			    sflagval, description, oflagval, type, child_rs,
-			    num_rs);
+			    sflagval, description, oflagval, type, child_rs);
 		} else {
 			mergeAndHashRecordStores(
 			    sflagval, description, hash_filename, oflagval,
-			    type, child_rs, num_rs, what_to_hash,
-			    hashed_key_format);
+			    type, child_rs, what_to_hash, hashed_key_format);
 		}
 	} catch (Error::Exception &e) {
 		cerr << "Could not create " << sflagval << " - " <<
