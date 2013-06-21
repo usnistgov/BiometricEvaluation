@@ -1,0 +1,50 @@
+%
+% Define the shapes that are commonly used for figures created with the
+% TikZ LaTeX package.
+%
+\usetikzlibrary{arrows,shapes.geometric}
+\tikzset{
+	% Arrow styles
+	connector/.style = {
+		->,
+		very thick,
+		>=stealth'
+	},
+	% Shape properties common to most flowchart shapes
+	basicShape/.style = {
+		minimum width = 15em,
+		minimum height = 3em,
+		text centered,
+	},
+	% Process flowchart shape
+	process/.style = {
+		rectangle,
+		basicShape,
+		text width = 16em,
+		minimum height = 5em,
+		node distance = 5em,
+		fill=gray!20,
+		node distance = 7em,
+		draw
+	},
+	% Decision flowchart shape
+	decision/.style = {
+		diamond,
+		basicShape,
+		minimum width = 10em,
+		text width = 5em,
+		text centered,
+		fill = yellow!20,
+		node distance=10em,
+		draw
+	},
+	% Terminator flowchart shape
+	terminator/.style = {
+		rectangle,
+		basicShape,
+		minimum width = 7em,
+		rounded corners,
+		node distance = 10em,
+		draw
+	}
+}

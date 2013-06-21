@@ -1,0 +1,3 @@
+This directory contains common, shared items used for generating LaTeX documents
+within the Evaluation project. Examples include tweaks and refined definitions
+of LaTeX packages, bibliographies, glossaries, build settings, among others.
