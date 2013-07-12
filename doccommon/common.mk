@@ -14,6 +14,10 @@
 #	- LOCALINC: Relative path to 'doccommon'
 #	- .DEFAULT_GOAL: make goal that calls thedoc
 #
+#     - Optional defines:
+#	- COMMONTEX: .tex files (e.g. commonglossary) that the document will use
+#	- COMMONASSETS: Common figures or other non-tex items.
+#
 #     - Create a make goal that makes 'thedoc'
 #	.DEFAULT_GOAL := all
 #	- all:
@@ -23,7 +27,7 @@
 #	to $(LATEXMK)
 #
 # To add doxygen documentation:
-#     - Listthe source code to include in SOURCECODE make variable
+#     - List the source code to include in SOURCECODE make variable
 #
 #     - include doccommon/common.mk
 #
@@ -47,16 +51,9 @@ DOXYCONFIG = $(ROOTNAME).dox
 GENERATEDOXYGEN = $(shell test -f $(DOXYCONFIG) && echo YES || echo NO)
 
 #
-# Check if there's a glossary to be included
+# Check if there's a common glossary to be included
 #
-GLOSSARY = glossary.tex
-GENERATEGLOSSARY = $(shell test -f $(GLOSSARY) && echo YES || echo NO)
-
-# Assets directory (local and shared)
-ASSETS = assets
-
-# Common Images
-SOURCEIMAGES = $(LOCALINC)/$(ASSETS)/*
+GLOSSARY = commonglossary.tex
 
 # Common Bibliography
 COMMONBIB = $(LOCALINC)/common.bib
@@ -79,17 +76,23 @@ LATEXMAIN = $(ROOTNAME).tex
 PDFMAIN = $(ROOTNAME).pdf
 
 #
+# If the common glossary is wanted, we need to tell latexmk to use it
+# later on.
+#
+GENERATEGLOSSARY=$(if $(findstring $(GLOSSARY),$(COMMONTEX)),YES,NO)
+
+#
 # Check whether the main PDF file exists in the top-level doc directory, and
 # whether it's writable. If not present, we'll just create it; if present, and
 # not writable, error out. These checks accomodate having the main PDF file
 # kept under version control where the local write permission is controlled
 # by version control, e.g. Perforce.
 #
-PDFMAINPRESENT = $(shell test -f $(PDFMAIN) && echo yes)
-ifeq ($(PDFMAINPRESENT),yes)
-	PDFMAINWRITABLE = $(shell test -w $(PDFMAIN) && echo yes)
+PDFMAINPRESENT = $(shell test -f $(PDFMAIN) && echo YES)
+ifeq ($(PDFMAINPRESENT),YES)
+	PDFMAINWRITABLE = $(shell test -w $(PDFMAIN) && echo YES)
 else
-	PDFMAINWRITABLE = yes
+	PDFMAINWRITABLE = YES
 endif
 
 thedoc: build $(PDFMAIN)
@@ -108,21 +111,22 @@ ifneq ($(SOURCEBIB), $(LATEXBIB))
 	ln -s $(LATEXBIB) $(LATEXBUILDDIR)/$(SOURCEBIB)
 endif
 	cp -f $(SOURCETEX) $(LATEXBUILDDIR)
-# Copy any images into the build directory
-	cp -f $(SOURCEIMAGES) $(LATEXBUILDDIR)
+# Are any common TeX files included?
+ifdef COMMONTEX
+	cp -f $(COMMONTEX) $(LATEXBUILDDIR)
+endif
+# Copy any assets into the build directory
+ifdef COMMONASSETS
+	cp -f $(COMMONASSETS) $(LATEXBUILDDIR)
+endif
 # Add rule to generate glossary, if present
 ifeq ($(GENERATEGLOSSARY), YES)
-	cp -f $(GLOSSARY) $(LATEXBUILDDIR)
-	ln -s $(GLOSSARY) $(LATEXBUILDDIR)/$(basename $GLOSSARY).glo
+	ln -s $(LATEXBUILDDIR)/$(GLOSSARY) $(LATEXBUILDDIR)/$(basename $(GLOSSARY)).glo
 	cp $(LOCALINC)/latexmkrc $(LATEXBUILDDIR)
 endif
-# Copy local assets, if present
-	if [ -d $(ASSETS) ]; then					\
-		cp -r -f $(ASSETS)/* $(LATEXBUILDDIR);			\
-	fi
 
 $(PDFMAIN): $(LATEXBUILDDIR)/$(LATEXPDF)
-ifneq ($(PDFMAINWRITABLE),yes)
+ifneq ($(PDFMAINWRITABLE),YES)
 	$(error $(PDFMAIN) is not writable)
 else
 	cp -p $(LATEXBUILDDIR)/$(LATEXPDF) $(PDFMAIN)
