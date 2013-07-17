@@ -40,8 +40,14 @@
 #
 # Override executables
 #
-LATEXMK = $(shell which latexmk) -pdf -recorder
+# NOTE: Pass the -g option to latexmk to force a rebuild as the source file
+# changes are recognized by make using rules in this file, but for some reason
+# latexmk doesn't recognize the changes in its dependencies.
+#
+LATEXMK = $(shell which latexmk) -pdf -recorder -g
 DOXYGEN = $(shell which doxygen)
+CP = cp -pf
+LNS = ln -sf
 
 #
 # Check if doxygen generated documentation should be appended to this
@@ -95,41 +101,17 @@ else
 	PDFMAINWRITABLE = YES
 endif
 
-thedoc: build $(PDFMAIN)
+thedoc: $(PDFMAIN)
 # Error if main Makefile does not define a default goal
 ifeq ($(.DEFAULT_GOAL), )
 	$(error DEFAULT_GOAL is not set)
-endif
-
-build:
-# Make directory structure
-	mkdir -p $(LATEXBUILDDIR)
-	mkdir -p $(HTMLBUILDDIR)
-# Combined project-level bibliography files with the common references
-	cat $(SOURCEBIB) $(LOCALINC)/shared.bib > $(LATEXBUILDDIR)/$(LATEXBIB)
-ifneq ($(SOURCEBIB), $(LATEXBIB))
-	ln -s $(LATEXBIB) $(LATEXBUILDDIR)/$(SOURCEBIB)
-endif
-	cp -f $(SOURCETEX) $(LATEXBUILDDIR)
-# Are any common TeX files included?
-ifdef COMMONTEX
-	cp -f $(COMMONTEX) $(LATEXBUILDDIR)
-endif
-# Copy any assets into the build directory
-ifdef COMMONASSETS
-	cp -f $(COMMONASSETS) $(LATEXBUILDDIR)
-endif
-# Add rule to generate glossary, if present
-ifeq ($(GENERATEGLOSSARY), YES)
-	ln -s $(LATEXBUILDDIR)/$(GLOSSARY) $(LATEXBUILDDIR)/$(basename $(GLOSSARY)).glo
-	cp $(LOCALINC)/latexmkrc $(LATEXBUILDDIR)
 endif
 
 $(PDFMAIN): $(LATEXBUILDDIR)/$(LATEXPDF)
 ifneq ($(PDFMAINWRITABLE),YES)
 	$(error $(PDFMAIN) is not writable)
 else
-	cp -p $(LATEXBUILDDIR)/$(LATEXPDF) $(PDFMAIN)
+	$(CP) $(LATEXBUILDDIR)/$(LATEXPDF) $(PDFMAIN)
 endif
 
 # Build relies on doxygen config, if present
@@ -138,14 +120,36 @@ $(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCECODE) $(SOURCETEX) $(LATEXMAIN) $(DOXYCONF
 else
 $(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCECODE) $(SOURCETEX) $(LATEXMAIN)
 endif
+# Make directory structure
+	mkdir -p $(LATEXBUILDDIR)
+	mkdir -p $(HTMLBUILDDIR)
+# Combined project-level bibliography files with the common references
+	cat $(SOURCEBIB) $(LOCALINC)/shared.bib > $(LATEXBUILDDIR)/$(LATEXBIB)
+ifneq ($(SOURCEBIB), $(LATEXBIB))
+	$(LNS) $(LATEXBIB) $(LATEXBUILDDIR)/$(SOURCEBIB)
+endif
+	$(CP) $(SOURCETEX) $(LATEXBUILDDIR)
+# Are any common TeX files included?
+ifdef COMMONTEX
+	$(CP) $(COMMONTEX) $(LATEXBUILDDIR)
+endif
+# Copy any assets into the build directory
+ifdef COMMONASSETS
+	$(CP) $(COMMONASSETS) $(LATEXBUILDDIR)
+endif
+# Add rule to generate glossary, if present
+ifeq ($(GENERATEGLOSSARY), YES)
+	$(LNS) $(LATEXBUILDDIR)/$(GLOSSARY) $(LATEXBUILDDIR)/$(basename $(GLOSSARY)).glo
+	$(CP) $(LOCALINC)/latexmkrc $(LATEXBUILDDIR)
+endif
 	cd $(LATEXBUILDDIR) && $(LATEXMK) $(LATEXROOTNAME)
 
 %.dox: build
 # Rename main TeX file as refman for doxygen
-	cp $(ROOTNAME).tex $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
+	$(CP) $(ROOTNAME).tex $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
 	chmod +w $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
 	$(foreach texdoc, $(SOURCETEX), perl -pe 's|(\\.*?doxyref){(.*?)}({([1-9]*?)})?|`scripts/$$1 $$2 $$4`|ge' -i $(LATEXBUILDDIR)/$(texdoc);)
-	cp $@ $(LATEXBUILDDIR)
+	$(CP) $@ $(LATEXBUILDDIR)
 	$(DOXYGEN) $@
 
 clean:
