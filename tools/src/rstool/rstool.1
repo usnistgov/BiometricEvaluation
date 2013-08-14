@@ -1,5 +1,5 @@
 .\"
-.Dd March 30, 2011
+.Dd February 07, 2013
 .Dt RSTOOL 1
 .Os "Mac OS X"
 .Sh NAME
@@ -56,7 +56,7 @@ make
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
 .Op Fl o Ar dir
-.Op Fl t Ar rs_type
+.Op Fl t Ar rs_type Op Fl s Ar source_rs
 .Op Fl z
 .Op Fl Z Ar compressor
 .Op file/dir ...
@@ -393,6 +393,13 @@ The hash to unhash.
 The hash translation RecordStore.
 .El
 .El
+.Sh NOTES
+ListRecordStores can be managed by
+.Nm , but some arguments will be ignored, notably anything to do with compression.
+Adding and removing from a ListRecordStore only changes the ListRecordStore's 
+KeyList and
+.Nm not
+the backing RecordStore.
 .Sh EXAMPLES
 .Bl -tag -width
 .It Li rstool merge -s 3B -a templates/3B-00001 -a templates/3B-00002
@@ -447,11 +454,24 @@ and
 into a newly formed RecordStore named
 .Em azla .
 .Pp
+.\"
+.It Li rstool make -s smallSubsetRS -t list -s $PWD/humongousRS key1 key2 key3
+.Pp
+Create a new ListRecordStore named
+.Em smallSubsetRS
+with keys
+.Em key1 key2
+and
+.Em key3
+referenced from the RecordStore named
+.Em humongousRS .
+It's somewhat important to use an absolute path for the source RecordStore.
+.Pp
 .El
 .\"
 .\"
 .Sh VERSION
-This man page is current for version 1.2 of
+This man page is current for version 1.3 of
 .Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.

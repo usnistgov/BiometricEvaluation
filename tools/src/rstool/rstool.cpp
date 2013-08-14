@@ -8,10 +8,6 @@
  * about its quality, reliability, or any other characteristic.
  */
 
-/*
- * rstool - A tool for manipulating RecordStores.
- */
-
 #include <sys/stat.h>
 
 #include <algorithm>
@@ -42,83 +38,19 @@
 #include <be_text.h>
 #include <be_memory_autoarray.h>
 
-static string oflagval = ".";		/* Output directory */
-static string sflagval = "";		/* Path to main RecordStore */
-static const char optstr[] = "a:cfh:k:m:o:pr:s:t:zZ:";
+#include <lrs_additions.h>
+#include <rstool.h>
 
-/* Possible actions performed by this utility */
-static const string ADD_ARG = "add";
-static const string DISPLAY_ARG = "display";
-static const string DIFF_ARG = "diff";
-static const string DUMP_ARG = "dump";
-static const string LIST_ARG = "list";
-static const string MAKE_ARG = "make";
-static const string MERGE_ARG = "merge";
-static const string REMOVE_ARG = "remove";
-static const string VERSION_ARG = "version";
-static const string UNHASH_ARG = "unhash";
-namespace Action {
-	typedef enum {
-	    ADD,
-	    DISPLAY,
-	    DIFF,
-	    DUMP,
-	    LIST,
-	    MAKE,
-	    MERGE,
-	    REMOVE,
-	    VERSION,
-	    UNHASH, 
-	    QUIT
-	} Type;
-}
-
-/* Things that could be hashed when hashing a key */
-namespace HashablePart {
-	typedef enum {
-		FILECONTENTS,
-		FILENAME,
-		FILEPATH,
-		NOTHING
-	} Type;
-}
-
-/* What to print as value in a hash translation RecordStore */
-namespace KeyFormat {
-	typedef enum {
-		DEFAULT,
-		FILENAME,
-		FILEPATH
-	} Type;
-}
+uint16_t specialProcessingFlags = SpecialProcessing::NA;
 
 using namespace BiometricEvaluation;
 using namespace std;
 
-/**
- * @brief
- * Read the contents of a text file into a vector (one line per entry).
- *
- * @param[in] filePath
- *	Complete path of the text file to read from.
- * @param[in] ignoreComments
- *	Whether or not to ignore comment lines (lines beginning with '#')
- * @param[in] ignoreBlankLines
- *	Whether or not to add blank entries (lines beginning with '\n')
- *
- * @return
- *	Vector of the lines in the file
- *
- * @throw Error::FileError
- *	Error opening or reading from filePath.
- * @throw Error::ObjectDoesNotExist
- *	filePath does not exist.
- */
-static vector<string>
+vector<string>
 readTextFileToVector(
     const string &filePath,
-    bool ignoreComments = true,
-    bool ignoreBlankLines = true)
+    bool ignoreComments,
+    bool ignoreBlankLines)
     throw (Error::FileError,
     Error::ObjectDoesNotExist)
 {
@@ -163,29 +95,12 @@ readTextFileToVector(
 	return (rv);
 }
 
-/**
- * @brief
- * Prompt the user to answer a yes or no question.
- *
- * @param[in] prompt
- *	The yes or no question.
- * @param[in] default_answer
- *	Value that is the default answer if return is pressed but nothing
- *	typed.
- * @param[in] show_options
- *	Whether or not to show valid input values.
- * @param[in] allow_default_answer
- *	Whether or not to allow default answer.
- *
- * @return
- *	Answer to prompt (true if yes, false if no).
- */
-static bool
+bool
 yesOrNo(
     const string &prompt,
-    bool default_answer = true,
-    bool show_options = true,
-    bool allow_default_answer = true)
+    bool default_answer,
+    bool show_options,
+    bool allow_default_answer)
 {	
 	string input;
 	for (;;) {
@@ -217,14 +132,7 @@ yesOrNo(
 	}
 }
 
-/**
- * @brief
- * Display command-line usage for the tool.
- * 
- * @param[in] exe
- *	Name of executable.
- */
-static void usage(char *exe)
+void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
 	cerr << "Actions: add, display, dump, list, make, merge, remove, "
@@ -271,7 +179,7 @@ static void usage(char *exe)
 
 	cerr << "Make Options:" << endl;
 	cerr << "\t-a <text>\tText file with paths to files or directories "
-	    "to\n\t\t\tinitially add as reords (multiple)" << endl;
+	    "to\n\t\t\tinitially add as records (multiple)" << endl;
 	cerr << "\t-h <hash_rs>\tHash keys and save translation RecordStore" <<
 	    endl;
 	cerr << "\t-f\t\tForce insertion even if the same key already exists" <<
@@ -279,7 +187,9 @@ static void usage(char *exe)
 	cerr << "\t-k(fp)\t\tPrint 'f'ilename or file'p'ath of key as value " <<
 	    endl << "\t\t\tin hash translation RecordStore" << endl;
 	cerr << "\t-t <type>\tType of RecordStore to make" << endl;
-	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" << endl;
+	cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File, List, " <<
+	    "SQLite" << endl;
+	cerr << "\t-s <sourceRS>\tSource RecordStore, if -t is List" << endl;
 	cerr << "\t-z\t\tCompress records with default strategy\n" <<
 	"\t\t\t(same as -Z GZIP)" << endl;
 	cerr << "\t-Z <type>\tCompress records with <type> compression" <<
@@ -310,32 +220,11 @@ static void usage(char *exe)
 	cerr << endl;
 }
 
-/**
- * @brief 
- * Check access to core RecordStore files.
- *
- * @param[in] name
- *	RecordStore name
- * @param[in] parentDir
- *	Directory holding RecordStore.
- * @param[in] mode
- *	How attempting to open the RecordStore (IO::READONLY, IO::READWRITE)
- *
- * @return
- *	true if access to file exists, false otherwise.
- *
- * @note
- *	This function could return true if core RecordStore files do not
- *	exist.  See related functions for more information.
- *
- * @see BiometricEvaluation::IO::Utility::isReadable()
- * @see BiometricEvaluation::IO::Utility::isWritable()
- */
-static bool
+bool
 isRecordStoreAccessible(
     const string &name,
     const string &parentDir,
-    const uint8_t mode = IO::READWRITE)
+    const uint8_t mode)
 {
 	bool (*isAccessible)(const string&) = NULL;
 	switch (mode) {
@@ -358,17 +247,7 @@ isRecordStoreAccessible(
 	    isAccessible(path + '/' + name)));
 }
 
-/**
- * @brief
- * Validate a RecordStore type string.
- *
- * @param[in] type
- *	String (likely entered by user) to check for validity.
- *
- * @return
- *	RecordStore type string, if one can be identified, or "" on error.
- */
-static string validate_rs_type(const string &type)
+string validate_rs_type(const string &type)
 {
 	if (strcasecmp(type.c_str(), IO::RecordStore::FILETYPE.c_str()) == 0)
 		return (IO::RecordStore::FILETYPE);
@@ -381,23 +260,14 @@ static string validate_rs_type(const string &type)
 	else if (strcasecmp(type.c_str(),
 	    IO::RecordStore::SQLITETYPE.c_str()) == 0)
 		return (IO::RecordStore::SQLITETYPE);
+	else if (strcasecmp(type.c_str(),
+	    IO::RecordStore::LISTTYPE.c_str()) == 0)
+		return (IO::RecordStore::LISTTYPE);
 
 	return ("");
 }
 
-/**
- * @brief
- * Process command-line arguments for the tool.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	The Action the user has indicated on the command-line.
- */
-static Action::Type procargs(int argc, char *argv[])
+Action::Type procargs(int argc, char *argv[])
 {
 	if (argc == 1) {
 		usage(argv[0]);
@@ -448,7 +318,7 @@ static Action::Type procargs(int argc, char *argv[])
 			} else {
 				if (mkdir(oflagval.c_str(), S_IRWXU) != 0) {
 					cerr << "Could not create " <<
-					    oflagval << " - " << 
+					    oflagval << " - " <<
 					    Error::errorStr();
 					return (Action::QUIT);
 				}
@@ -467,37 +337,15 @@ static Action::Type procargs(int argc, char *argv[])
 		cerr << "Missing required option (-s)." << endl;
 		return (Action::QUIT);
 	}
+	
+	/* Special processing needed for ListRecordStores */
+	if (isListRecordStore(sflagval))
+		specialProcessingFlags |= SpecialProcessing::LISTRECORDSTORE;
 
 	return (action);
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the DISPLAY and DUMP Actions.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- * @param[in/out] key
- *	Reference to a string that will be populated with any value
- *	following the "key" flag on the command-line
- * @param[in/out] range
- *	Reference to a string that will be populated with any value
- *	following the "range" flag on the command-line
- * @param[in/out] rs
- *	Reference to a RecordStore shared pointer that will be allocated
- *	to hold the main RecordStore passed with the -s flag on the command-line
- * @param[in/out] hash_rs
- *	Reference to a RecordStore shared pointer that will be allocated
- *	to hold a hash translation RecordStore.  Instantiating this RecordStore
- *	lets the driver know that the user would like the unhashed key to be
- *	used when the extraction takes place.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
- */
-static int
+int
 procargs_extract(
     int argc,
     char *argv[],
@@ -569,20 +417,7 @@ procargs_extract(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Print a record to the screen.
- *
- * @param[in] key
- *	The name of the record to display.
- * @param[in] value
- *	The contents of the record to display.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 display(
     const string &key,
     Memory::AutoArray<uint8_t> &value)
@@ -595,20 +430,7 @@ display(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Write a record to disk.
- *
- * @param[in] key
- *	The name of the file to write.
- * @param[in] value
- *	The contents of the file to write.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 dump(
     const string &key,
     Memory::AutoArray<uint8_t> &value)
@@ -641,23 +463,8 @@ dump(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates the extraction of a single key or a range of records from a 
- * RecordStore
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- * @param[in] action
- *	The Action to be performed with the extracted data.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int extract(int argc, char *argv[], Action::Type action)
+
+int extract(int argc, char *argv[], Action::Type action)
 {
 	string key = "", range = "";
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
@@ -779,20 +586,7 @@ static int extract(int argc, char *argv[], Action::Type action)
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates the listing of the keys stored within a RecordStore.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int list(int argc, char *argv[])
+int listRecordStore(int argc, char *argv[])
 {
 	tr1::shared_ptr<IO::RecordStore> rs;
 	try {
@@ -825,44 +619,7 @@ static int list(int argc, char *argv[])
 	return (EXIT_SUCCESS);	/* Not reached */
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the MAKE Action.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- * @param[in/out] hash_filename
- *	Reference to a string to store a path to a hash translation RecordStore,
- *	indicating that the keys should be hashed
- * @param[in/out] what_to_hash
- *	Reference to a HashablePart enumeration that indicates what should be
- *	hashed when creating a hash for an entry.
- * @param[in/out] hashed_key_format
- *	Reference to a KeyFormat enumeration that indicates how the key (when
- *	printed as a value) should appear in a hash translation RecordStore.
- * @param[in/out] type
- *	Reference to a string that will represent the type of RecordStore to
- *	create.
- * @param[in/out] elements
- *	Reference to a vector that will hold paths to elements that should
- *	be added to the target RecordStore.  The paths may be to text
- *	files, whose contents are lines of paths that should be added, or
- *	directories, whose contents should be added.
- * @param[in/out] compress
- *	Whether or not to compress record contents.
- * @param[in/out] compressorKind
- *	The type of compression used to compress record contents.
- * @param[in] stopOnDuplicate
- *	Whether or not to stop when attempting to add a duplicate key into
- *	the data RecordStore.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 procargs_make(
     int argc,
     char *argv[],
@@ -1011,6 +768,12 @@ procargs_make(
 		cerr << "Specified hash method without -h." << endl;
 		return (EXIT_FAILURE);
 	}
+	
+	/* Sanity check -- don't compress and make a ListRecordStore */
+	if (compress && type == IO::RecordStore::LISTTYPE) {
+		cerr << "Can't compress ListRecordStore entries." << endl;
+		    return (EXIT_FAILURE);
+	}
 
 	/* Choose to hash filename by default */
 	if ((hash_filename.empty() == false) && (what_to_hash ==
@@ -1020,29 +783,7 @@ procargs_make(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Helper function to insert the contents of a file into a RecordStore.
- *
- * @param[in] filename
- *	The name of the file whose contents should be inserted into rs.
- * @param[in] rs
- *	The RecordStore into which the contents of filename should be inserted
- * @param[in] hash_rs
- *	The RecordStore into which hash translations should be stored
- * @param[in] what_to_hash
- *	What should be hashed when creating a hash for an entry.
- * @param[in] hashed_key_format
- *	How the key should be displayed in a hash translation RecordStore.
- * @param[in] stopOnDuplicate
- *	Whether or not to stop when attempting to add a duplicate key into
- *	the data RecordStore.
- *
- * @return
- *	An exit status, either EXIT_FAILURE or EXIT_SUCCESS, depending on if
- *	the contents of filename could be inserted.
- */
-static int make_insert_contents(const string &filename,
+int make_insert_contents(const string &filename,
     const tr1::shared_ptr<IO::RecordStore> &rs,
     const tr1::shared_ptr<IO::RecordStore> &hash_rs,
     const HashablePart::Type what_to_hash,
@@ -1129,7 +870,8 @@ static int make_insert_contents(const string &filename,
 			}
 
 			try {
-				hash_rs->insert(hash_value, key.c_str(), key.size());
+				hash_rs->insert(hash_value, key.c_str(),
+				    key.size());
 			} catch (Error::ObjectExists &e) {
 				if (stopOnDuplicate)
 					throw e;
@@ -1151,36 +893,7 @@ static int make_insert_contents(const string &filename,
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Recursive helper function to insert the contents of a directory into
- * a RecordStore.
- * 
- * @param[in] directory
- *	Path of the directory to search through
- * @param[in] prefix
- *	The parent directories of directory
- * @param[in] rs
- *	The RecordStore into which files should be inserted
- * @param[in] hash_rs
- *	The RecordStore into which hash translations should be stored
- * @param[in] what_to_hash
- *	What should be hashed when creating a hash for an entry.
- * @param[in] hashed_key_value
- *	How the key should be displayed in the hash translation RecordStore.
- * @param[in] stopOnDuplicate
- *	Whether or not to stop if a duplicate key is detected.
- *
- * @throws Error::ObjectDoesNotExist
- *	If the contents of the directory changes during the run
- * @throws Error::StrategyError
- *	Underlying problem in storage system
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 make_insert_directory_contents(
     const string &directory,
     const string &prefix,
@@ -1234,20 +947,95 @@ make_insert_directory_contents(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates creation of a RecordStore.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int make(int argc, char *argv[])
+int
+makeListRecordStore(
+    int argc,
+    char *argv[],
+    vector<string> &elements,
+    HashablePart::Type what_to_hash,
+    KeyFormat::Type hashed_key_format)
+{
+	string newRSName, existingRSPath;
+	tr1::shared_ptr<IO::RecordStore> targetRS;
+	
+	/*
+	 * Rescan for -s (rstool make -s <newRS> -s <existingRS>) and -h (must
+	 * exist).
+	 */
+	char c;
+	uint8_t rsCount = 0;
+	tr1::shared_ptr<IO::RecordStore> hash_rs;
+	optind = 2;
+        while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 'h':
+			try {
+				hash_rs = IO::RecordStore::openRecordStore(
+				    Text::filename(optarg),
+				    Text::dirname(optarg), IO::READONLY);
+			} catch (Error::Exception &e) {
+				cerr << "Could not open hash RecordStore, but "
+				    "it must exist when creating a hashed "
+				    "ListRecordStore." << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+ 		case 's':
+			switch (rsCount) {
+			case 0:
+				newRSName = optarg;
+				sflagval = newRSName;
+				rsCount++;
+				break;
+			case 1:
+				try {
+					targetRS =
+					    IO::RecordStore::openRecordStore(
+					    Text::filename(optarg),
+					    Text::dirname(optarg),
+					    IO::READONLY);
+				} catch (Error::Exception &e) {
+					if (isRecordStoreAccessible(
+					    Text::filename(optarg),
+					    Text::dirname(optarg),
+					    IO::READONLY))
+						cerr << "Could not open " <<
+						Text::filename(optarg) <<
+						" - " << e.getInfo() << endl;
+					else
+						cerr << optarg <<
+						    ": Permission denied." <<
+						    endl;
+					return (EXIT_FAILURE);
+				}
+				existingRSPath = optarg;
+				rsCount++;
+				break;
+			default:
+				cerr << "Too many -s options while making a "
+				    "ListRecordStore" << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		}
+	}
+	if (rsCount != 2) {
+		cerr << "Not enough -s options while making a "
+		    "ListRecordStore." << endl;
+		return (EXIT_FAILURE);
+	}
+	
+	try {
+		constructListRecordStore(newRSName, oflagval, existingRSPath);
+	} catch (Error::Exception &e) {
+		cerr << e.getInfo() << endl;
+		return (EXIT_FAILURE);
+	}
+	
+	return (modifyListRecordStore(argc, argv, Action::ADD));
+}
+
+int make(int argc, char *argv[])
 {
 	string hash_filename = "", type = "";
 	vector<string> elements;
@@ -1261,6 +1049,12 @@ static int make(int argc, char *argv[])
 	    hashed_key_format, type, elements, compress, compressorKind,
 	    stopOnDuplicate) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
+		
+	if (type == IO::RecordStore::LISTTYPE) {
+		specialProcessingFlags |= SpecialProcessing::LISTRECORDSTORE;
+		return (makeListRecordStore(argc, argv, elements, what_to_hash,
+		    hashed_key_format));
+	}
 
 	tr1::shared_ptr<IO::RecordStore> rs;
 	tr1::shared_ptr<IO::RecordStore> hash_rs;
@@ -1309,34 +1103,7 @@ static int make(int argc, char *argv[])
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the MERGE Action.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- * @param[in/out] type
- *	Reference to a string that will represent the type of RecordStore
- *	to create.
- * @param[in/out] child_rs
- * 	Reference to an vector of strings that will hold the paths to the 
- *	RecordStores that should be merged.
- * @param[in/out] hash_filename
- *	Reference to a string that will specify the name of the hash translation
- *	RecordStore, if one is desired.
- * @param[in/out] what_to_hash
- *	Reference to a HashablePart enumeration indicating what should be
- *	hashed when creating a hash for an entry.
- * @param[in/out] hashed_key_format
- *	Reference to a KeyFormat enumerating indicating how the key should be
- *	printed (as a value) in a hash translation RecordStore.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE.
- */
-static int
+int
 procargs_merge(
     int argc,
     char *argv[],
@@ -1434,34 +1201,7 @@ procargs_merge(
 	return (EXIT_SUCCESS);
 }
 
-/** 
- * Create a new RecordStore that contains the contents of several RecordStores,
- * hashing the keys of the child RecordStores before adding them to the merged.
- *  
- * @param[in] mergedName
- * 	The name of the new RecordStore that will be created.
- * @param[in] mergedDescription
- * 	The text used to describe the RecordStore.
- * @param[in] hashName
- *	The name of the new hash translation RecordStore that will be created.
- * @param[in] parentDir
- * 	Where, in the file system, the new store should be rooted.
- * @param[in] type
- * 	The type of RecordStore that mergedName should be.
- * @param[in] recordStores
- * 	An vector of string paths to RecordStore that should be merged into
- *	mergedName.
- * @param[in] what_to_hash
- *	What should be hashed when creating a hash for an entry.
- * @param[in] hashed_key_format
- *	How the key should be printed in a hash translation RecordStore
- *
- * @throws Error::ObjectExists
- * 	A RecordStore with mergedNamed in parentDir
- * @throws Error::StrategyError
- * 	An error occurred when using the underlying storage system
- */
-static void mergeAndHashRecordStores(
+void mergeAndHashRecordStores(
     const string &mergedName,
     const string &mergedDescription,
     const string &hashName,
@@ -1574,20 +1314,7 @@ static void mergeAndHashRecordStores(
 	}
 }
 
-/**
- * @brief
- * Facilitates the merging of multiple RecordStores.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int merge(int argc, char *argv[])
+int merge(int argc, char *argv[])
 {
 	HashablePart::Type what_to_hash = HashablePart::NOTHING;
 	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
@@ -1620,20 +1347,7 @@ static int merge(int argc, char *argv[])
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Display version information.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int version(int argc, char *argv[])
+int version(int argc, char *argv[])
 {
 	cout << argv[0] << " v" << MAJOR_VERSION << "." << MINOR_VERSION <<
 	    " (Compiled " << __DATE__ << " " << __TIME__ << ")" << endl;
@@ -1646,24 +1360,7 @@ static int version(int argc, char *argv[])
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the UNHASH Action.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- * @param[in/out] hash
- *	Reference to a string that will hold the hash to unhash
- * @param[in/out] hash_rs
- *	Reference to a shared pointer that will hold the open hashed RecordStore
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int procargs_unhash(int argc, char *argv[], string &hash,
+int procargs_unhash(int argc, char *argv[], string &hash,
     tr1::shared_ptr<IO::RecordStore> &rs)
 {
 	char c;
@@ -1697,21 +1394,7 @@ static int procargs_unhash(int argc, char *argv[], string &hash,
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates the unhashing of an MD5 hashed key from a RecordStore, given
- * a RecordStore of hash values.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int unhash(int argc, char *argv[])
+int unhash(int argc, char *argv[])
 {
 	string hash = "";
 	tr1::shared_ptr<IO::RecordStore> rs;
@@ -1731,38 +1414,7 @@ static int unhash(int argc, char *argv[])
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the ADD Action.
- *
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- * @param[in/out] rs
- *	Reference to a RecordStore shared pointer that will be allocated
- *	to hold the main RecordStore passed with the -s flag on the command-line
- * @param[in/out] hash_rs
- *	Reference to a hash translation RecordStore shared pointer that will
- *	be allocated to hold a hash translation of the file's contents.
- * @param[in/out] files
- *	Reference to a vector that will be populated with paths to files that
- *	should be added to rs.
- * @param[in/out] what_to_hash
- *	Reference to a HashablePart enumeration that indicates what should be
- *	hashed when creating a hash for an entry.
- * @param[in/out] hashed_key_format
- *	Reference to a KeyFormat enumeration that indicates how the key (when
- *	printed as a value) should appear in a hash translation RecordStore.
- * @param[in] stopOnDuplicate
- *	Whether or not to stop when attempting to add a duplicate key into
- *	the data RecordStore.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 procargs_add(
     int argc,
     char *argv[],
@@ -1887,20 +1539,199 @@ procargs_add(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates the addition of files to an existing RecordStore.
- * 
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
+procargs_modifyListRecordStore(
+    int argc,
+    char *argv[],
+    tr1::shared_ptr<IO::RecordStore> &hash_rs,
+    vector<string> &files,
+    HashablePart::Type &what_to_hash,
+    bool &prompt)
+{
+	what_to_hash = HashablePart::NOTHING;
+
+	char c;
+	optind = 2;
+	while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 'a':	/* File to add */
+			if (!IO::Utility::fileExists(optarg))
+				cerr << optarg << " does not exist and will "
+				    "be skipped." << endl;
+			else
+				files.push_back(optarg);
+			break;
+		case 'c':	/* Hash contents */
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILECONTENTS;
+			else {
+				cerr << "More than one hash method selected." <<
+				    endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'f':	/* Force */
+			prompt = false;
+			break;
+		case 'p':	/* Hash file path */
+			if (what_to_hash == HashablePart::NOTHING)
+				what_to_hash = HashablePart::FILEPATH;
+			else {
+				cerr << "More than one hash method selected." <<
+				    endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		case 'h':	/* Existing hash translation RecordStore */
+			try {
+				hash_rs = IO::RecordStore::openRecordStore(
+				    Text::filename(optarg),
+				    Text::dirname(optarg));
+			} catch (Error::Exception &e) {
+				if (isRecordStoreAccessible(
+				    Text::filename(optarg),
+				    Text::dirname(optarg)))
+					cerr << "Could not open " << optarg << 
+					    " -- " << e.getInfo() << endl;
+				else
+				    	cerr << optarg << ": Permission "
+					    "denied." << endl;
+				return (EXIT_FAILURE);
+			}
+			break;
+		}
+	}
+	/* Remaining arguments are files to add (same as -a) */
+	for (int i = optind; i < argc; i++)
+		files.push_back(argv[i]);
+
+	/* Sanity check -- don't hash without recording a translation */
+	if ((hash_rs.get() == NULL) && (what_to_hash !=
+	    HashablePart::NOTHING)) {
+		cerr << "Specified hash method without -h." << endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* Choose to hash filename by default */
+	if ((hash_rs.get() != NULL) && (what_to_hash == HashablePart::NOTHING))
+		what_to_hash = HashablePart::FILENAME;
+
+	/* Sanity check -- inserting into ListRecordStore */
+	if (specialProcessingFlags & SpecialProcessing::LISTRECORDSTORE)
+		if (!yesOrNo("You are about to modify a ListRecordStore, "
+		    "which means that you are only\nmodifying keys in the "
+		    "KeyList, not values in the backing RecordStore.\n"
+		    "Is this correct?", false))
+			return (EXIT_FAILURE);
+			
+	return (EXIT_SUCCESS);
+}
+
+int
+modifyListRecordStore(
+    int argc,
+    char *argv[],
+    Action::Type action)
+{
+	HashablePart::Type what_to_hash = HashablePart::NOTHING;
+	KeyFormat::Type hashed_key_format = KeyFormat::DEFAULT;
+	tr1::shared_ptr<IO::RecordStore> hash_rs;
+	vector<string> files;
+	bool prompt = true;
+	
+	if (procargs_modifyListRecordStore(argc, argv, hash_rs, files,
+	    what_to_hash, prompt) != EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+	
+	tr1::shared_ptr< OrderedSet<string> > keys(
+	    new OrderedSet<string>);
+	Memory::uint8Array buffer;
+	string hash, invalidHashKeys = "";
+	for (vector<string>::const_iterator file_path = files.begin();
+	    file_path != files.end(); file_path++) {
+		switch (what_to_hash) {
+		case HashablePart::FILECONTENTS:
+			try {
+				buffer = IO::Utility::readFile(*file_path);
+			} catch (Error::Exception &e) {
+				cerr << e.getInfo() << endl;
+				return (EXIT_FAILURE);
+			}
+			hash = Text::digest(buffer, buffer.size());
+			break;
+		case HashablePart::FILENAME:
+			hash = Text::digest(Text::filename(*file_path));
+			break;
+		case HashablePart::FILEPATH:
+			hash = Text::digest(*file_path);
+			break;
+		case HashablePart::NOTHING:
+			hash = Text::filename(*file_path);
+			break;
+		}
+		
+		/* Sanity check -- the hash value we're modifying must exist */
+		if (what_to_hash != HashablePart::NOTHING) {
+			if (hash_rs->containsKey(hash)) {
+				switch (action) {
+				case Action::REMOVE:
+					if (prompt) {
+						if (yesOrNo("Remove \"" + hash +
+						    "\"?"))
+							keys->push_back(hash);
+					} else
+						keys->push_back(hash);
+					break;
+				default:
+					keys->push_back(hash);
+					break;
+				}
+			} else
+				invalidHashKeys += " * " + *file_path + '\n';
+		} else {
+			switch (action) {
+			case Action::REMOVE:
+				if (prompt) {
+					if (yesOrNo("Remove \"" + hash + "\"?"))
+						keys->push_back(hash);
+				} else
+					keys->push_back(hash);
+				break;
+			default:
+				keys->push_back(hash);
+				break;
+			}
+		}
+	}
+	
+	try {
+		switch (action) {
+		case Action::ADD:
+			insertKeysIntoListRecordStore(sflagval, keys);
+			break;
+		case Action::REMOVE:
+			removeKeysFromListRecordStore(sflagval, keys);
+			break;
+		default:
+			throw Error::StrategyError("Internal inconsistency -- "
+			    "can't perform this action on ListRecordStore");
+		}
+	} catch (Error::Exception &e) {
+		cerr << e.getInfo() << endl;
+		return (EXIT_FAILURE);
+	}
+	
+	if (invalidHashKeys.empty() == false) {
+		cerr << "The following keys were not added because their hash "
+		    "translation does not\nexist in the hash translation "
+		    "RecordStore: " << '\n' << invalidHashKeys << endl;
+		    return (EXIT_FAILURE);
+	}
+	
+	return (EXIT_SUCCESS);
+}
+
+int
 add(
     int argc,
     char *argv[])
@@ -1910,7 +1741,7 @@ add(
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
 	vector<string> files;
 	bool stopOnDuplicate = true;
-	
+
 	if (procargs_add(argc, argv, rs, hash_rs, files, what_to_hash,
 	    hashed_key_format, stopOnDuplicate) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
@@ -1937,26 +1768,7 @@ add(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the REMOVE Action.
- *
- * @param[in] argc
- *	argc from main().
- * @param[in] argv
- *	argv from main().
- * @param[in/out] keys
- *	Reference to a vector that will hold the keys to remove.
- * @param[in/out] force_removal
- *	Reference to a boolean that when true will not prompt before removal.
- * @param[in/out] rs
- *	Reference to a shared pointer that will hold the open RecordStore.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 procargs_remove(
     int argc,
     char *argv[],
@@ -1998,20 +1810,34 @@ procargs_remove(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates the removal of key/value pairs from an existing RecordStore.
- * 
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
+removeFromListRecordStore(
+    int argc,
+    char *argv[])
+{
+	bool force_removal = false;
+	int status = EXIT_SUCCESS;
+	tr1::shared_ptr<IO::RecordStore> rs;
+	vector<string> keys;
+	tr1::shared_ptr< OrderedSet<string> > approvedKeys(
+	    new OrderedSet<string>());
+	
+	if (procargs_remove(argc, argv, keys, force_removal, rs) != 
+	    EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+		
+	for (vector<string>::const_iterator key = keys.begin();
+	    key != keys.end(); key++)
+		if ((force_removal == false && yesOrNo("Remove " + *key + "?",
+		    false)) || force_removal == true)
+			approvedKeys->push_back(*key);
+			
+	removeKeysFromListRecordStore(sflagval, approvedKeys);
+	
+	return (status);
+}
+
+int
 remove(
     int argc,
     char *argv[])
@@ -2020,10 +1846,11 @@ remove(
 	int status = EXIT_SUCCESS;
 	tr1::shared_ptr<IO::RecordStore> rs;
 	vector<string> keys;
-	if (procargs_remove(argc, argv, keys, force_removal, rs) != 
+		
+	if (procargs_remove(argc, argv, keys, force_removal, rs) !=
 	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
-
+		
 	for (vector<string>::const_iterator key = keys.begin();
 	    key != keys.end(); key++) {
 		if ((force_removal == false && yesOrNo("Remove " + *key + "?",
@@ -2041,31 +1868,7 @@ remove(
 	return (status);
 }
 
-/**
- * @brief
- * Process command-line arguments specific to the DIFF Action.
- *
- * @param[in] argc
- *	argc from main().
- * @param[in] argv
- *	argv from main().
- * @param[in/out] sourceRS
- *	Reference to a shared pointer that will hold the open
- *	source-RecordStore.
- * @param[in/out] targetRS
- *	Reference to a shared pointer that will hold the open 
- *	target-RecordStore.
- * @param[in/out] keys
- *	Reference to a vector that will hold the keys to compare.
- * @param[in/out] byte_for_byte
- *	Reference to a boolean that, when true, will perform the difference by
- *	comparing buffers byte-for-byte instead of using an MD5 checksum.
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 procargs_diff(
     int argc,
     char *argv[],
@@ -2142,20 +1945,7 @@ procargs_diff(
 	return (EXIT_SUCCESS);
 }
 
-/**
- * @brief
- * Facilitates a diff between two RecordStores.
- * 
- * @param[in] argc
- *	argc from main()
- * @param[in] argv
- *	argv from main()
- *
- * @return
- *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
- *	returned from main().
- */
-static int
+int
 diff(
     int argc,
     char *argv[])
@@ -2289,6 +2079,8 @@ int main(int argc, char *argv[])
 	Action::Type action = procargs(argc, argv);
 	switch (action) {
 	case Action::ADD:
+		if (specialProcessingFlags & SpecialProcessing::LISTRECORDSTORE)
+			return (modifyListRecordStore(argc, argv, action));
 		return (add(argc, argv));
 	case Action::DIFF:
 		return (diff(argc, argv));
@@ -2297,12 +2089,14 @@ int main(int argc, char *argv[])
 	case Action::DUMP:
 		return (extract(argc, argv, action));
 	case Action::LIST:
-		return (list(argc, argv));
+		return (listRecordStore(argc, argv));
 	case Action::MAKE:
 		return (make(argc, argv));
 	case Action::MERGE:
 		return (merge(argc, argv));
 	case Action::REMOVE:
+		if (specialProcessingFlags & SpecialProcessing::LISTRECORDSTORE)
+			return (modifyListRecordStore(argc, argv, action));
 		return (remove(argc, argv));
 	case Action::VERSION:
 		return (version(argc, argv));

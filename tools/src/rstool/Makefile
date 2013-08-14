@@ -13,17 +13,19 @@
 # rstool versioning
 # 
 MAJOR_VERSION=1
-MINOR_VERSION=2
+MINOR_VERSION=3
 #
 include ../common.mk
 LOCALMAN = ../../man
 #
 LIB = -lbiomeval
 #
-SOURCES = rstool.cpp
+SOURCES = lrs_additions.cpp rstool.cpp
 OBJECTS = $(SOURCES:%.cpp=%.o)
 #
 PROGRAM = rstool
+
+CXXFLAGS += -I.
 
 all: $(PROGRAM)
 
@@ -36,7 +38,7 @@ $(PROGRAM): $(OBJECTS)
 	$(CP) $@ $(LOCALBIN)/$@
 	$(CP) $@.1 $(LOCALMAN)
 
-rstool.o: rstool.cpp
+rstool.o: rstool.cpp lrs_additions.cpp
 	$(CXX) $(CXXFLAGS) -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) -c $< -o $@
 
 clean:
