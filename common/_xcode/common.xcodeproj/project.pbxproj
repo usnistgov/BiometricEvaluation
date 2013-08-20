@@ -743,28 +743,34 @@
 		08CFC4611545DF2B00BA89B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
+				EXTRA_CFLAGS = "";
+				EXTRA_CXXFLAGS = "";
+				EXTRA_LDFLAGS = "";
+				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4 $(EXTRA_CFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_LDFLAGS)";
 			};
 			name = Debug;
 		};
 		08CFC4621545DF2B00BA89B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
+				EXTRA_CFLAGS = "";
+				EXTRA_CXXFLAGS = "";
+				EXTRA_LDFLAGS = "";
+				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4 $(EXTRA_CFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_LDFLAGS)";
 			};
 			name = Release;
 		};
 		08CFC4741545DFCF00BA89B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
+				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4";
 			};
 			name = Debug;
 		};
 		08CFC4751545DFCF00BA89B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
+				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4";
 			};
 			name = Release;
 		};
