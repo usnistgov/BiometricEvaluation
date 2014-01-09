@@ -32,7 +32,7 @@
 #     - include doccommon/common.mk
 #
 #     - If doxygen is to be run and the doxygen configuration file is not 
-#	$(ROOTNAME).tex, define DOXYCONFIG and set GENERATEDOXYGEN to YES
+#	$(ROOTNAME).dox, define DOXYCONFIG and set GENERATEDOXYGEN to YES
 #
 # Good luck.
 #
@@ -142,15 +142,16 @@ ifeq ($(GENERATEGLOSSARY), YES)
 	$(LNS) $(LATEXBUILDDIR)/$(GLOSSARY) $(LATEXBUILDDIR)/$(basename $(GLOSSARY)).glo
 	$(CP) $(LOCALINC)/latexmkrc $(LATEXBUILDDIR)
 endif
-	cd $(LATEXBUILDDIR) && $(LATEXMK) $(LATEXROOTNAME)
-
-%.dox: build
+ifeq ($(GENERATEDOXYGEN), YES)
 # Rename main TeX file as refman for doxygen
 	$(CP) $(ROOTNAME).tex $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
 	chmod +w $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
 	$(foreach texdoc, $(SOURCETEX), perl -pe 's|(\\.*?doxyref){(.*?)}({([1-9]*?)})?|`scripts/$$1 $$2 $$4`|ge' -i $(LATEXBUILDDIR)/$(texdoc);)
-	$(CP) $@ $(LATEXBUILDDIR)
-	$(DOXYGEN) $@
+	$(CP) $(DOXYCONFIG) $(LATEXBUILDDIR)
+	$(DOXYGEN) $(DOXYCONFIG)
+endif
+	cd $(LATEXBUILDDIR) && $(LATEXMK) $(LATEXROOTNAME)
+
 
 clean:
 ifeq ($(shell test -f $(LATEXBUILDDIR) && echo "YES" || echo "NO"), YES)
