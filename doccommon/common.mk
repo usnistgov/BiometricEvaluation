@@ -8,8 +8,12 @@
 
 #
 # To create a Makefile for a LaTeX document:
+#
+#     - include doccommon/common.mk
+#
 #     - Define the following make variables:
-#	- ROOTNAME: Name of the document
+#	- ROOTNAME: The document 'core' files (main .tex, .bib, etc.)
+#	- WRAPPER: File that wraps ROOTNAME.tex
 #	- SOURCETEX: TeX files that comprise the document
 #	- LOCALINC: Relative path to 'doccommon'
 #	- .DEFAULT_GOAL: make goal that calls thedoc
@@ -23,13 +27,7 @@
 #	- all:
 #		$(MAKE) thedoc
 #
-#     - If arguments to pdflatex are needed, append "-pdflatex="pdflatex <args>"
-#	to $(LATEXMK)
-#
 # To add doxygen documentation:
-#     - List the source code to include in SOURCECODE make variable
-#
-#     - include doccommon/common.mk
 #
 #     - If doxygen is to be run and the doxygen configuration file is not 
 #	$(ROOTNAME).dox, define DOXYCONFIG and set GENERATEDOXYGEN to YES
@@ -40,11 +38,9 @@
 #
 # Override executables
 #
-# NOTE: Pass the -g option to latexmk to force a rebuild as the source file
-# changes are recognized by make using rules in this file, but for some reason
-# latexmk doesn't recognize the changes in its dependencies.
 #
-LATEXMK = $(shell which latexmk) -pdf -recorder -g
+LATEX = $(shell which pdflatex)
+MAKEINDEX = $(shell which makeindex)
 DOXYGEN = $(shell which doxygen)
 CP = cp -pf
 LNS = ln -sf
@@ -66,20 +62,19 @@ COMMONBIB = $(LOCALINC)/common.bib
 SOURCEBIB = $(ROOTNAME).bib
 
 #
+# The PDF file to be dropped in the top directory.
+#
+PDFMAIN = $(WRAPPER).pdf
+#
 # Setup the build directory structure, working around the doxygen defaults.
 #
+LATEXROOTNAME = $(ROOTNAME)-TMP
 BUILDDIR = build
 LATEXBUILDDIR = $(BUILDDIR)/latex
 HTMLBUILDDIR = $(BUILDDIR)/html
-ifeq ($(GENERATEDOXYGEN), YES)
-LATEXROOTNAME = refman
-else
-LATEXROOTNAME = $(ROOTNAME)
-endif
 LATEXPDF = $(LATEXROOTNAME).pdf
 LATEXBIB = $(LATEXROOTNAME).bib
-LATEXMAIN = $(ROOTNAME).tex
-PDFMAIN = $(ROOTNAME).pdf
+LATEXMAIN = $(LATEXROOTNAME).tex
 
 #
 # If the common glossary is wanted, we need to tell latexmk to use it
@@ -116,9 +111,9 @@ endif
 
 # Build relies on doxygen config, if present
 ifeq ($(GENERATEDOXYGEN), YES)
-$(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCECODE) $(SOURCETEX) $(LATEXMAIN) $(DOXYCONFIG)
+$(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCETEX) $(ROOTNAME).tex $(WRAPPER).tex $(DOXYCONFIG)
 else
-$(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCECODE) $(SOURCETEX) $(LATEXMAIN)
+$(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCETEX) $(ROOTNAME).tex $(WRAPPER).tex
 endif
 # Make directory structure
 	mkdir -p $(LATEXBUILDDIR)
@@ -142,19 +137,27 @@ ifeq ($(GENERATEGLOSSARY), YES)
 	$(LNS) $(LATEXBUILDDIR)/$(GLOSSARY) $(LATEXBUILDDIR)/$(basename $(GLOSSARY)).glo
 	$(CP) $(LOCALINC)/latexmkrc $(LATEXBUILDDIR)
 endif
+	$(CP) $(WRAPPER).tex $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
 ifeq ($(GENERATEDOXYGEN), YES)
-# Rename main TeX file as refman for doxygen
-	$(CP) $(ROOTNAME).tex $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
-	chmod +w $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
+	chmod +w $(LATEXBUILDDIR)/$(ROOTNAME).tex
 	$(foreach texdoc, $(SOURCETEX), perl -pe 's|(\\.*?doxyref){(.*?)}({([1-9]*?)})?|`scripts/$$1 $$2 $$4`|ge' -i $(LATEXBUILDDIR)/$(texdoc);)
 	$(CP) $(DOXYCONFIG) $(LATEXBUILDDIR)
 	$(DOXYGEN) $(DOXYCONFIG)
 endif
-	cd $(LATEXBUILDDIR) && $(LATEXMK) $(LATEXROOTNAME)
 
+#
+# This build logic is borrowed from the Doxygen-generated Makefile
+#
+	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
+	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(LATEXROOTNAME)
+	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
+	while egrep -s 'Rerun (LaTeX to get cross-references right)' $(LATEXROOTNAME).log && [ $$latex_count -gt 0 ] ;\
+	    do \
+		echo "Rerunning latex...." ;\
+		latex_count=`expr $$latex_count - 1` ;\
+	    done
+	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(LATEXROOTNAME)
+	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
 
 clean:
-ifeq ($(shell test -f $(LATEXBUILDDIR) && echo "YES" || echo "NO"), YES)
-	cd $(LATEXBUILDDIR) && $(LATEXMK) -c $(LATEXROOTNAME).tex
-endif
 	$(RM) -r $(BUILDDIR)
