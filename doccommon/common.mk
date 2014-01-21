@@ -41,6 +41,7 @@
 #
 LATEX = $(shell which pdflatex)
 MAKEINDEX = $(shell which makeindex)
+MAKEBIB = $(shell which bibtex)
 DOXYGEN = $(shell which doxygen)
 CP = cp -pf
 LNS = ln -sf
@@ -65,10 +66,12 @@ SOURCEBIB = $(ROOTNAME).bib
 # The PDF file to be dropped in the top directory.
 #
 PDFMAIN = $(WRAPPER).pdf
+
 #
-# Setup the build directory structure, working around the doxygen defaults.
+# Setup the build directory structure and file names that will be used
+# in that directory.
 #
-LATEXROOTNAME = $(ROOTNAME)-TMP
+LATEXROOTNAME = $(WRAPPER)
 BUILDDIR = build
 LATEXBUILDDIR = $(BUILDDIR)/latex
 HTMLBUILDDIR = $(BUILDDIR)/html
@@ -77,8 +80,7 @@ LATEXBIB = $(LATEXROOTNAME).bib
 LATEXMAIN = $(LATEXROOTNAME).tex
 
 #
-# If the common glossary is wanted, we need to tell latexmk to use it
-# later on.
+# If the common glossary is wanted, we need to tell later on.
 #
 GENERATEGLOSSARY=$(if $(findstring $(GLOSSARY),$(COMMONTEX)),YES,NO)
 
@@ -102,6 +104,10 @@ ifeq ($(.DEFAULT_GOAL), )
 	$(error DEFAULT_GOAL is not set)
 endif
 
+#
+# Check whether the final PDF file is writable; the build will still
+# occur if not, however.
+#
 $(PDFMAIN): $(LATEXBUILDDIR)/$(LATEXPDF)
 ifneq ($(PDFMAINWRITABLE),YES)
 	$(error $(PDFMAIN) is not writable)
@@ -109,54 +115,66 @@ else
 	$(CP) $(LATEXBUILDDIR)/$(LATEXPDF) $(PDFMAIN)
 endif
 
+#
 # Build relies on doxygen config, if present
+#
 ifeq ($(GENERATEDOXYGEN), YES)
 $(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCETEX) $(ROOTNAME).tex $(WRAPPER).tex $(DOXYCONFIG)
 else
 $(LATEXBUILDDIR)/$(LATEXPDF): $(SOURCETEX) $(ROOTNAME).tex $(WRAPPER).tex
 endif
+#
 # Make directory structure
+#
 	mkdir -p $(LATEXBUILDDIR)
 	mkdir -p $(HTMLBUILDDIR)
-# Combined project-level bibliography files with the common references
+#
+# Combine project-level bibliography files with the common references
+#
 	cat $(SOURCEBIB) $(LOCALINC)/shared.bib > $(LATEXBUILDDIR)/$(LATEXBIB)
 ifneq ($(SOURCEBIB), $(LATEXBIB))
 	$(LNS) $(LATEXBIB) $(LATEXBUILDDIR)/$(SOURCEBIB)
 endif
 	$(CP) $(SOURCETEX) $(LATEXBUILDDIR)
+#
 # Are any common TeX files included?
+#
 ifdef COMMONTEX
 	$(CP) $(COMMONTEX) $(LATEXBUILDDIR)
 endif
+#
 # Copy any assets into the build directory
+#
 ifdef COMMONASSETS
 	$(CP) $(COMMONASSETS) $(LATEXBUILDDIR)
 endif
+#
 # Add rule to generate glossary, if present
+#
 ifeq ($(GENERATEGLOSSARY), YES)
 	$(LNS) $(LATEXBUILDDIR)/$(GLOSSARY) $(LATEXBUILDDIR)/$(basename $(GLOSSARY)).glo
 	$(CP) $(LOCALINC)/latexmkrc $(LATEXBUILDDIR)
 endif
 	$(CP) $(WRAPPER).tex $(LATEXBUILDDIR)/$(LATEXROOTNAME).tex
+#
+# When generating Doxygen content, we need to first modify the source LaTeX
+# files to have linked references to doxygen content. The run Doxygen to
+# create the class and other documents.
+#
 ifeq ($(GENERATEDOXYGEN), YES)
-	chmod +w $(LATEXBUILDDIR)/$(ROOTNAME).tex
+	chmod +w $(LATEXBUILDDIR)/*.tex
 	$(foreach texdoc, $(SOURCETEX), perl -pe 's|(\\.*?doxyref){(.*?)}({([1-9]*?)})?|`scripts/$$1 $$2 $$4`|ge' -i $(LATEXBUILDDIR)/$(texdoc);)
 	$(CP) $(DOXYCONFIG) $(LATEXBUILDDIR)
 	$(DOXYGEN) $(DOXYCONFIG)
 endif
 
 #
-# This build logic is borrowed from the Doxygen-generated Makefile
+# Build the document, including index, bibliography.
 #
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
 	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(LATEXROOTNAME)
+	cd $(LATEXBUILDDIR) && $(MAKEBIB) $(LATEXROOTNAME)
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
-	while egrep -s 'Rerun (LaTeX to get cross-references right)' $(LATEXROOTNAME).log && [ $$latex_count -gt 0 ] ;\
-	    do \
-		echo "Rerunning latex...." ;\
-		latex_count=`expr $$latex_count - 1` ;\
-	    done
-	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(LATEXROOTNAME)
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
 
 clean:
