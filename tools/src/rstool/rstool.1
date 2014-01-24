@@ -1,5 +1,5 @@
 .\"
-.Dd February 07, 2013
+.Dd January 23, 2014
 .Dt RSTOOL 1
 .Os "Mac OS X"
 .Sh NAME
@@ -37,6 +37,7 @@ display/dump
 .Op Fl k Ar key | Fl r Ar #-#
 .Op Fl h Ar hash_rs
 .Op Fl o Ar dir
+.Op Fl f
 .Pp
 .\"
 .Nm
@@ -59,6 +60,7 @@ make
 .Op Fl t Ar rs_type Op Fl s Ar source_rs
 .Op Fl z
 .Op Fl Z Ar compressor
+.Op Fl q
 .Op file/dir ...
 .Pp
 \#
@@ -212,6 +214,10 @@ The RecordStore from which to dump
 .Fa key
 or
 .Fa #-# .
+.It Cm -f
+Visualize data. If the data is a supported image format, 
+it will be displayed. If it is an ANSI/NIST file, supported
+image captures will be displayed.
 .El
 \#
 .It Cm list
@@ -279,6 +285,8 @@ instead of the name to form the hash.  This will set
 by default if no other
 .Cm -k
 option is specified.
+.It Cm -q
+Don't show confirmation verbiage ("quiet").
 .It Cm -s Fa new_rs
 The RecordStore that will be created.
 .It Cm -t Fa type
@@ -290,6 +298,11 @@ RecordStore, where type is:
 .It Fa BerkeleyDB
 (default)
 .It Fa File
+.It Fa List
+(see 
+.Cm NOTES
+below)
+.It Fa SQLite
 .El
 .It Cm -z
 Compress records using the default strategy.
@@ -356,6 +369,7 @@ RecordStore, where type is:
 .It Fa BerkeleyDB
 (default)
 .It Fa File
+.It Fa SQLite
 .El
 .It Fa RS ...
 Additional RecordStores to merge into
@@ -399,7 +413,9 @@ ListRecordStores can be managed by
 Adding and removing from a ListRecordStore only changes the ListRecordStore's 
 KeyList and
 .Nm not
-the backing RecordStore.
+the backing RecordStore.  See
+.Cm EXAMPLES
+for more information.
 .Sh EXAMPLES
 .Bl -tag -width
 .It Li rstool merge -s 3B -a templates/3B-00001 -a templates/3B-00002
@@ -471,7 +487,8 @@ It's somewhat important to use an absolute path for the source RecordStore.
 .\"
 .\"
 .Sh VERSION
-This man page is current for version 1.3 of
+This man page is current for version 1.4 of
 .Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.
+

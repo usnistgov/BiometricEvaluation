@@ -49,7 +49,7 @@
 
 static string oflagval = ".";		/* Output directory */
 static string sflagval = "";		/* Path to main RecordStore */
-static const char optstr[] = "a:cfh:k:m:o:pr:s:t:zZ:";
+static const char optstr[] = "a:cfh:k:m:o:pqr:s:t:zZ:";
 
 /* Possible actions performed by this utility */
 static const string ADD_ARG = "add";
@@ -233,6 +233,9 @@ procargs(
  *	argc from main()
  * @param[in] argv
  *	argv from main()
+ * @param[in/out] visualize
+ *	Reference to a boolean indicating if we should try to visually 
+ *	display an image ("DISPLAY" only).
  * @param[in/out] key
  *	Reference to a string that will be populated with any value
  *	following the "key" flag on the command-line
@@ -255,6 +258,7 @@ int
 procargs_extract(
     int argc,
     char *argv[],
+    bool &visualize,
     string &key,
     string &range,
     tr1::shared_ptr<IO::RecordStore> &rs,
@@ -277,6 +281,27 @@ int
 display(
     const string &key,
     Memory::AutoArray<uint8_t> &value);
+
+/**
+ * @brief
+ * Visualize a record by displaying on the screen.
+ *
+ * @param[in] key
+ *	The name of the record to visualize.
+ * @param[in] value
+ *	The contents of the record to visualize.
+ *
+ * @return
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ *
+ * @note
+ *	This function calls others that will fork().
+ */
+int
+visualizeRecord(
+    const std::string &key,
+    BiometricEvaluation::Memory::uint8Array &value);
 
 /**
  * @brief
@@ -858,6 +883,50 @@ procargs_diff(
 
 /**
  * @brief
+ * Explain in English what's happening with the complicated "make" options.
+ *
+ * @param[in] argc
+ *      argc from main().
+ * @param[in] argv
+ *      argv from main().
+ * @param[in] kind
+ *      Type of RecordStore being created
+ * @param[in] what_to_hash
+ *      What to hash for keys (name, contents, etc)
+ * @param[in] hashed_key_format
+ *      Values inserted into the hashed translation RecordStore
+ * @param[in] hash_filename
+ *      Name of the hash translation RecordStore
+ * @param[in] textProvided
+ *      Whether or not a text file of paths was provided
+ * @param[in] dirProvided
+ *      Whether or not a directory of files was provided
+ * @param[in] otherProvided
+ *      Whether or not individual foles were provided
+ * @param[in] compress
+ *      Whether or not this is a compressed RecordStore
+ * @param[in] compressorKind
+ *      The kind of compression used.
+ * @param[in] stopOnDuplicate
+ *      Whether or not to stop on duplicate keys.
+ */
+int
+makeHumanConfirmation(
+    int argc,
+    char *argv[],
+    const std::string &kind,
+    HashablePart::Type what_to_hash,
+    KeyFormat::Type hashed_key_format,
+    const std::string &hash_filename,
+    bool textProvided,
+    bool dirProvided,
+    bool otherProvided,
+    bool compress,
+    BiometricEvaluation::IO::Compressor::Kind compressorKind,
+    bool stopOnDuplicate);
+
+/**
+ * @brief
  * Facilitates a diff between two RecordStores.
  * 
  * @param[in] argc
@@ -875,3 +944,4 @@ diff(
     char *argv[]);
 
 #endif /* __RSTOOL_H__ */
+

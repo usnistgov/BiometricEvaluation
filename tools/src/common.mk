@@ -14,3 +14,4 @@ LOCALLIB := ../../lib -L../../../common/lib
 LOCALBIN := ../../bin
 LOCALMAN := ../../man
 include ../../common.mk
+LD_BIOMEVAL := -L../../../common/lib -lbiomeval

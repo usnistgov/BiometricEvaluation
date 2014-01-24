@@ -38,6 +38,7 @@
 #include <be_text.h>
 #include <be_memory_autoarray.h>
 
+#include <image_additions.h>
 #include <lrs_additions.h>
 #include <rstool.h>
 
@@ -132,6 +133,7 @@ yesOrNo(
 	}
 }
 
+
 void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
@@ -174,6 +176,7 @@ void usage(char *exe)
 	    endl;
 	cerr << "\t-k <key>\tKey to dump" << endl;
 	cerr << "\t-r <#-#>\tRange of keys" << endl;
+	cerr << "\t-f\t\tVisualize image or AN2K record" << endl;
 
 	cerr << endl;
 
@@ -195,6 +198,7 @@ void usage(char *exe)
 	cerr << "\t-Z <type>\tCompress records with <type> compression" <<
 	    "\n\t\t\tWhere type is GZIP" << endl;
 	cerr << "\t<file> ...\tFiles/dirs to add as a record" << endl;
+	cerr << "\t-q\t\tSkip the confirmation step" << endl;
 
 	cerr << endl;
 
@@ -349,6 +353,7 @@ int
 procargs_extract(
     int argc,
     char *argv[],
+    bool &visualize,
     string &key,
     string &range,
     tr1::shared_ptr<IO::RecordStore> &rs,
@@ -357,6 +362,9 @@ procargs_extract(
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
+		case 'f':	/* Visualize */
+			visualize = true;
+			break;
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
 				hash_rs = IO::RecordStore::openRecordStore(
@@ -431,6 +439,48 @@ display(
 }
 
 int
+visualizeRecord(
+    const std::string &key,
+    BiometricEvaluation::Memory::uint8Array &value)
+{
+	/* 
+	 * We can visualize supported images and AN2K files. Figure out
+	 * what we're dealing with by trying formats until we don't throw
+	 * an exception.
+	 */
+	bool isImage = false;
+	tr1::shared_ptr<BiometricEvaluation::Image::Image> image;
+	try {
+		image = BiometricEvaluation::Image::Image::openImage(value);
+		isImage = true;
+	} catch (BiometricEvaluation::Error::Exception &e) {
+		/* Ignore */
+	}
+
+	if (isImage) {
+		try {
+			::displayImage(image);
+			return (EXIT_SUCCESS);
+		} catch (BiometricEvaluation::Error::Exception) {
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* At this point, we're not an Image */
+	try {
+		displayAN2K(value);
+		return (EXIT_SUCCESS);
+	} catch (BiometricEvaluation::Error::Exception) {
+		return (EXIT_FAILURE);
+	}
+
+	/* This data is nothing we know about... */
+	std::cerr << "Data for key \"" << key << "\" cannot be visualized." <<
+	    std::endl;
+	return (EXIT_FAILURE);
+}
+
+int
 dump(
     const string &key,
     Memory::AutoArray<uint8_t> &value)
@@ -466,9 +516,10 @@ dump(
 
 int extract(int argc, char *argv[], Action::Type action)
 {
+	bool visualize = false;
 	string key = "", range = "";
 	tr1::shared_ptr<IO::RecordStore> rs, hash_rs;
-	if (procargs_extract(argc, argv, key, range, rs, hash_rs) !=
+	if (procargs_extract(argc, argv, visualize, key, range, rs, hash_rs) !=
 	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
@@ -514,8 +565,14 @@ int extract(int argc, char *argv[], Action::Type action)
 				return (EXIT_FAILURE);
 			break;
 		case Action::DISPLAY:
-			if (display(key, buf) != EXIT_SUCCESS)
-				return (EXIT_FAILURE);
+			if (visualize) {
+				if (visualizeRecord(key, buf) != EXIT_SUCCESS)
+					return (EXIT_FAILURE);
+				break;
+			} else {
+				if (display(key, buf) != EXIT_SUCCESS)
+					return (EXIT_FAILURE);
+			}
 			break;
 		default:
 			cerr << "Invalid action received (" <<
@@ -523,6 +580,21 @@ int extract(int argc, char *argv[], Action::Type action)
 			return (EXIT_FAILURE);
 		}
 	} else {
+		/* TODO: Visualize multiple records */
+		if ((action == Action::DISPLAY) && visualize) {
+			if (rs->getCount() > 10) {
+				std::cerr << "Cowardly refusing to "
+				    "visualize " << rs->getCount() <<
+				    " records.  Please use -k or dump." <<
+				    std::endl;
+				return (EXIT_FAILURE);
+			}
+
+			std::cerr << "Visualizing multiple records is not "
+			    "implemented yet." << std::endl;
+			return (EXIT_FAILURE);
+		}
+
 		vector<string> ranges = Text::split(range, '-');
 		if (ranges.size() != 2) {
 			cerr << "Invalid value (-r)." << endl;
@@ -639,6 +711,8 @@ procargs_make(
 	stopOnDuplicate = true;
 
 	char c;
+        bool textProvided = false, dirProvided = false, otherProvided = false;
+        bool quiet = false;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
 		case 'a': {	/* Text file with paths to be added */
@@ -652,6 +726,7 @@ procargs_make(
 			/* -a used to take a directory (backwards compat) */
 			if (IO::Utility::pathIsDirectory(path)) {
 				elements.push_back(path);
+				dirProvided = true;
 				break;
 			}
 			
@@ -659,6 +734,8 @@ procargs_make(
 			ifstream input;
 			string line;
 			input.open(optarg, ifstream::in);
+			textProvided = true;
+
 			for (;;) {
 				/* Read one path from text file */
 				input >> line;
@@ -723,6 +800,9 @@ procargs_make(
 				return (EXIT_FAILURE);
 			}
 			break;
+		case 'q':	/* Don't show confirmation */
+			quiet = true;
+			break;
 		case 't':	/* Destination RecordStore type */
 			type = validate_rs_type(optarg);
 			if (type.empty()) {
@@ -779,6 +859,129 @@ procargs_make(
 	if ((hash_filename.empty() == false) && (what_to_hash ==
 	    HashablePart::NOTHING))
 		what_to_hash = HashablePart::FILENAME;
+
+        if (quiet)
+                return (EXIT_SUCCESS);
+
+        return (makeHumanConfirmation(argc, argv, type, what_to_hash,
+            hashed_key_format, hash_filename, textProvided, dirProvided,
+            otherProvided, compress, compressorKind, stopOnDuplicate));
+}
+
+int
+makeHumanConfirmation(
+    int argc,
+    char *argv[],
+    const std::string &kind,
+    HashablePart::Type what_to_hash,
+    KeyFormat::Type hashed_key_format,
+    const std::string &hash_filename,
+    bool textProvided,
+    bool dirProvided,
+    bool otherProvided,
+    bool compress,
+    BiometricEvaluation::IO::Compressor::Kind compressorKind,
+    bool stopOnDuplicate)
+{
+	/* Verbose sanity check */
+	std::cout << "* Make a new ";
+	if (compress)
+		std::cout << "\"compressed\" ";
+	std::cout << kind << " RecordStore named \"";
+
+	std::string rsName = "";
+	if (kind == BiometricEvaluation::IO::RecordStore::LISTTYPE) {
+		char c;
+		optind = 2;
+	        while ((c = getopt(argc, argv, optstr)) != EOF) {
+			switch (c) {
+			case 's':
+				rsName = optarg;
+				break;
+			}
+			if (rsName != "")
+				break;
+		}
+	} else
+		rsName = sflagval;
+
+	std::cout << rsName << '"' << std::endl;
+	if (kind == BiometricEvaluation::IO::RecordStore::LISTTYPE)
+		std::cout << "* \"" << rsName << "\" will refer to keys " <<
+		    "from \"" << sflagval << "\"" << std::endl;
+	std::cout << "* \"" << rsName << "\" will be stored in \"" <<
+	    oflagval << '"' << std::endl;
+	if (textProvided)
+		std::cout << "* You provided one or more text files of file "
+		    "paths whose contents will be added" << std::endl;
+	if (dirProvided)
+		std::cout << "* You provided one or more directories whose "
+		    "contents will be added" << std::endl;
+	if (otherProvided)
+		std::cout << "* You provided one or more arguments of "
+		    "individual files that will be added" << std::endl;
+	if (compress)
+		std::cout << "* Files will always be compressed with " <<
+		    BiometricEvaluation::IO::Compressor::kindToString(
+		    compressorKind) << " "
+		    "as they're added to the RecordStore" << std::endl;
+	switch (what_to_hash) {
+	case HashablePart::FILECONTENTS:
+		std::cout << "* Keys will be the MD5 checksum of the "
+		    "contents of the files added" << std::endl;
+		break;
+	case HashablePart::FILEPATH:
+		std::cout << "* Keys will be the MD5 checksum of the "
+		    "relative paths of the files added" << std::endl;
+		break;
+	case HashablePart::FILENAME:
+		std::cout << "* Keys will be the MD5 checksum of the "
+		    "names of the files added" << std::endl;
+		break;
+	case HashablePart::NOTHING:
+		std::cout << "* Keys will be the name of the files added" <<
+		    std::endl;
+	default:
+		break;
+	}
+
+	if (what_to_hash != HashablePart::NOTHING) {
+		std::cout << "* The hash translation RecordStore ";
+		if (kind == BiometricEvaluation::IO::RecordStore::LISTTYPE)
+			std::cout << "is ";
+		else
+			std::cout << "will be ";
+
+		std::cout << "named \"" << hash_filename << '"' << std::endl;
+		std::cout << "* The values in \"" << hash_filename <<
+		    "\" will be the ";
+		switch (hashed_key_format) {
+		case KeyFormat::FILEPATH:
+			std::cout << "relative paths ";
+			break;
+		case KeyFormat::FILENAME:
+			/* FALLTHROUGH */
+		default:
+			std::cout << "file names ";
+			break;
+		}
+		std::cout << "of the original files" << std::endl;
+	}
+	if (kind != BiometricEvaluation::IO::RecordStore::LISTTYPE) {
+		std::cout << "* If a duplicate key is encountered, " <<
+		    argv[0] << " will ";
+		if (stopOnDuplicate)
+			std::cout << "stop and exit" << std::endl;
+		else
+			std::cout << "overwrite the key/value pair" <<
+			    std::endl;
+	} else
+		std::cout << "* Keys added to \"" << rsName << "\" must "
+		    "already exist in \"" << sflagval << "\"" << std::endl;
+
+	std::cout << std::endl;
+	if (!yesOrNo("Sound good?", false, true, false))
+		return (EXIT_FAILURE);
 
 	return (EXIT_SUCCESS);
 }
@@ -2107,3 +2310,4 @@ int main(int argc, char *argv[])
 		return (EXIT_FAILURE);
 	}
 }
+
