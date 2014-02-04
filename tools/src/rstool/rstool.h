@@ -60,6 +60,7 @@ static const string LIST_ARG = "list";
 static const string MAKE_ARG = "make";
 static const string MERGE_ARG = "merge";
 static const string REMOVE_ARG = "remove";
+static const string RENAME_ARG = "rename";
 static const string VERSION_ARG = "version";
 static const string UNHASH_ARG = "unhash";
 namespace Action {
@@ -72,6 +73,7 @@ namespace Action {
 		MAKE,
 		MERGE,
 		REMOVE,
+		RENAME,
 		VERSION,
 		UNHASH, 
 		QUIT
@@ -845,6 +847,45 @@ procargs_remove(
  */
 int
 remove(
+    int argc,
+    char *argv[]);
+
+/**
+ * @brief
+ * Process command-line arguments specific to the RENAME Action.
+ *
+ * @param[in] argc
+ *	argc from main()
+ * @param[in] argv
+ *	argv from main()
+ * @param[in/out] newName
+ *	Reference to a string that will hold the new name desired for the
+ *	existing RecordStore.
+ * @return
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+int
+procargs_rename(
+    int argc,
+    char *argv[],
+    std::string &newName);
+
+/**
+ * @brief
+ * Facilitates changing the name of a RecordStore.
+ *
+ * @param[in] argc
+ *	argc from main()
+ * @param[in] argv
+ *	argv from main()
+ *
+ * @return
+ *	An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be
+ *	returned from main().
+ */
+int
+rename(
     int argc,
     char *argv[]);
 

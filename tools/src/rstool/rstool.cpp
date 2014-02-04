@@ -138,7 +138,7 @@ void usage(char *exe)
 {
 	cerr << "Usage: " << exe << " <action> -s <RS> [options]" << endl;
 	cerr << "Actions: add, display, dump, list, make, merge, remove, "
-	    "version, unhash" << endl;
+	    "rename, version, unhash" << endl;
 
 	cerr << endl;
 
@@ -218,6 +218,11 @@ void usage(char *exe)
 	
 	cout << endl;
 
+	cerr << "Rename Options:" << endl;
+	cerr << "\t-s <new_name>\tNew name for the RecordStore" << endl;
+
+	cerr << endl;
+
 	cerr << "Unhash Options:" << endl;
 	cerr << "\t-h <hash>\tHash to unhash" << endl;
 
@@ -293,6 +298,8 @@ Action::Type procargs(int argc, char *argv[])
 		action = Action::MERGE;
 	else if (strcasecmp(argv[1], REMOVE_ARG.c_str()) == 0)
 		action = Action::REMOVE;
+	else if (strcasecmp(argv[1], RENAME_ARG.c_str()) == 0)
+		action = Action::RENAME;
 	else if (strcasecmp(argv[1], VERSION_ARG.c_str()) == 0)
 		return Action::VERSION;
 	else if (strcasecmp(argv[1], UNHASH_ARG.c_str()) == 0)
@@ -2277,6 +2284,123 @@ diff(
 	return (status);
 }
 
+int
+procargs_rename(
+    int argc,
+    char *argv[],
+    std::string &newName)
+{
+	newName = "";
+	int rsCount = 0;
+	char c;
+        while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 's':	/* Source/target RecordStores */
+			switch (rsCount) {
+			case 0:
+				/* Ensure first RecordStore exists */
+				try {
+					IO::RecordStore::openRecordStore(
+					    Text::filename(optarg),
+					    Text::dirname(optarg),
+					    IO::READWRITE);
+				} catch (Error::Exception &e) {
+					if (isRecordStoreAccessible(
+					    Text::filename(optarg),
+					    Text::dirname(optarg),
+					    IO::READWRITE))
+						std::cerr << "Could not "
+						    "open " << Text::
+						    filename(optarg) <<
+						    " - " << e.getInfo() <<
+						    std::endl;
+					else
+						std::cerr << optarg <<
+						": Permission denied." <<
+						std::endl;
+					return (EXIT_FAILURE);
+				}
+				sflagval = optarg;
+				break;
+			default:
+				newName = optarg;
+				break;
+			}
+			rsCount++;
+			break;
+		}
+	}
+
+	if (rsCount != 2) {
+		std::cerr << "Must specify only two RecordStores " <<
+		    "(-s <existing_rs> -s <new_rs>)." << std::endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* Ensure new path doesn't already exist */
+	if (IO::Utility::constructAndCheckPath(newName, oflagval,
+	    newName)) {
+		std::cerr << newName << " already exists." << std::endl;
+		return (EXIT_FAILURE);
+	}
+	newName = Text::filename(newName);
+
+	return (EXIT_SUCCESS);
+}
+
+int
+rename(
+    int argc,
+    char *argv[])
+{
+	std::string newName;
+	if (procargs_rename(argc, argv, newName) != EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+
+	/* Ensure we can temporarily change the name in the current directory */
+	std::string newPath;
+	if (IO::Utility::constructAndCheckPath(newName,
+	    Text::dirname(sflagval), newPath)) {
+		std::cerr << newPath << " exists (needed temporarily)." <<
+		    std::endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* Ensure destination path will allow for name change */
+	if (IO::Utility::constructAndCheckPath(newName, oflagval,
+	    newPath)) {
+		std::cerr << newPath << " exists." << std::endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* Change name in same directory */
+	try {
+		tr1::shared_ptr<IO::RecordStore> rs = IO::RecordStore::
+		    openRecordStore(Text::filename(sflagval),
+		    Text::dirname(sflagval), IO::READWRITE);
+		rs->changeName(newName);
+	} catch (Error::Exception &e) {
+		std::cerr << e.getInfo() << std::endl;
+		return (EXIT_FAILURE);
+	}
+
+	/* Move the RecordStore */
+	std::string existingPath;
+	if (!IO::Utility::constructAndCheckPath(newName,
+	    Text::dirname(sflagval), existingPath)) {
+		std::cerr << existingPath << " does not exist." << std::endl;
+		return (EXIT_FAILURE);
+	}
+	if (rename(existingPath.c_str(), newPath.c_str()) != 0) {
+		std::cerr << "Could not move \"" << existingPath << "\" "
+		    "to \"" << newPath << "\" (" << Error::errorStr() <<
+		    ")" << std::endl;
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
 	Action::Type action = procargs(argc, argv);
@@ -2301,6 +2425,8 @@ int main(int argc, char *argv[])
 		if (specialProcessingFlags & SpecialProcessing::LISTRECORDSTORE)
 			return (modifyListRecordStore(argc, argv, action));
 		return (remove(argc, argv));
+	case Action::RENAME:
+		return (rename(argc, argv));
 	case Action::VERSION:
 		return (version(argc, argv));
 	case Action::UNHASH:

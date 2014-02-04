@@ -87,6 +87,12 @@ remove
 .Op Fl k Ar ...
 .Pp
 .Nm
+rename
+.Fl s Ar existing_rs
+.Fl s Ar new_name
+.Op Fl o Ar dir
+.Pp
+.Nm
 version
 .Pp
 .\"
@@ -393,6 +399,17 @@ may be specified.
 .It Cm -s Fa rs
 The RecordStore from which to remove.
 .El
+.It Cm rename
+.Bl -tag -compact -width "-s existing_rs "
+.It Cm -s Fa existing_rs
+Path to the RecordStore whose name should be changed.
+.It Cm -s Fa new_name
+New name for the RecordStore
+.It Cm -o Fa dir
+New directory in which to place
+.Fa new_name
+(defaults to $PWD)
+.El
 .It Cm version
 Display the version of
 .Nm
@@ -491,4 +508,3 @@ This man page is current for version 1.4 of
 .Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.
-
