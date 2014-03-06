@@ -32,6 +32,11 @@
 #     - If doxygen is to be run and the doxygen configuration file is not 
 #	$(ROOTNAME).dox, define DOXYCONFIG and set GENERATEDOXYGEN to YES
 #
+# To add a LaTeX index:
+#
+#     - If makeindex is to be run and the .idx file is not $(ROOTNAME).idx,
+#	define INDEXFILE and set GENERATEINDEX to YES.
+#
 # Good luck.
 #
 
@@ -39,7 +44,7 @@
 # Override executables
 #
 #
-LATEX = $(shell which pdflatex)
+LATEX = $(shell which pdflatex) $(LATEXARGS)
 MAKEINDEX = $(shell which makeindex)
 MAKEBIB = $(shell which bibtex)
 DOXYGEN = $(shell which doxygen)
@@ -57,6 +62,12 @@ GENERATEDOXYGEN = $(shell test -f $(DOXYCONFIG) && echo YES || echo NO)
 # Check if there's a common glossary to be included
 #
 GLOSSARY = commonglossary.tex
+
+# 
+# Check for index file
+#
+INDEXFILE = $(LATEXROOTNAME).idx
+GENERATEINDEX = $(shell test -f $(ROOTNAME).idx && echo YES || echo NO)
 
 # Common Bibliography
 COMMONBIB = $(LOCALINC)/common.bib
@@ -172,7 +183,10 @@ endif
 # Build the document, including index, bibliography.
 #
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
-	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(LATEXROOTNAME)
+ifeq ($(GENERATEINDEX),YES)
+	$(warning MAKING AN INDEX)
+	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(INDEXFILE)
+endif
 	cd $(LATEXBUILDDIR) && $(MAKEBIB) $(LATEXROOTNAME)
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
