@@ -167,6 +167,20 @@
 		08CFC4FB1545E1F500BA89B2 /* be_view_an2kview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_view_an2kview.cpp; path = ../src/libbiomeval/be_view_an2kview.cpp; sourceTree = "<group>"; };
 		08CFC4FC1545E1F500BA89B2 /* be_view_view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_view_view.cpp; path = ../src/libbiomeval/be_view_view.cpp; sourceTree = "<group>"; };
 		08CFC4FD1545E1F500BA89B2 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/libbiomeval/Makefile; sourceTree = "<group>"; };
+		224A58EA18D22E1F00E11798 /* be_face_incitsview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_incitsview.h; path = ../src/include/be_face_incitsview.h; sourceTree = "<group>"; };
+		224A58EB18D22E1F00E11798 /* be_face_iso2005view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_iso2005view.h; path = ../src/include/be_face_iso2005view.h; sourceTree = "<group>"; };
+		224A58EC18D22E1F00E11798 /* be_face.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face.h; path = ../src/include/be_face.h; sourceTree = "<group>"; };
+		224A58ED18D22E2B00E11798 /* be_feature_mpegfacepoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_feature_mpegfacepoint.h; path = ../src/include/be_feature_mpegfacepoint.h; sourceTree = "<group>"; };
+		224A58EF18D22E4F00E11798 /* be_iris_incitsview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_iris_incitsview.h; path = ../src/include/be_iris_incitsview.h; sourceTree = "<group>"; };
+		224A58F018D22E4F00E11798 /* be_iris_iso2011view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_iris_iso2011view.h; path = ../src/include/be_iris_iso2011view.h; sourceTree = "<group>"; };
+		224A58F118D22E4F00E11798 /* be_iris.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_iris.h; path = ../src/include/be_iris.h; sourceTree = "<group>"; };
+		224A58F218D22E7B00E11798 /* be_face_incitsview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_face_incitsview.cpp; path = ../src/libbiomeval/be_face_incitsview.cpp; sourceTree = "<group>"; };
+		224A58F318D22E7B00E11798 /* be_face_iso2005view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_face_iso2005view.cpp; path = ../src/libbiomeval/be_face_iso2005view.cpp; sourceTree = "<group>"; };
+		224A58F418D22E8C00E11798 /* be_iris_incitsview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_iris_incitsview.cpp; path = ../src/libbiomeval/be_iris_incitsview.cpp; sourceTree = "<group>"; };
+		224A58F518D22E8C00E11798 /* be_iris_iso2011view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_iris_iso2011view.cpp; path = ../src/libbiomeval/be_iris_iso2011view.cpp; sourceTree = "<group>"; };
+		224A58F818D22EBA00E11798 /* test_be_iris_incitsviews.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_iris_incitsviews.cpp; path = ../src/test/test_be_iris_incitsviews.cpp; sourceTree = "<group>"; };
+		224A58F918D22ED300E11798 /* test_be_face_incitsviews.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_face_incitsviews.cpp; path = ../src/test/test_be_face_incitsviews.cpp; sourceTree = "<group>"; };
+		224A58FA18D22EE200E11798 /* test_be_error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_error.cpp; path = ../src/test/test_be_error.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -176,10 +190,12 @@
 				086A2A63154735EA00464DC5 /* Makefile */,
 				086A2A62154735BB00464DC5 /* Data Interchange */,
 				086A2A61154735BA00464DC5 /* Error */,
+				224A58F618D22E9600E11798 /* Face */,
 				086A2A60154735B900464DC5 /* Feature */,
 				086A2A56154735A100464DC5 /* Finger */,
 				086A2A57154735A200464DC5 /* Framework */,
 				086A2A58154735AE00464DC5 /* Image */,
+				224A58F718D22E9B00E11798 /* Iris */,
 				086A2A59154735B000464DC5 /* IO */,
 				086A2A5A154735B200464DC5 /* Memory */,
 				086A2A5B154735B300464DC5 /* Process */,
@@ -288,6 +304,7 @@
 		086A2A61154735BA00464DC5 /* Error */ = {
 			isa = PBXGroup;
 			children = (
+				224A58FA18D22EE200E11798 /* test_be_error.cpp */,
 				086A2A65154735EA00464DC5 /* test_be_error_signal_manager.cpp */,
 			);
 			name = Error;
@@ -316,11 +333,13 @@
 			children = (
 				08CFC5061545E22700BA89B2 /* Data Interchange */,
 				08CFC5091545E22A00BA89B2 /* Error */,
+				224A58E618D22D7F00E11798 /* Face */,
 				08CFC50C1545E3FA00BA89B2 /* Feature */,
 				08CFC4FF1545E20700BA89B2 /* Finger */,
 				08CFC4FE1545E20400BA89B2 /* Framework */,
 				08CFC5081545E22900BA89B2 /* Image */,
 				08CFC5071545E22800BA89B2 /* IO */,
+				224A58E918D22DC800E11798 /* Iris */,
 				08CFC50B1545E3E100BA89B2 /* Memory */,
 				08CFC5051545E22600BA89B2 /* Process */,
 				08CFC50E1545E41C00BA89B2 /* System */,
@@ -335,6 +354,7 @@
 			isa = PBXGroup;
 			children = (
 				08CFC4FD1545E1F500BA89B2 /* Makefile */,
+				224A58E718D22DB100E11798 /* Face */,
 				08CFC51C1545E48F00BA89B2 /* Finger */,
 				08CFC51B1545E44200BA89B2 /* Data Interchange */,
 				08CFC51A1545E44200BA89B2 /* Error */,
@@ -342,6 +362,7 @@
 				08CFC5181545E44000BA89B2 /* Framework */,
 				08CFC5171545E44000BA89B2 /* Image */,
 				08CFC5161545E43F00BA89B2 /* IO */,
+				224A58E818D22DB700E11798 /* Iris */,
 				08CFC5151545E43E00BA89B2 /* Memory */,
 				08CFC5141545E43E00BA89B2 /* Process */,
 				08CFC5131545E43D00BA89B2 /* System */,
@@ -492,6 +513,7 @@
 		08CFC50C1545E3FA00BA89B2 /* Feature */ = {
 			isa = PBXGroup;
 			children = (
+				224A58ED18D22E2B00E11798 /* be_feature_mpegfacepoint.h */,
 				08CFC48D1545E14800BA89B2 /* be_feature_an2k7minutiae.h */,
 				08CFC48E1545E14800BA89B2 /* be_feature_incitsminutiae.h */,
 				08CFC48F1545E14800BA89B2 /* be_feature_minutiae.h */,
@@ -653,6 +675,60 @@
 				08CFC4D71545E1F500BA89B2 /* be_finger_iso2005view.cpp */,
 			);
 			name = Finger;
+			sourceTree = "<group>";
+		};
+		224A58E618D22D7F00E11798 /* Face */ = {
+			isa = PBXGroup;
+			children = (
+				224A58EA18D22E1F00E11798 /* be_face_incitsview.h */,
+				224A58EB18D22E1F00E11798 /* be_face_iso2005view.h */,
+				224A58EC18D22E1F00E11798 /* be_face.h */,
+			);
+			name = Face;
+			sourceTree = "<group>";
+		};
+		224A58E718D22DB100E11798 /* Face */ = {
+			isa = PBXGroup;
+			children = (
+				224A58F218D22E7B00E11798 /* be_face_incitsview.cpp */,
+				224A58F318D22E7B00E11798 /* be_face_iso2005view.cpp */,
+			);
+			name = Face;
+			sourceTree = "<group>";
+		};
+		224A58E818D22DB700E11798 /* Iris */ = {
+			isa = PBXGroup;
+			children = (
+				224A58F418D22E8C00E11798 /* be_iris_incitsview.cpp */,
+				224A58F518D22E8C00E11798 /* be_iris_iso2011view.cpp */,
+			);
+			name = Iris;
+			sourceTree = "<group>";
+		};
+		224A58E918D22DC800E11798 /* Iris */ = {
+			isa = PBXGroup;
+			children = (
+				224A58EF18D22E4F00E11798 /* be_iris_incitsview.h */,
+				224A58F018D22E4F00E11798 /* be_iris_iso2011view.h */,
+				224A58F118D22E4F00E11798 /* be_iris.h */,
+			);
+			name = Iris;
+			sourceTree = "<group>";
+		};
+		224A58F618D22E9600E11798 /* Face */ = {
+			isa = PBXGroup;
+			children = (
+				224A58F918D22ED300E11798 /* test_be_face_incitsviews.cpp */,
+			);
+			name = Face;
+			sourceTree = "<group>";
+		};
+		224A58F718D22E9B00E11798 /* Iris */ = {
+			isa = PBXGroup;
+			children = (
+				224A58F818D22EBA00E11798 /* test_be_iris_incitsviews.cpp */,
+			);
+			name = Iris;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
