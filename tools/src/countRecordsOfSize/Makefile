@@ -9,7 +9,7 @@
 #
 include ../common.mk
 #
-LIB = -lbiomeval
+LIB = $(LD_BIOMEVAL)
 #
 SOURCES = countRecordsOfSize.cpp
 OBJECTS = $(SOURCES:%.cpp=%.o)

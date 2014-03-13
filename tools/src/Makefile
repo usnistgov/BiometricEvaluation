@@ -9,7 +9,7 @@
 #
 
 # The 'core' library and programs, that always build
-CORE := dmprecstor lsrecstor mkrecstor mrgrecstor rstool countRecordsOfSize
+CORE := rstool countRecordsOfSize
 SUBDIRS := $(CORE)
 
 include ../common.mk

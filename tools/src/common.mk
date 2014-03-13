@@ -10,7 +10,6 @@
 # This set of directories is where the header files, libraries, programs,
 # and man pages are to be installed.
 LOCALINC := ../include -I../../../common/src/include
-LOCALLIB := ../../lib -L../../../common/lib
 LOCALBIN := ../../bin
 LOCALMAN := ../../man
 include ../../common.mk
