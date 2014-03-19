@@ -1461,7 +1461,7 @@ void mergeAndHashRecordStores(
     throw (BiometricEvaluation::Error::ObjectExists,
     BiometricEvaluation::Error::StrategyError)
 {
-	std::auto_ptr<BE::IO::RecordStore> merged_rs, hash_rs;
+	std::unique_ptr<BE::IO::RecordStore> merged_rs, hash_rs;
 	std::string hash_description = "Hash translation of " + mergedName;
 	if (kind == BE::IO::RecordStore::Kind::BerkeleyDB) {
 		merged_rs.reset(new BE::IO::DBRecordStore(mergedName,
