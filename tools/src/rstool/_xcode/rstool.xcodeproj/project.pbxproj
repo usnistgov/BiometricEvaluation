@@ -63,7 +63,7 @@
 		084A71DC1559924800C84756 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 084A71DF1559924800C84756 /* Build configuration list for PBXProject "rstool" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -137,4 +137,3 @@
 	};
 	rootObject = 084A71DC1559924800C84756 /* Project object */;
 }
-
