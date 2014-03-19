@@ -80,7 +80,7 @@ RGBAToBGRA(
  */
 static void
 createWindowAndDisplayImage(
-    tr1::shared_ptr<BiometricEvaluation::Image::Image> image);
+    std::shared_ptr<BiometricEvaluation::Image::Image> image);
 
 /**
  * @brief
@@ -105,7 +105,7 @@ createWindowAndDisplayImage(
  */
 void
 displayImage(
-    tr1::shared_ptr<BiometricEvaluation::Image::Image> image);
+    std::shared_ptr<BiometricEvaluation::Image::Image> image);
 
 /**
  * @brief
@@ -130,7 +130,7 @@ displayImage(
  */
 void
 displayImages(
-    std::vector<tr1::shared_ptr<BiometricEvaluation::Image::Image> > &images);
+    std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images);
 
 /**
  * @brief
@@ -169,9 +169,11 @@ public:
 
 	/** Name of the parameter containing an Image */
 	static const std::string ImageParameterKey;
-	
-	ImageViewerWorker();
-	~ImageViewerWorker();
+
+	/** Constructor */
+	ImageViewerWorker() = default;
+	/** Destructor */
+	~ImageViewerWorker() = default;
 };
 
 #endif /* __RSTOOL_IMAGE_ADDITIONS_H__ */

@@ -47,65 +47,64 @@
 
 #include <lrs_additions.h>
 
-static string oflagval = ".";		/* Output directory */
-static string sflagval = "";		/* Path to main RecordStore */
+static std::string oflagval = ".";		/* Output directory */
+static std::string sflagval = "";		/* Path to main RecordStore */
 static const char optstr[] = "a:cfh:k:m:o:pqr:s:t:zZ:";
 
 /* Possible actions performed by this utility */
-static const string ADD_ARG = "add";
-static const string DISPLAY_ARG = "display";
-static const string DIFF_ARG = "diff";
-static const string DUMP_ARG = "dump";
-static const string LIST_ARG = "list";
-static const string MAKE_ARG = "make";
-static const string MERGE_ARG = "merge";
-static const string REMOVE_ARG = "remove";
-static const string RENAME_ARG = "rename";
-static const string VERSION_ARG = "version";
-static const string UNHASH_ARG = "unhash";
-namespace Action {
-	typedef enum {
-		ADD,
-		DISPLAY,
-		DIFF,
-		DUMP,
-		LIST,
-		MAKE,
-		MERGE,
-		REMOVE,
-		RENAME,
-		VERSION,
-		UNHASH, 
-		QUIT
-	} Type;
-}
+static const std::string ADD_ARG = "add";
+static const std::string DISPLAY_ARG = "display";
+static const std::string DIFF_ARG = "diff";
+static const std::string DUMP_ARG = "dump";
+static const std::string LIST_ARG = "list";
+static const std::string MAKE_ARG = "make";
+static const std::string MERGE_ARG = "merge";
+static const std::string REMOVE_ARG = "remove";
+static const std::string RENAME_ARG = "rename";
+static const std::string VERSION_ARG = "version";
+static const std::string UNHASH_ARG = "unhash";
+
+enum class Action
+{
+	ADD,
+	DISPLAY,
+	DIFF,
+	DUMP,
+	LIST,
+	MAKE,
+	MERGE,
+	RENAME,
+	REMOVE,
+	VERSION,
+	UNHASH,
+	QUIT
+};
 
 /* Things that could be hashed when hashing a key */
-namespace HashablePart {
-	typedef enum {
-		FILECONTENTS,
-		FILENAME,
-		FILEPATH,
-		NOTHING
-	} Type;
-}
+enum class HashablePart
+{
+	FILECONTENTS,
+	FILENAME,
+	FILEPATH,
+	NOTHING
+};
+
 
 /* What to print as value in a hash translation RecordStore */
-namespace KeyFormat {
-	typedef enum {
-		DEFAULT,
-		FILENAME,
-		FILEPATH
-	} Type;
-}
+enum class KeyFormat
+{
+	DEFAULT,
+	FILENAME,
+	FILEPATH
+};
+
 
 /* Triggers for special-case processing.  Allows multiple cases. */
-namespace SpecialProcessing {
-	typedef enum {
-		NA		= 0,
-		LISTRECORDSTORE	= 1 << 0
-	} Flag;
-}
+enum class SpecialProcessing : uint16_t
+{
+	NA		= 0,
+	LISTRECORDSTORE	= 1 << 0
+};
 
 /**
  * @brief
@@ -121,18 +120,18 @@ namespace SpecialProcessing {
  * @return
  *	Vector of the lines in the file
  *
- * @throw Error::FileError
+ * @throw BiometricEvaluation::Error::FileError
  *	Error opening or reading from filePath.
- * @throw Error::ObjectDoesNotExist
+ * @throw BiometricEvaluation::Error::ObjectDoesNotExist
  *	filePath does not exist.
  */
-vector<string>
+std::vector<std::string>
 readTextFileToVector(
-    const string &filePath,
+    const std::string &filePath,
     bool ignoreComments = true,
     bool ignoreBlankLines = true)
-    throw (Error::FileError,
-    Error::ObjectDoesNotExist);
+    throw (BiometricEvaluation::Error::FileError,
+    BiometricEvaluation::Error::ObjectDoesNotExist);
 
 /**
  * @brief
@@ -153,7 +152,7 @@ readTextFileToVector(
  */
 bool
 yesOrNo(
-    const string &prompt,
+    const std::string &prompt,
     bool default_answer = true,
     bool show_options = true,
     bool allow_default_answer = true);
@@ -192,9 +191,9 @@ usage(
  */
 bool
 isRecordStoreAccessible(
-    const string &name,
-    const string &parentDir,
-    const uint8_t mode = IO::READWRITE);
+    const std::string &name,
+    const std::string &parentDir,
+    const uint8_t mode = BiometricEvaluation::IO::READWRITE);
 
 /**
  * @brief
@@ -204,11 +203,14 @@ isRecordStoreAccessible(
  *	String (likely entered by user) to check for validity.
  *
  * @return
- *	RecordStore type string, if one can be identified, or "" on error.
+ *	RecordStore Kind.
+ *
+ * @throw BiometricEvaluation::Error::StrategyError
+ *	type is not a valid string representation of a RecordStore.
  */
-string
+BiometricEvaluation::IO::RecordStore::Kind
 validate_rs_type(
-    const string &type);
+    const std::string &type);
 
 /**
  * @brief
@@ -222,7 +224,7 @@ validate_rs_type(
  * @return
  *	The Action the user has indicated on the command-line.
  */
-Action::Type
+Action
 procargs(
     int argc,
     char *argv[]);
@@ -261,10 +263,10 @@ procargs_extract(
     int argc,
     char *argv[],
     bool &visualize,
-    string &key,
-    string &range,
-    tr1::shared_ptr<IO::RecordStore> &rs,
-    tr1::shared_ptr<IO::RecordStore> &hash_rs);
+    std::string &key,
+    std::string &range,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs);
 
 /**
  * @brief
@@ -281,8 +283,8 @@ procargs_extract(
  */
 int
 display(
-    const string &key,
-    Memory::AutoArray<uint8_t> &value);
+    const std::string &key,
+    BiometricEvaluation::Memory::AutoArray<uint8_t> &value);
 
 /**
  * @brief
@@ -320,8 +322,8 @@ visualizeRecord(
  */
 int
 dump(
-    const string &key,
-    Memory::AutoArray<uint8_t> &value);
+    const std::string &key,
+    BiometricEvaluation::Memory::AutoArray<uint8_t> &value);
 /**
  * @brief
  * Facilitates the extraction of a single key or a range of records from a 
@@ -342,7 +344,7 @@ int
 extract(
     int argc,
     char *argv[],
-    Action::Type action);
+    Action action);
 
 /**
  * @brief
@@ -379,9 +381,8 @@ listRecordStore(
  * @param[in/out] hashed_key_format
  *	Reference to a KeyFormat enumeration that indicates how the key (when
  *	printed as a value) should appear in a hash translation RecordStore.
- * @param[in/out] type
- *	Reference to a string that will represent the type of RecordStore to
- *	create.
+ * @param[in/out] kind
+ *	Kind of RecordStore to create
  * @param[in/out] elements
  *	Reference to a vector that will hold paths to elements that should
  *	be added to the target RecordStore.  The paths may be to text
@@ -403,13 +404,13 @@ int
 procargs_make(
     int argc,
     char *argv[],
-    string &hash_filename,
-    HashablePart::Type &what_to_hash,
-    KeyFormat::Type &hashed_key_format,
-    string &type,
-    vector<string> &elements,
+    std::string &hash_filename,
+    HashablePart &what_to_hash,
+    KeyFormat &hashed_key_format,
+    BiometricEvaluation::IO::RecordStore::Kind &kind,
+    std::vector<std::string> &elements,
     bool &compress,
-    IO::Compressor::Kind &compressorKind,
+    BiometricEvaluation::IO::Compressor::Kind &compressorKind,
     bool &stopOnDuplicate);
 
 /**
@@ -434,11 +435,11 @@ procargs_make(
  *	An exit status, either EXIT_FAILURE or EXIT_SUCCESS, depending on if
  *	the contents of filename could be inserted.
  */
-int make_insert_contents(const string &filename,
-    const tr1::shared_ptr<IO::RecordStore> &rs,
-    const tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    const HashablePart::Type what_to_hash,
-    const KeyFormat::Type hashed_key_format,
+int make_insert_contents(const std::string &filename,
+    const std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs,
+    const std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs,
+    const HashablePart what_to_hash,
+    const KeyFormat hashed_key_format,
     bool stopOnDuplicate);
 
 /**
@@ -461,9 +462,9 @@ int make_insert_contents(const string &filename,
  * @param[in] stopOnDuplicate
  *	Whether or not to stop if a duplicate key is detected.
  *
- * @throws Error::ObjectDoesNotExist
+ * @throws BiometricEvaluation::Error::ObjectDoesNotExist
  *	If the contents of the directory changes during the run
- * @throws Error::StrategyError
+ * @throws BiometricEvaluation::Error::StrategyError
  *	Underlying problem in storage system
  *
  * @return
@@ -472,14 +473,15 @@ int make_insert_contents(const string &filename,
  */
 int
 make_insert_directory_contents(
-    const string &directory,
-    const string &prefix,
-    const tr1::shared_ptr<IO::RecordStore> &rs,
-    const tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    const HashablePart::Type what_to_hash,
-    const KeyFormat::Type hashed_key_format,
+    const std::string &directory,
+    const std::string &prefix,
+    const std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs,
+    const std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs,
+    const HashablePart what_to_hash,
+    const KeyFormat hashed_key_format,
     bool stopOnDuplicate)
-    throw (Error::ObjectDoesNotExist, Error::StrategyError);
+    throw (BiometricEvaluation::Error::ObjectDoesNotExist,
+    BiometricEvaluation::Error::StrategyError);
 
 /**
  * @brief
@@ -507,9 +509,9 @@ int
 makeListRecordStore(
     int argc,
     char *argv[],
-    vector<string> &elements,
-    HashablePart::Type what_to_hash,
-    KeyFormat::Type hashed_key_format);
+    std::vector<std::string> &elements,
+    HashablePart what_to_hash,
+    KeyFormat hashed_key_format);
 
 /**
  * @brief
@@ -537,9 +539,8 @@ make(
  *	argc from main()
  * @param[in] argv
  *	argv from main()
- * @param[in/out] type
- *	Reference to a string that will represent the type of RecordStore
- *	to create.
+ * @param[in/out] kind
+ *	Kind of RecordStore to create
  * @param[in/out] child_rs
  * 	Reference to an vector of strings that will hold the paths to the 
  *	RecordStores that should be merged.
@@ -560,11 +561,11 @@ int
 procargs_merge(
     int argc,
     char *argv[],
-    string &type,
-    vector<string> &child_rs,
-    string &hash_filename,
-    HashablePart::Type &what_to_hash,
-    KeyFormat::Type &hashed_key_format);
+    BiometricEvaluation::IO::RecordStore::Kind &kind,
+    std::vector<std::string> &child_rs,
+    std::string &hash_filename,
+    HashablePart &what_to_hash,
+    KeyFormat &hashed_key_format);
 
 /** 
  * Create a new RecordStore that contains the contents of several RecordStores,
@@ -578,8 +579,8 @@ procargs_merge(
  *	The name of the new hash translation RecordStore that will be created.
  * @param[in] parentDir
  * 	Where, in the file system, the new store should be rooted.
- * @param[in] type
- * 	The type of RecordStore that mergedName should be.
+ * @param[in] kind
+ * 	The kind of RecordStore that mergedName should be.
  * @param[in] recordStores
  * 	An vector of string paths to RecordStore that should be merged into
  *	mergedName.
@@ -588,21 +589,22 @@ procargs_merge(
  * @param[in] hashed_key_format
  *	How the key should be printed in a hash translation RecordStore
  *
- * @throws Error::ObjectExists
+ * @throws BiometricEvaluation::Error::ObjectExists
  * 	A RecordStore with mergedNamed in parentDir
- * @throws Error::StrategyError
+ * @throws BiometricEvaluation::Error::StrategyError
  * 	An error occurred when using the underlying storage system
  */
 void mergeAndHashRecordStores(
-    const string &mergedName,
-    const string &mergedDescription,
-    const string &hashName,
-    const string &parentDir,
-    const string &type,
-    vector<string> &recordStores,
-    const HashablePart::Type what_to_hash,
-    const KeyFormat::Type hashed_key_format)
-    throw (Error::ObjectExists, Error::StrategyError);
+    const std::string &mergedName,
+    const std::string &mergedDescription,
+    const std::string &hashName,
+    const std::string &parentDir,
+    const BiometricEvaluation::IO::RecordStore::Kind &kind,
+    std::vector<std::string> &recordStores,
+    const HashablePart what_to_hash,
+    const KeyFormat hashed_key_format)
+    throw (BiometricEvaluation::Error::ObjectExists,
+    BiometricEvaluation::Error::StrategyError);
 
 /**
  * @brief
@@ -661,8 +663,8 @@ int
 procargs_unhash(
     int argc,
     char *argv[],
-    string &hash,
-    tr1::shared_ptr<IO::RecordStore> &rs);
+    std::string &hash,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs);
 
 /**
  * @brief
@@ -718,11 +720,11 @@ int
 procargs_add(
     int argc,
     char *argv[],
-    tr1::shared_ptr<IO::RecordStore> &rs,
-    tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    vector<string> &files,
-    HashablePart::Type &what_to_hash,
-    KeyFormat::Type &hashed_key_format,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs,
+    std::vector<std::string> &files,
+    HashablePart &what_to_hash,
+    KeyFormat &hashed_key_format,
     bool &stopOnDuplicate);
 /**
  * @brief
@@ -757,9 +759,9 @@ int
 procargs_modifyListRecordStore(
     int argc,
     char *argv[],
-    tr1::shared_ptr<IO::RecordStore> &hash_rs,
-    vector<string> &files,
-    HashablePart::Type &what_to_hash,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs,
+    std::vector<std::string> &files,
+    HashablePart &what_to_hash,
     bool &force);
 
 /**
@@ -785,7 +787,7 @@ int
 modifyListRecordStore(
     int argc,
     char *argv[],
-    Action::Type action);
+    Action action);
 
 /**
  * @brief
@@ -828,9 +830,9 @@ int
 procargs_remove(
     int argc,
     char *argv[],
-    vector<string> &keys,
+    std::vector<std::string> &keys,
     bool &force_removal,
-    tr1::shared_ptr<IO::RecordStore> &rs);
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs);
 
 /**
  * @brief
@@ -917,47 +919,48 @@ int
 procargs_diff(
     int argc,
     char *argv[],
-    tr1::shared_ptr<IO::RecordStore> &sourceRS,
-    tr1::shared_ptr<IO::RecordStore> &targetRS,
-    vector<string> &keys,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &sourceRS,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &targetRS,
+    std::vector<std::string> &keys,
     bool &byte_for_byte);
+
 
 /**
  * @brief
  * Explain in English what's happening with the complicated "make" options.
  *
  * @param[in] argc
- *      argc from main().
+ *	argc from main().
  * @param[in] argv
- *      argv from main().
+ *	argv from main().
  * @param[in] kind
- *      Type of RecordStore being created
+ *	Type of RecordStore being created
  * @param[in] what_to_hash
- *      What to hash for keys (name, contents, etc)
+ *	What to hash for keys (name, contents, etc)
  * @param[in] hashed_key_format
- *      Values inserted into the hashed translation RecordStore
+ *	Values inserted into the hashed translation RecordStore
  * @param[in] hash_filename
- *      Name of the hash translation RecordStore
+ *	Name of the hash translation RecordStore
  * @param[in] textProvided
- *      Whether or not a text file of paths was provided
+ *	Whether or not a text file of paths was provided
  * @param[in] dirProvided
- *      Whether or not a directory of files was provided
+ *	Whether or not a directory of files was provided
  * @param[in] otherProvided
- *      Whether or not individual foles were provided
+ *	Whether or not individual foles were provided
  * @param[in] compress
- *      Whether or not this is a compressed RecordStore
+ *	Whether or not this is a compressed RecordStore
  * @param[in] compressorKind
- *      The kind of compression used.
+ *	The kind of compression used.
  * @param[in] stopOnDuplicate
- *      Whether or not to stop on duplicate keys.
+ *	Whether or not to stop on duplicate keys.
  */
 int
 makeHumanConfirmation(
     int argc,
     char *argv[],
-    const std::string &kind,
-    HashablePart::Type what_to_hash,
-    KeyFormat::Type hashed_key_format,
+    BiometricEvaluation::IO::RecordStore::Kind kind,
+    HashablePart what_to_hash,
+    KeyFormat hashed_key_format,
     const std::string &hash_filename,
     bool textProvided,
     bool dirProvided,
@@ -985,4 +988,3 @@ diff(
     char *argv[]);
 
 #endif /* __RSTOOL_H__ */
-

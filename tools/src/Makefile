@@ -12,8 +12,6 @@
 CORE := rstool countRecordsOfSize
 SUBDIRS := $(CORE)
 
-include ../common.mk
-
 all:
 	@for subdir in $(SUBDIRS); do \
 		(cd $$subdir && $(MAKE) all) || exit 1; \

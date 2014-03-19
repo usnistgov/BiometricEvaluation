@@ -22,7 +22,7 @@ debug: CXXFLAGS += -g
 debug: all
 
 $(PROGRAM): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LIB)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LD_BIOMEVAL)
 	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
 	$(CP) $@ $(LOCALBIN)/$@
 

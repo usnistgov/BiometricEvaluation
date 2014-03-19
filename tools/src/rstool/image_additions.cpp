@@ -8,7 +8,6 @@
  * about its quality, reliability, or any other characteristic.
  */
 
-#include <cstdlib>
 #include <string>
 
 #include <be_data_interchange_an2k.h>
@@ -79,21 +78,21 @@ RGBAToBGRA(
 
 void
 createWindowAndDisplayImage(
-    tr1::shared_ptr<BiometricEvaluation::Image::Image> image)
+    std::shared_ptr<BiometricEvaluation::Image::Image> image)
 {
 	/*
 	 * Init the X11 environment.
 	 */
-	Display *display = XOpenDisplay(NULL);
-	if (display == NULL) {
-		std::string displayName = XDisplayName(NULL);
+	Display *display = XOpenDisplay(nullptr);
+	if (display == nullptr) {
+		std::string displayName = XDisplayName(nullptr);
 		throw BiometricEvaluation::Error::StrategyError("Could not "
 		    "open DISPLAY (" + displayName + ")");
 	}
 
 	int screen = DefaultScreen(display);
 	Visual *visual = DefaultVisual(display, screen);
-	if (visual == NULL)
+	if (visual == nullptr)
 		throw BiometricEvaluation::Error::StrategyError("Could not "
 		    "create Visual");
 
@@ -105,9 +104,10 @@ createWindowAndDisplayImage(
 	/* 
 	 * Create BGRA XImage.
 	 */
-	BiometricEvaluation::Memory::uint8Array rawBytes = image->getRawData();
+	BiometricEvaluation::Memory::uint8Array rawBytes;
 	BiometricEvaluation::Memory::uint8Array bgraBytes(
 	    (image->getDimensions().xSize * image->getDimensions().ySize) * 4);
+	image->getRawData(rawBytes);
 	uint8_t *bgraBytesPtr = NULL;
 	switch (image->getDepth()) {
 	case 8:
@@ -120,7 +120,8 @@ createWindowAndDisplayImage(
 		RGBAToBGRA(rawBytes, bgraBytes);
 		break;
 	default:
-		throw BiometricEvaluation::Error::NotImplemented("Depth");
+		throw BiometricEvaluation::Error::NotImplemented("Depth " +
+		    std::to_string(image->getDepth()));
 		/* Not reached */
 		break;
 	}
@@ -178,45 +179,40 @@ const std::string ImageViewerWorker::ImageParameterKey = "image";
 int32_t
 ImageViewerWorker::workerMain()
 {
-	tr1::shared_ptr<BiometricEvaluation::Image::Image> image =
-	    tr1::static_pointer_cast<BiometricEvaluation::Image::Image>(
+	std::shared_ptr<BiometricEvaluation::Image::Image> image =
+	    std::static_pointer_cast<BiometricEvaluation::Image::Image>(
 	    getParameter(ImageViewerWorker::ImageParameterKey));
 	try {
 		createWindowAndDisplayImage(image);
 	} catch (BiometricEvaluation::Error::Exception &e) {
-		cerr << e.getInfo() << endl;
+		std::cerr << e.what() << std::endl;
 		return (EXIT_FAILURE);
 	}
 
 	return (EXIT_SUCCESS);
 }
 
-ImageViewerWorker::ImageViewerWorker() {}
-ImageViewerWorker::~ImageViewerWorker() {}
-
 void
 displayImage(
-    tr1::shared_ptr<BiometricEvaluation::Image::Image> image)
+    std::shared_ptr<BiometricEvaluation::Image::Image> image)
 {
-	std::vector<tr1::shared_ptr<BiometricEvaluation::Image::Image> > images(
-	    1);
+	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images {
+	    1};
 	images.push_back(image);
 	displayImages(images);
 }
 
 void
 displayImages(
-    std::vector<tr1::shared_ptr<BiometricEvaluation::Image::Image> > &images)
+    std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images)
 {
-	tr1::shared_ptr<BiometricEvaluation::Process::ForkManager> manager(
-	    new BiometricEvaluation::Process::ForkManager());
+	std::shared_ptr<BiometricEvaluation::Process::ForkManager> manager {
+	    new BiometricEvaluation::Process::ForkManager()};
 
-	std::vector<tr1::shared_ptr<BiometricEvaluation::Image::Image> >::
-	    const_iterator image;
-	for (image = images.begin(); image != images.end(); image++) {
-		tr1::shared_ptr<BiometricEvaluation::Process::
+	for (auto image = images.begin(); image != images.end(); image++) {
+		std::shared_ptr<BiometricEvaluation::Process::
 		    WorkerController> worker =
-		    manager->addWorker(tr1::shared_ptr<ImageViewerWorker>(
+		    manager->addWorker(std::shared_ptr<ImageViewerWorker>(
 		    new ImageViewerWorker()));
 		worker->setParameter(ImageViewerWorker::ImageParameterKey,
 		    *image);
@@ -229,29 +225,25 @@ void
 displayAN2K(
     BiometricEvaluation::Memory::uint8Array &data)
 {
-	tr1::shared_ptr<BiometricEvaluation::DataInterchange::AN2KRecord> an2k(
-	    new BiometricEvaluation::DataInterchange::AN2KRecord(data));
+	std::shared_ptr<BiometricEvaluation::DataInterchange::AN2KRecord> an2k {
+	    new BiometricEvaluation::DataInterchange::AN2KRecord(data)};
 
-	std::vector<tr1::shared_ptr<BiometricEvaluation::Image::Image> > images(
-	    an2k->getFingerLatentCount() + an2k->getFingerCaptureCount());
+	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images {
+	    an2k->getFingerLatentCount() + an2k->getFingerCaptureCount()};
 
 	/* Finger Captures */
 	std::vector<BiometricEvaluation::Finger::AN2KViewCapture>
 	    fingerCaptures = an2k->getFingerCaptures();
-	std::vector<BiometricEvaluation::Finger::AN2KViewCapture>::
-	    const_iterator fcView;
-	for (fcView = fingerCaptures.begin(); fcView != fingerCaptures.end();
-	    fcView++)
-		images.push_back(fcView->getImage());
+	for (auto view = fingerCaptures.begin(); view != fingerCaptures.end();
+	    view++)
+		images.push_back(view->getImage());
 
 	/* Latent Captures */
 	std::vector<BiometricEvaluation::Finger::AN2KViewLatent>
 	    latentCaptures = an2k->getFingerLatents();
-	std::vector<BiometricEvaluation::Finger::AN2KViewLatent>::
-	    const_iterator lView;
-	for (lView = latentCaptures.begin(); lView != latentCaptures.end();
-	    lView++)
-		images.push_back(lView->getImage());
+	for (auto view = latentCaptures.begin(); view != latentCaptures.end();
+	    view++)
+		images.push_back(view->getImage());
 
 	/* Other Captures */
 

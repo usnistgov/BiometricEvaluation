@@ -10,7 +10,8 @@
 # This set of directories is where the header files, libraries, programs,
 # and man pages are to be installed.
 LOCALINC := ../include -I../../../common/src/include
+LOCALLIB := ../../lib
 LOCALBIN := ../../bin
 LOCALMAN := ../../man
-include ../../common.mk
+include ../../../common/common.mk
 LD_BIOMEVAL := -L../../../common/lib -lbiomeval

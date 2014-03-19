@@ -11,43 +11,44 @@
 #include <be_error.h>
 #include <be_io_propertiesfile.h>
 #include <be_io_utility.h>
+#include <be_io_recordstore.h>
 #include <be_text.h>
 
 #include <lrs_additions.h>
 #include <ordered_set.h>
 
-using namespace BiometricEvaluation;
+namespace BE = BiometricEvaluation;
 
 bool
 isListRecordStore(
-    const string &pathToRecordStore)
+    const std::string &pathToRecordStore)
 {
 	/* RecordStore existance */
-	string rsPath;
-	if (!IO::Utility::constructAndCheckPath(
-	    Text::filename(pathToRecordStore),
-	    Text::dirname(pathToRecordStore), rsPath))
+	std::string rsPath;
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::Text::filename(pathToRecordStore),
+	    BE::Text::dirname(pathToRecordStore), rsPath))
 		return (false);
 	
 	/* RecordStore control file existance */
-	string filePath;
-	if (!IO::Utility::constructAndCheckPath(
-	    IO::RecordStore::CONTROLFILENAME, rsPath, filePath))
+	std::string filePath;
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::RecordStore::CONTROLFILENAME, rsPath, filePath))
 		return (false);
 	
 	/* RecordStore control file lists a RecordStore type of LISTTYPE */
 	try {
-		IO::PropertiesFile props(filePath, IO::READONLY);
-		if (props.getProperty(IO::RecordStore::TYPEPROPERTY) !=
-		    IO::RecordStore::LISTTYPE)
+		BE::IO::PropertiesFile props(filePath, BE::IO::READONLY);
+		if (props.getProperty(BE::IO::RecordStore::TYPEPROPERTY) !=
+		    to_string(BE::IO::RecordStore::Kind::List))
 			return (false);
-	} catch (Error::Exception) {
+	} catch (BE::Error::Exception) {
 		return (false);
 	}
 	
 	/* KeyList file existance */
-	if (!IO::Utility::constructAndCheckPath(
-	    IO::ListRecordStore::KEYLISTFILENAME, rsPath, filePath))
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::ListRecordStore::KEYLISTFILENAME, rsPath, filePath))
 		return (false);
 			
 	/* Fairly confident it's a ListRecordStore at this point */
@@ -56,148 +57,151 @@ isListRecordStore(
 
 void
 updateListRecordStoreCount(
-    const string &pathToRecordStore,
+    const std::string &pathToRecordStore,
     uint64_t newCount)
-    throw (Error::StrategyError)
+    throw (BiometricEvaluation::Error::StrategyError)
 {
 	if (isListRecordStore(pathToRecordStore) == false)
-		throw Error::StrategyError(pathToRecordStore + " is not "
+		throw BE::Error::StrategyError(pathToRecordStore + " is not "
 		    " a ListRecordStore");
 	
-	string propsFilePath;
-	if (!IO::Utility::constructAndCheckPath(
-	    IO::RecordStore::CONTROLFILENAME, pathToRecordStore, propsFilePath))
-		throw Error::StrategyError(propsFilePath + " does not exist");
-	IO::PropertiesFile props(propsFilePath);
-	props.setPropertyFromInteger(IO::RecordStore::COUNTPROPERTY, newCount);
+	std::string propsFilePath;
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::RecordStore::CONTROLFILENAME, pathToRecordStore,
+		    propsFilePath))
+		throw BE::Error::StrategyError(propsFilePath + " does not exist");
+	BE::IO::PropertiesFile props(propsFilePath);
+	props.setPropertyFromInteger(BE::IO::RecordStore::COUNTPROPERTY,
+	     newCount);
 	props.sync();
 }
 
 void
 constructListRecordStore(
-    string lrsName,
-    string lrsDir,
-    string rsPath)
-    throw (Error::ObjectDoesNotExist,
-    Error::ObjectExists,
-    Error::StrategyError)
+    std::string lrsName,
+    std::string lrsDir,
+    std::string rsPath)
+    throw (BiometricEvaluation::Error::ObjectDoesNotExist,
+    BiometricEvaluation::Error::ObjectExists,
+    BiometricEvaluation::Error::StrategyError)
 {
 	/* Make sure rsPath is actually a RecordStore (exceptions float out) */
-	tr1::shared_ptr<IO::RecordStore> rs =
-	    IO::RecordStore::openRecordStore(Text::filename(rsPath),
-	    Text::dirname(rsPath), IO::READONLY);
+	std::shared_ptr<BE::IO::RecordStore> rs =
+	    BE::IO::RecordStore::openRecordStore(BE::Text::filename(rsPath),
+	    BE::Text::dirname(rsPath), BE::IO::READONLY);
 
 	/* LRS directory */
-	string lrsPath;
-	if (IO::Utility::constructAndCheckPath(lrsName, lrsDir, lrsPath))
-		throw Error::ObjectExists(lrsPath);
+	std::string lrsPath;
+	if (BE::IO::Utility::constructAndCheckPath(lrsName, lrsDir, lrsPath))
+		throw BE::Error::ObjectExists(lrsPath);
 	if (mkdir(lrsPath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO))
-		throw Error::StrategyError("Could not create " + lrsPath +
-		    Error::errorStr());
+		throw BE::Error::StrategyError("Could not create " + lrsPath +
+		    BE::Error::errorStr());
 	    
 	/* LRS Properties file */
-	string controlFilePath;
-	if (IO::Utility::constructAndCheckPath(
-	    IO::RecordStore::CONTROLFILENAME, lrsPath, controlFilePath))
-		throw Error::ObjectExists(controlFilePath);
-	string absoluteRSPath;
-	if (!IO::Utility::constructAndCheckPath(
-	    Text::filename(rsPath), Text::dirname(rsPath), absoluteRSPath))
-		throw Error::ObjectDoesNotExist(absoluteRSPath);
+	std::string controlFilePath;
+	if (BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::RecordStore::CONTROLFILENAME, lrsPath, controlFilePath))
+		throw BE::Error::ObjectExists(controlFilePath);
+	std::string absoluteRSPath;
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::Text::filename(rsPath), BE::Text::dirname(rsPath),
+	    absoluteRSPath))
+		throw BE::Error::ObjectDoesNotExist(absoluteRSPath);
 		
-	IO::PropertiesFile props(controlFilePath);
-	props.setPropertyFromInteger(IO::RecordStore::COUNTPROPERTY, 0);
-	props.setProperty(IO::RecordStore::NAMEPROPERTY,
-	Text::filename(lrsPath));
-	props.setProperty(IO::RecordStore::DESCRIPTIONPROPERTY,
+	BE::IO::PropertiesFile props(controlFilePath);
+	props.setPropertyFromInteger(BE::IO::RecordStore::COUNTPROPERTY, 0);
+	props.setProperty(BE::IO::RecordStore::NAMEPROPERTY,
+	BE::Text::filename(lrsPath));
+	props.setProperty(BE::IO::RecordStore::DESCRIPTIONPROPERTY,
 	    "<Description>");
-	props.setProperty(IO::RecordStore::TYPEPROPERTY,
-	    IO::RecordStore::LISTTYPE);
-	props.setProperty(IO::ListRecordStore::SOURCERECORDSTOREPROPERTY,
+	props.setProperty(BE::IO::RecordStore::TYPEPROPERTY,
+	    to_string(BE::IO::RecordStore::Kind::List));
+	props.setProperty(BE::IO::ListRecordStore::SOURCERECORDSTOREPROPERTY,
 	    absoluteRSPath);
 	props.sync();
 	
 	/* KeyList file */
-	string keyListFile;
-	if (IO::Utility::constructAndCheckPath(
-	    IO::ListRecordStore::KEYLISTFILENAME, lrsPath, keyListFile))
-		throw Error::ObjectExists(keyListFile);
-	IO::Utility::writeFile(NULL, 0, keyListFile);
+	std::string keyListFile;
+	if (BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::ListRecordStore::KEYLISTFILENAME, lrsPath, keyListFile))
+		throw BE::Error::ObjectExists(keyListFile);
+	BE::IO::Utility::writeFile(NULL, 0, keyListFile);
 }
 
 void
 readListRecordStoreKeys(
-    const string &pathToRecordStore,
-    tr1::shared_ptr<IO::RecordStore> &srs,
-    tr1::shared_ptr< OrderedSet<string> > &existingKeys)
-    throw (Error::FileError,
-    Error::StrategyError)
+    const std::string &pathToRecordStore,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &srs,
+    std::shared_ptr<OrderedSet<std::string>> &existingKeys)
+    throw (BiometricEvaluation::Error::FileError,
+    BiometricEvaluation::Error::StrategyError)
 {
 	if (isListRecordStore(pathToRecordStore) == false)
-		throw Error::StrategyError(pathToRecordStore + " is not "
+		throw BE::Error::StrategyError(pathToRecordStore + " is not "
 		    "a ListRecordStore");
 
 	/* Open Source RecordStore */
-	string controlFilePath;
-	if (!IO::Utility::constructAndCheckPath(
-	    IO::RecordStore::CONTROLFILENAME, pathToRecordStore,
+	std::string controlFilePath;
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::RecordStore::CONTROLFILENAME, pathToRecordStore,
 	    controlFilePath)) {
-		throw Error::FileError("Error opening " +
-		    IO::RecordStore::CONTROLFILENAME);
+		throw BE::Error::FileError("Error opening " +
+		    BE::IO::RecordStore::CONTROLFILENAME);
 	}
-	tr1::shared_ptr<IO::PropertiesFile> props(
-	    new IO::PropertiesFile(controlFilePath, IO::READONLY));
-	string sourceRSPath;
+	std::shared_ptr<BE::IO::PropertiesFile> props(
+	    new BE::IO::PropertiesFile(controlFilePath, BE::IO::READONLY));
+	std::string sourceRSPath;
 	try {
 		sourceRSPath = props->getProperty(
-		    IO::ListRecordStore::SOURCERECORDSTOREPROPERTY);
-	} catch (Error::Exception &e) {
-		throw Error::StrategyError("Could not read " +
-		    IO::ListRecordStore::SOURCERECORDSTOREPROPERTY +
-		    " property (" + e.getInfo() + ")");
+		    BE::IO::ListRecordStore::SOURCERECORDSTOREPROPERTY);
+	} catch (BE::Error::Exception &e) {
+		throw BE::Error::StrategyError("Could not read " +
+		    BE::IO::ListRecordStore::SOURCERECORDSTOREPROPERTY +
+		    " property (" + e.what() + ")");
 	}
 	try {
-		srs = IO::RecordStore::openRecordStore(
-		    Text::filename(sourceRSPath),
-		    Text::dirname(sourceRSPath),
-		    IO::READONLY);
-	} catch (Error::Exception &e) {
-		throw Error::StrategyError("Could not open source "
-		    "RecordStore " + sourceRSPath + " (" + e.getInfo() + ")");
+		srs = BE::IO::RecordStore::openRecordStore(
+		    BE::Text::filename(sourceRSPath),
+		    BE::Text::dirname(sourceRSPath),
+		    BE::IO::READONLY);
+	} catch (BE::Error::Exception &e) {
+		throw BE::Error::StrategyError("Could not open source "
+		    "RecordStore " + sourceRSPath + " (" + e.what() + ")");
 	}
 	
 	/* Open KeyList */
-	string keyListFilePath;
-	if (!IO::Utility::constructAndCheckPath(
-	    IO::ListRecordStore::KEYLISTFILENAME, pathToRecordStore,
+	std::string keyListFilePath;
+	if (!BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::ListRecordStore::KEYLISTFILENAME, pathToRecordStore,
 	    keyListFilePath))
-		throw Error::FileError("Cannot find " +
-		    IO::ListRecordStore::KEYLISTFILENAME);
+		throw BE::Error::FileError("Cannot find " +
+		    BE::IO::ListRecordStore::KEYLISTFILENAME);
 	std::fstream keyListFile(keyListFilePath.c_str());
 	if (keyListFile.is_open() == false || !keyListFile)
-		throw Error::FileError("Error opening " +
-		    IO::ListRecordStore::KEYLISTFILENAME);
+		throw BE::Error::FileError("Error opening " +
+		    BE::IO::ListRecordStore::KEYLISTFILENAME);
 	
 	/* Read existing keys */
 	try {
-		existingKeys.reset(new OrderedSet<string>());
-	} catch (Error::Exception &e) {
+		existingKeys.reset(new OrderedSet<std::string>());
+	} catch (BE::Error::Exception &e) {
 		keyListFile.close();
-		throw Error::StrategyError("Could not allocate key list (" +
-		    e.getInfo() + ")");
+		throw BE::Error::StrategyError("Could not allocate key list (" +
+		    std::string(e.what()) + ")");
 	}
-	string line;
+	std::string line;
 	for (;;) {
 		std::getline(keyListFile, line);
 		if (keyListFile.eof())
 			break;
 		if (!keyListFile) {
 			keyListFile.close();
-			throw Error::FileError("Error reading " +
-			    IO::ListRecordStore::KEYLISTFILENAME);
+			throw BE::Error::FileError("Error reading " +
+			    BE::IO::ListRecordStore::KEYLISTFILENAME);
 		}
 			
-		Text::removeLeadingTrailingWhitespace(line);
+		BE::Text::removeLeadingTrailingWhitespace(line);
 		existingKeys->push_back(line);
 	}
 	keyListFile.close();
@@ -205,66 +209,68 @@ readListRecordStoreKeys(
 
 void
 writeListRecordStoreKeys(
-    const string &pathToRecordStore,
-    const tr1::shared_ptr< OrderedSet<string> > &keys)
-    throw (Error::FileError)
+    const std::string &pathToRecordStore,
+    const std::shared_ptr<OrderedSet<std::string>> &keys)
+    throw (BiometricEvaluation::Error::FileError)
 {
         /* Write key list to temporary file */
-	string newListPath;
+	std::string newListPath;
 	try {
-		newListPath = IO::Utility::createTemporaryFile(
-		    IO::ListRecordStore::KEYLISTFILENAME);
-	} catch (Error::MemoryError &e) {
-		throw Error::FileError(e.getInfo());
+		newListPath = BE::IO::Utility::createTemporaryFile(
+		    BE::IO::ListRecordStore::KEYLISTFILENAME);
+	} catch (BE::Error::MemoryError &e) {
+		throw BE::Error::FileError(e.what());
 	}
 	
         std::ofstream newListStream(newListPath.c_str());
         if (!newListStream)
-                throw Error::FileError("Could not open " + newListPath);
+                throw BE::Error::FileError("Could not open " + newListPath);
 
-        for (OrderedSet<string>::const_iterator i = keys->begin();
+        for (OrderedSet<std::string>::const_iterator i = keys->begin();
 	    i != keys->end(); i++) {
                 newListStream << *i << '\n';
                 if (!newListStream)
-                        throw Error::FileError("Could not write " +
+                        throw BE::Error::FileError("Could not write " +
                             newListPath);
         }
 
         newListStream.close();
         if (!newListStream)
-                throw Error::FileError("Could not close " + newListPath);
+                throw BE::Error::FileError("Could not close " + newListPath);
 
         /* Atomically replace contents of key list with temporary file */
-	string existingListPath;
-	IO::Utility::constructAndCheckPath(IO::ListRecordStore::KEYLISTFILENAME,
+	std::string existingListPath;
+	BE::IO::Utility::constructAndCheckPath(
+	    BE::IO::ListRecordStore::KEYLISTFILENAME,
 	    pathToRecordStore, existingListPath);
         if (std::rename(newListPath.c_str(), existingListPath.c_str()) != 0)
-                throw Error::FileError("Could not replace key list: " +
-                    Error::errorStr());
+                throw BE::Error::FileError("Could not replace key list: " +
+                    BE::Error::errorStr());
 		    
 	updateListRecordStoreCount(pathToRecordStore, keys->size());
 }
 
 void
 insertKeysIntoListRecordStore(
-    const string &pathToRecordStore,
-    tr1::shared_ptr< OrderedSet<string> > keys)
-    throw (Error::FileError,
-    Error::ObjectDoesNotExist,
-    Error::ObjectExists,
-    Error::StrategyError)
+    const std::string &pathToRecordStore,
+    std::shared_ptr<OrderedSet<std::string>> keys)
+    throw (BiometricEvaluation::Error::FileError,
+    BiometricEvaluation::Error::ObjectDoesNotExist,
+    BiometricEvaluation::Error::ObjectExists,
+    BiometricEvaluation::Error::StrategyError)
 {
-	tr1::shared_ptr< OrderedSet<string> > existingKeys;
-	tr1::shared_ptr<IO::RecordStore> srs;
+	std::shared_ptr<OrderedSet<std::string>> existingKeys;
+	std::shared_ptr<BE::IO::RecordStore> srs;
 	readListRecordStoreKeys(pathToRecordStore, srs, existingKeys);
 	
-	tr1::shared_ptr<IO::RecordStore> lrs =
-	    IO::RecordStore::openRecordStore(Text::filename(pathToRecordStore),
-	    Text::dirname(pathToRecordStore), IO::READONLY);
+	std::shared_ptr<BE::IO::RecordStore> lrs =
+	    BE::IO::RecordStore::openRecordStore(
+	    BE::Text::filename(pathToRecordStore),
+	    BE::Text::dirname(pathToRecordStore), BE::IO::READONLY);
 	
 	/* Add unique keys */
-	string badKeys;
-	for (OrderedSet<string>::const_iterator it = keys->begin();
+	std::string badKeys;
+	for (OrderedSet<std::string>::const_iterator it = keys->begin();
 	    it != keys->end(); it++) {
 		if (!srs->containsKey(*it))
 			badKeys += *it + ", ";
@@ -277,23 +283,23 @@ insertKeysIntoListRecordStore(
 		    
 	/* Report any keys that could not be inserted (removing last ", ") */
 	if (badKeys.empty() == false)
-		throw Error::ObjectDoesNotExist(badKeys.substr(0,
+		throw BE::Error::ObjectDoesNotExist(badKeys.substr(0,
 		    badKeys.size() - 2));
 }
 
 void
 removeKeysFromListRecordStore(
-    const string &pathToRecordStore,
-    tr1::shared_ptr< OrderedSet<string> > keys)
-    throw (Error::FileError,
-    Error::StrategyError)
+    const std::string &pathToRecordStore,
+    std::shared_ptr<OrderedSet<std::string>> keys)
+    throw (BiometricEvaluation::Error::FileError,
+    BiometricEvaluation::Error::StrategyError)
 {
-	tr1::shared_ptr< OrderedSet<string> > existingKeys;
-	tr1::shared_ptr<IO::RecordStore> srs;
+	std::shared_ptr<OrderedSet<std::string>> existingKeys;
+	std::shared_ptr<BE::IO::RecordStore> srs;
 	readListRecordStoreKeys(pathToRecordStore, srs, existingKeys);
 	
 	/* Remove keys */
-	for (OrderedSet<string>::const_iterator it = keys->begin();
+	for (OrderedSet<std::string>::const_iterator it = keys->begin();
 	    it != keys->end(); it++)
 		existingKeys->erase(*it);
 	

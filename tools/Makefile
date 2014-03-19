@@ -10,7 +10,7 @@
 #
 # Top-level make file to build all of the BIOMDI common code.
 #
-include common.mk
+include ../common/common.mk
 SUBDIRS := src
 
 LOCALINC := $(PWD)/src/include
@@ -19,6 +19,7 @@ LOCALBIN := $(PWD)/bin
 LOCALMAN := $(PWD)/man
 
 all:
+	test -d $(LOCALLIB) || mkdir $(LOCALLIB)
 	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
 	test -d $(LOCALMAN) || mkdir $(LOCALMAN)
 	@for subdir in $(SUBDIRS); do \
@@ -27,6 +28,7 @@ all:
 
 install:
 	install -m 644 -o $(ROOT) $(LOCALINC)/*.h $(INCPATH)
+	install -m 755 -o $(ROOT) $(LOCALLIB)/* $(LIBPATH)
 	install -m 755 -o $(ROOT) $(LOCALBIN)/* $(BINPATH)
 	install -m 755 -o $(ROOT) $(LOCALMAN)/* $(MANPATH)
 
@@ -34,6 +36,7 @@ clean:
 	@for subdir in $(SUBDIRS); do \
 		(cd $$subdir && $(MAKE) clean) || exit 1; \
 	done
+	rm -rf $(LOCALLIB)
 	rm -rf $(LOCALBIN)
 	rm -rf $(LOCALMAN)
 	rm -f .gdb_history

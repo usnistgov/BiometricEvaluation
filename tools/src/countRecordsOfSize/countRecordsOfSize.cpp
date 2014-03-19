@@ -17,15 +17,14 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <tr1/memory>
+#include <memory>
 
 #include <be_text.h>
 #include <be_io_recordstore.h>
 
-using namespace std;
-using namespace BiometricEvaluation;
+namespace BE = BiometricEvaluation;
 
-static const string ARG_STRING = "<RecordStore> [<size> (default = 0)]";
+static const std::string ARG_STRING = "<RecordStore> [<size> (default = 0)]";
 
 /**
  * @brief
@@ -38,7 +37,7 @@ static const string ARG_STRING = "<RecordStore> [<size> (default = 0)]";
  */
 void
 printKeys(
-    tr1::shared_ptr<IO::RecordStore> rs,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> rs,
     const uint64_t targetSize);
 
 int
@@ -48,17 +47,18 @@ main(
 {
 	/* Check arguments */
 	if ((argc < 2) || (argc > 3)) {
-		cerr << "Usage: " << argv[0] << " " << ARG_STRING << endl;
+		std::cerr << "Usage: " << argv[0] << " " << ARG_STRING <<
+		    std::endl;
 		return (1);
 	}
 
-	tr1::shared_ptr<IO::RecordStore> rs;
+	std::shared_ptr<BE::IO::RecordStore> rs;
 	try {
-		rs = IO::RecordStore::openRecordStore(
-	    	    Text::filename(argv[1]), Text::dirname(argv[1]),
-		    IO::READONLY);
-	} catch (Error::Exception &e) {
-		cerr << e.getInfo() << endl;
+		rs = BE::IO::RecordStore::openRecordStore(
+	    	    BE::Text::filename(argv[1]), BE::Text::dirname(argv[1]),
+		    BE::IO::READONLY);
+	} catch (BE::Error::Exception &e) {
+		std::cerr << e.what() << std::endl;
 		return (1);
 	}
 
@@ -70,7 +70,8 @@ main(
 		printKeys(rs, atoi(argv[2]));
 		break;
 	default:
-		cerr << "Usage: " << argv[0] << " " << ARG_STRING << endl;
+		std::cerr << "Usage: " << argv[0] << " " << ARG_STRING <<
+		    std::endl;
 		return (1);
 	}
 	
@@ -79,24 +80,24 @@ main(
 
 void
 printKeys(
-    tr1::shared_ptr<IO::RecordStore> rs,
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> rs,
     const uint64_t targetSize)
 {
 	uint64_t size;
-	string key;
+	std::string key;
 
 	for (;;) {
 		try {
 			size = rs->sequence(key, NULL);
-		} catch (Error::ObjectDoesNotExist) {
+		} catch (BE::Error::ObjectDoesNotExist) {
 			break;
-		} catch (Error::Exception &e) {
-			cerr << e.getInfo() << endl;
+		} catch (BE::Error::Exception &e) {
+			std::cerr << e.what() << std::endl;
 			return;
 		}
 
 		if (size == targetSize)
-			cout << key << endl;
+			std::cout << key << std::endl;
 	}
 }
 

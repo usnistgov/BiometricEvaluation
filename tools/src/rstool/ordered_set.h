@@ -13,7 +13,7 @@
 
 #include <list>
 #include <set>
-#include <tr1/memory>
+#include <memory>
 
 /** A container where insertion order is preserved and elements are unique. */
 template<class T>
@@ -142,9 +142,9 @@ private:
 	/** Insertion strategy */
 	Strategy _strategy;
 	/** Backing datastore for elements */
-	std::tr1::shared_ptr<container> _elements;
+	std::shared_ptr<container> _elements;
 	/** Used when strategy == FASTER to find duplicates */
-	std::tr1::shared_ptr< std::set<T> > _uniqueElements;
+	std::shared_ptr<std::set<T>> _uniqueElements;
 };
 
 template<class T>
