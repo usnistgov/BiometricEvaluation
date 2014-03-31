@@ -104,10 +104,9 @@ createWindowAndDisplayImage(
 	/* 
 	 * Create BGRA XImage.
 	 */
-	BiometricEvaluation::Memory::uint8Array rawBytes;
+	BiometricEvaluation::Memory::uint8Array rawBytes{image->getRawData()};
 	BiometricEvaluation::Memory::uint8Array bgraBytes(
 	    (image->getDimensions().xSize * image->getDimensions().ySize) * 4);
-	image->getRawData(rawBytes);
 	uint8_t *bgraBytesPtr = NULL;
 	switch (image->getDepth()) {
 	case 8:
