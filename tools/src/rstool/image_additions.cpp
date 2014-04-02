@@ -24,7 +24,7 @@
 #include <X11/Xutil.h>
 
 void
-grayToBGRA(
+ImageAdditions::grayToBGRA(
     BiometricEvaluation::Memory::uint8Array &grayBytes,
     BiometricEvaluation::Memory::uint8Array &bgraBytes)
 {
@@ -43,7 +43,7 @@ grayToBGRA(
 }
 
 void
-RGBToBGRA(
+ImageAdditions::RGBToBGRA(
     BiometricEvaluation::Memory::uint8Array &rgbBytes,
     BiometricEvaluation::Memory::uint8Array &bgraBytes)
 {
@@ -61,7 +61,7 @@ RGBToBGRA(
 }
 
 void
-RGBAToBGRA(
+ImageAdditions::RGBAToBGRA(
     BiometricEvaluation::Memory::uint8Array &rgbaBytes,
     BiometricEvaluation::Memory::uint8Array &bgraBytes)
 {
@@ -77,7 +77,7 @@ RGBAToBGRA(
 }
 
 void
-createWindowAndDisplayImage(
+ImageAdditions::createWindowAndDisplayImage(
     std::shared_ptr<BiometricEvaluation::Image::Image> image)
 {
 	/*
@@ -110,13 +110,13 @@ createWindowAndDisplayImage(
 	uint8_t *bgraBytesPtr = NULL;
 	switch (image->getDepth()) {
 	case 8:
-		grayToBGRA(rawBytes, bgraBytes);
+		ImageAdditions::grayToBGRA(rawBytes, bgraBytes);
 		break;
 	case 24:
-		RGBToBGRA(rawBytes, bgraBytes);
+		ImageAdditions::RGBToBGRA(rawBytes, bgraBytes);
 		break;
 	case 32:
-		RGBAToBGRA(rawBytes, bgraBytes);
+		ImageAdditions::RGBAToBGRA(rawBytes, bgraBytes);
 		break;
 	default:
 		throw BiometricEvaluation::Error::NotImplemented("Depth " +
@@ -173,16 +173,16 @@ createWindowAndDisplayImage(
 	XFree(xImage);
 }
 
-const std::string ImageViewerWorker::ImageParameterKey = "image";
+const std::string ImageAdditions::ImageViewerWorker::ImageParameterKey = "image";
 
 int32_t
-ImageViewerWorker::workerMain()
+ImageAdditions::ImageViewerWorker::workerMain()
 {
 	std::shared_ptr<BiometricEvaluation::Image::Image> image =
 	    std::static_pointer_cast<BiometricEvaluation::Image::Image>(
 	    getParameter(ImageViewerWorker::ImageParameterKey));
 	try {
-		createWindowAndDisplayImage(image);
+		ImageAdditions::createWindowAndDisplayImage(image);
 	} catch (BiometricEvaluation::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (EXIT_FAILURE);
@@ -192,7 +192,7 @@ ImageViewerWorker::workerMain()
 }
 
 void
-displayImage(
+ImageAdditions::displayImage(
     std::shared_ptr<BiometricEvaluation::Image::Image> image)
 {
 	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images {
@@ -202,7 +202,7 @@ displayImage(
 }
 
 void
-displayImages(
+ImageAdditions::displayImages(
     std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images)
 {
 	std::shared_ptr<BiometricEvaluation::Process::ForkManager> manager {
@@ -221,7 +221,7 @@ displayImages(
 }
 
 void
-displayAN2K(
+ImageAdditions::displayAN2K(
     BiometricEvaluation::Memory::uint8Array &data)
 {
 	std::shared_ptr<BiometricEvaluation::DataInterchange::AN2KRecord> an2k {

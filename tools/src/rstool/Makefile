@@ -43,6 +43,8 @@ $(PROGRAM): $(OBJECTS)
 
 rstool.o: rstool.cpp lrs_additions.cpp image_additions.cpp
 	$(CXX) $(CXXFLAGS) -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) -c $< -o $@
+	
+image_additions.o: CXXFLAGS += -Wno-variadic-macros
 
 clean:
 	$(RM) $(PROGRAM) $(OBJECTS)

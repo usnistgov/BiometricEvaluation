@@ -487,7 +487,7 @@ visualizeRecord(
 
 	if (isImage) {
 		try {
-			displayImage(image);
+			ImageAdditions::displayImage(image);
 			return (EXIT_SUCCESS);
 		} catch (BiometricEvaluation::Error::Exception) {
 			return (EXIT_FAILURE);
@@ -496,7 +496,7 @@ visualizeRecord(
 
 	/* At this point, we're not an Image */
 	try {
-		displayAN2K(value);
+		ImageAdditions::displayAN2K(value);
 		return (EXIT_SUCCESS);
 	} catch (BiometricEvaluation::Error::Exception) {
 		return (EXIT_FAILURE);
@@ -1895,7 +1895,6 @@ modifyListRecordStore(
     Action action)
 {
 	HashablePart what_to_hash = HashablePart::NOTHING;
-	KeyFormat hashed_key_format = KeyFormat::DEFAULT;
 	std::shared_ptr<BE::IO::RecordStore> hash_rs;
 	std::vector<std::string> files;
 	bool prompt = true;
