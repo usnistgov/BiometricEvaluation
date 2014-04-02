@@ -969,7 +969,11 @@
 			buildSettings = {
 				CXX = "clang++";
 				DEBUG = 1;
-				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4";
+				EXTRA_CFLAGS = "";
+				EXTRA_CXXFLAGS = "";
+				EXTRA_LDFLAGS = "";
+				MAKE_VARS = "CXX=\"$(CXX)\" MPICXX=\"$(MPICXX)\" DEBUG=$(DEBUG) -j 4 EXTRA_CFLAGS=\"$(EXTRA_CFLAGS)\" EXTRA_CXXFLAGS=\"$(EXTRA_CXXFLAGS)\" EXTRA_LDFLAGS=\"$(EXTRA_LDFLAGS)\"";
+				MPICXX = mpicxx;
 			};
 			name = Debug;
 		};
@@ -978,41 +982,35 @@
 			buildSettings = {
 				CXX = "clang++";
 				DEBUG = 0;
-				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4";
+				EXTRA_CFLAGS = "";
+				EXTRA_CXXFLAGS = "";
+				EXTRA_LDFLAGS = "";
+				MAKE_VARS = "CXX=\"$(CXX)\" MPICXX=\"$(MPICXX)\" DEBUG=$(DEBUG) -j 4 EXTRA_CFLAGS=\"$(EXTRA_CFLAGS)\" EXTRA_CXXFLAGS=\"$(EXTRA_CXXFLAGS)\" EXTRA_LDFLAGS=\"$(EXTRA_LDFLAGS)\"";
+				MPICXX = mpicxx;
 			};
 			name = Release;
 		};
 		08CFC4611545DF2B00BA89B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EXTRA_CFLAGS = "";
-				EXTRA_CXXFLAGS = "";
-				EXTRA_LDFLAGS = "";
-				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4 EXTRA_CFLAGS=\"$(EXTRA_CFLAGS)\" EXTRA_CXXFLAGS=\"$(EXTRA_CXXFLAGS)\" EXTRA_LDFLAGS=\"$(EXTRA_LDFLAGS)\"";
 			};
 			name = Debug;
 		};
 		08CFC4621545DF2B00BA89B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EXTRA_CFLAGS = "";
-				EXTRA_CXXFLAGS = "";
-				EXTRA_LDFLAGS = "";
-				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4 EXTRA_CFLAGS=\"$(EXTRA_CFLAGS)\" EXTRA_CXXFLAGS=\"$(EXTRA_CXXFLAGS)\" EXTRA_LDFLAGS=\"$(EXTRA_LDFLAGS)\"";
 			};
 			name = Release;
 		};
 		08CFC4741545DFCF00BA89B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4";
 			};
 			name = Debug;
 		};
 		08CFC4751545DFCF00BA89B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				MAKE_VARS = "CXX=$(CXX) DEBUG=$(DEBUG) -j 4";
 			};
 			name = Release;
 		};
