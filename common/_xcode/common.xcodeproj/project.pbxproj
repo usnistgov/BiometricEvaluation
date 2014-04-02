@@ -66,6 +66,8 @@
 		0890143218D9EB9B0079696B /* be_process_messagecenter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_process_messagecenter.cpp; path = ../src/libbiomeval/be_process_messagecenter.cpp; sourceTree = "<group>"; };
 		0890143818D9EC2C0079696B /* be_process_commandcenter_example.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_process_commandcenter_example.cpp; path = ../src/test/be_process_commandcenter_example.cpp; sourceTree = "<group>"; };
 		0890143918D9EC2C0079696B /* test_be_framework_enumeration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_framework_enumeration.cpp; path = ../src/test/test_be_framework_enumeration.cpp; sourceTree = "<group>"; };
+		08A64F2718EC9DC500ED9120 /* be_image_bmp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_image_bmp.cpp; path = ../src/libbiomeval/be_image_bmp.cpp; sourceTree = "<group>"; };
+		08A64F2818EC9DC500ED9120 /* be_image_bmp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_image_bmp.h; path = ../src/include/be_image_bmp.h; sourceTree = "<group>"; };
 		08C0465A156E9E4B00E2A097 /* be_io_gzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_gzip.h; path = ../src/include/be_io_gzip.h; sourceTree = "<group>"; };
 		08C0465B156E9E5A00E2A097 /* be_io_compressor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressor.h; path = ../src/include/be_io_compressor.h; sourceTree = "<group>"; };
 		08C0465C156E9E8D00E2A097 /* be_io_compressor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressor.cpp; path = ../src/libbiomeval/be_io_compressor.cpp; sourceTree = "<group>"; };
@@ -592,6 +594,7 @@
 			isa = PBXGroup;
 			children = (
 				08CFC4A41545E14800BA89B2 /* be_image.h */,
+				08A64F2818EC9DC500ED9120 /* be_image_bmp.h */,
 				08CFC49C1545E14800BA89B2 /* be_image_image.h */,
 				08CFC49D1545E14800BA89B2 /* be_image_jpeg.h */,
 				08CFC49E1545E14800BA89B2 /* be_image_jpeg2000.h */,
@@ -731,6 +734,7 @@
 			isa = PBXGroup;
 			children = (
 				08CFC4E31545E1F500BA89B2 /* be_image.cpp */,
+				08A64F2718EC9DC500ED9120 /* be_image_bmp.cpp */,
 				08CFC4DA1545E1F500BA89B2 /* be_image_image.cpp */,
 				08CFC4DB1545E1F500BA89B2 /* be_image_jpeg.cpp */,
 				08CFC4DC1545E1F500BA89B2 /* be_image_jpeg2000.cpp */,
