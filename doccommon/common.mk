@@ -44,10 +44,12 @@
 # Override executables
 #
 #
-LATEX = $(shell which pdflatex) $(LATEXARGS)
+LATEX = $(shell which pdflatex) 
 MAKEINDEX = $(shell which makeindex)
 MAKEBIB = $(shell which bibtex)
 DOXYGEN = $(shell which doxygen)
+PERL = $(shell which perl)
+
 CP = cp -pf
 LNS = ln -sf
 
@@ -126,6 +128,7 @@ else
 	$(CP) $(LATEXBUILDDIR)/$(LATEXPDF) $(PDFMAIN)
 endif
 
+
 #
 # Build relies on doxygen config, if present
 #
@@ -137,6 +140,9 @@ endif
 #
 # Make directory structure
 #
+    ifeq ("$(LATEX)", " ")
+	$(error LaTeX command not found)
+    endif
 	mkdir -p $(LATEXBUILDDIR)
 	mkdir -p $(HTMLBUILDDIR)
 #
@@ -173,8 +179,14 @@ endif
 # create the class and other documents.
 #
 ifeq ($(GENERATEDOXYGEN), YES)
+    ifeq ("$(DOXYGEN)", "")
+	$(error doxygen command not found)
+    endif
+    ifeq ("$(PERL)", "")
+	$(error Perl command not found)
+    endif
 	chmod +w $(LATEXBUILDDIR)/*.tex
-	$(foreach texdoc, $(SOURCETEX), perl -pe 's|(\\.*?doxyref){(.*?)}({([1-9]*?)})?|`scripts/$$1 $$2 $$4`|ge' -i $(LATEXBUILDDIR)/$(texdoc);)
+	$(foreach texdoc, $(SOURCETEX), $(PERL) -pe 's|(\\.*?doxyref){(.*?)}({([1-9]*?)})?|`scripts/$$1 $$2 $$4`|ge' -i $(LATEXBUILDDIR)/$(texdoc);)
 	$(CP) $(DOXYCONFIG) $(LATEXBUILDDIR)
 	$(DOXYGEN) $(DOXYCONFIG)
 endif
@@ -184,6 +196,12 @@ endif
 #
 	cd $(LATEXBUILDDIR) && $(LATEX) $(LATEXROOTNAME)
 ifeq ($(GENERATEINDEX),YES)
+    ifeq ("$(MAKEINDEX)", "")
+	$(error make index command not found)
+    endif
+    ifeq ("$(MAKEBIB)", "")
+	$(error make bibliography command not found)
+    endif
 	$(warning MAKING AN INDEX)
 	cd $(LATEXBUILDDIR) && $(MAKEINDEX) $(INDEXFILE)
 endif
