@@ -12,8 +12,8 @@
 #
 # rstool versioning
 # 
-MAJOR_VERSION=1
-MINOR_VERSION=4
+MAJOR_VERSION=2
+MINOR_VERSION=0
 #
 include ../common.mk
 #
@@ -31,8 +31,8 @@ debug: all
 
 # OS X needs Xquartz to be installed
 ifeq ($(OS),Darwin)
-LD_BIOMEVAL += -L/opt/local/lib
-CXXFLAGS += -I/opt/local/include
+LD_BIOMEVAL += -L/opt/local/lib -L/usr/X11/lib
+CXXFLAGS += -I/opt/local/include -I/usr/X11/include/
 endif
 
 $(PROGRAM): $(OBJECTS)

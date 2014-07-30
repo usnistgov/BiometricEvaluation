@@ -1,5 +1,5 @@
 .\"
-.Dd January 23, 2014
+.Dd March 06, 2014
 .Dt RSTOOL 1
 .Os "Mac OS X"
 .Sh NAME
@@ -56,7 +56,6 @@ make
 .Op Fl f
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
-.Op Fl o Ar dir
 .Op Fl t Ar rs_type Op Fl s Ar source_rs
 .Op Fl z
 .Op Fl Z Ar compressor
@@ -73,7 +72,6 @@ merge
 .Ar existing_rs
 .Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c
-.Op Fl o Ar dir
 .Op Fl t Ar rs_type
 .Op RS ...
 .Pp
@@ -90,7 +88,6 @@ remove
 rename
 .Fl s Ar existing_rs
 .Fl s Ar new_name
-.Op Fl o Ar dir
 .Pp
 .Nm
 version
@@ -274,13 +271,6 @@ is specified, print the file path (
 is the default unless
 .Cm -p 
 is specified ).
-.It Cm -o Fa dir
-Place 
-.Fa new_rs
-(and 
-.Fa hash_rs )
-in
-.Fa dir .
 .It Cm -p
 If 
 .Fa hash_rs
@@ -355,13 +345,6 @@ that can be used with
 .Cm unhash
 before merging into
 .Fa new_rs .
-.It Cm -o Fa dir
-Place 
-.Fa new_rs
-(and 
-.Fa hash_rs )
-in
-.Fa dir .
 .It Cm -s Fa new_rs
 The merge of all
 .Cm -a
@@ -405,10 +388,6 @@ The RecordStore from which to remove.
 Path to the RecordStore whose name should be changed.
 .It Cm -s Fa new_name
 New name for the RecordStore
-.It Cm -o Fa dir
-New directory in which to place
-.Fa new_name
-(defaults to $PWD)
 .El
 .It Cm version
 Display the version of
@@ -504,7 +483,10 @@ It's somewhat important to use an absolute path for the source RecordStore.
 .\"
 .\"
 .Sh VERSION
-This man page is current for version 1.4 of
+This man page is current for version 2.0 of
 .Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.
+
+Updated to match changes to Evaluation Framework Record Store construction,
+May 06, 2014 by NIST.

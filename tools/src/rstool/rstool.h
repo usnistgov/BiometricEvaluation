@@ -191,8 +191,7 @@ usage(
  */
 bool
 isRecordStoreAccessible(
-    const std::string &name,
-    const std::string &parentDir,
+    const std::string &pathname,
     const uint8_t mode = BiometricEvaluation::IO::READWRITE);
 
 /**

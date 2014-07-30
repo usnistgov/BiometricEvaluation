@@ -28,25 +28,22 @@
  * @brief
  * Determine if a directory on disk is a ListRecordStore.
  *
- * @param pathToRecordStore
+ * @param rsPath
  *	Path to the RecordStore in question.
  *
  * @return
- *	Whether or not the path pointed to by parentDir/name is
- *	a ListRecordStore.
+ *	Whether or not the given path is a ListRecordStore.
  */
 bool
 isListRecordStore(
-    const std::string &pathToRecordStore);
+    const std::string &rsPath);
 
 /**
  * @brief
  * Create a ListRecordStore.
  *
- * @param lrsName
- *	Name of the ListRecordStore to create.
- * @param lrsDir
- *	Directory to contain the newly created ListRecordStore.
+ * @param lrsPath
+ *	Pathame of the ListRecordStore to create.
  * @param rsPath
  *	Path to existing RecordStore pointed to by the newly created
  *	ListRecordStore.
@@ -60,8 +57,7 @@ isListRecordStore(
  */
 void
 constructListRecordStore(
-    std::string lrsName,
-    std::string lrsDir,
+    std::string lrsPath,
     std::string rsPath)
     throw (BiometricEvaluation::Error::ObjectDoesNotExist,
     BiometricEvaluation::Error::ObjectExists,
@@ -71,17 +67,17 @@ constructListRecordStore(
  * @brief
  * Update the Count Property for a ListRecordStore.
  *
- * @param pathToRecordStore
+ * @param rsPath
  *	Path to the ListRecordStore to update.
  * @param newCount
  *	Value to set for the Count Property.
  *
  * @throw Error::StrategyError
- *	pathToRecordStore is not a ListRecordStore.
+ *	rsPath is not a ListRecordStore.
  */
 void
 updateListRecordStoreCount(
-    const std::string &pathToRecordStore,
+    const std::string &rsPath,
     uint64_t newCount)
     throw (BiometricEvaluation::Error::StrategyError);
 
@@ -89,7 +85,7 @@ updateListRecordStoreCount(
  * @brief
  * Read keys from a ListRecordStore into a list of strings.
  *
- * @param[in] pathToRecordStore
+ * @param[in] rsPath
  *	Path to the RecordStore in question.
  * @param[out] srs
  *	Pointer to the open Source RecordStore of the ListRecordStore.
@@ -103,7 +99,7 @@ updateListRecordStoreCount(
  */
 void
 readListRecordStoreKeys(
-    const std::string &pathToRecordStore,
+    const std::string &rsPath,
     std::shared_ptr<BiometricEvaluation::IO::RecordStore> &srs,
     std::shared_ptr<OrderedSet<std::string>> &keys)
     throw (BiometricEvaluation::Error::FileError,
@@ -113,7 +109,7 @@ readListRecordStoreKeys(
  * @brief
  * Write keys from a list of strings to a ListRecordStore's KeyList.
  *
- * @param[in] pathToRecordStore
+ * @param[in] rsPath
  *	Path to the RecordStore in question.
  * @param[out] keys
  *	Pointer to a list of the string keys from the ListRecordStore.
@@ -123,7 +119,7 @@ readListRecordStoreKeys(
  */
 void
 writeListRecordStoreKeys(
-    const std::string &pathToRecordStore,
+    const std::string &rsPath,
     const std::shared_ptr<OrderedSet<std::string>> &keys)
     throw (BiometricEvaluation::Error::FileError);
 
@@ -131,7 +127,7 @@ writeListRecordStoreKeys(
  * @brief
  * Insert keys into the KeyList of a ListRecordStore.
  *
- * @param pathToRecordStore
+ * @param rsPath
  *	Path to the ListRecordStore in which a key should be inserted.
  * @param key
  *	The keys to insert into the ListRecordStore.
@@ -152,7 +148,7 @@ writeListRecordStoreKeys(
  */
 void
 insertKeysIntoListRecordStore(
-    const std::string &pathToRecordStore,
+    const std::string &rsPath,
     std::shared_ptr<OrderedSet<std::string>> keys)
     throw (BiometricEvaluation::Error::FileError,
     BiometricEvaluation::Error::ObjectDoesNotExist,
@@ -163,7 +159,7 @@ insertKeysIntoListRecordStore(
  * @brief
  * Remove a key from the KeyList of a ListRecordStore.
  *
- * @param pathToRecordStore
+ * @param rsPath
  *	Path to the ListRecordStore in which a key should be inserted.
  * @param keys
  *	The keys to remove from the ListRecordStore.
@@ -175,7 +171,7 @@ insertKeysIntoListRecordStore(
  */
 void
 removeKeysFromListRecordStore(
-    const std::string &pathToRecordStore,
+    const std::string &rsPath,
     std::shared_ptr<OrderedSet<std::string>> keys)
     throw (BiometricEvaluation::Error::FileError,
     BiometricEvaluation::Error::StrategyError);

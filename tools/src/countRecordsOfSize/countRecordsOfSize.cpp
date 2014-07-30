@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <string>
 
 #include <be_text.h>
 #include <be_io_recordstore.h>
@@ -55,8 +56,7 @@ main(
 	std::shared_ptr<BE::IO::RecordStore> rs;
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-	    	    BE::Text::filename(argv[1]), BE::Text::dirname(argv[1]),
-		    BE::IO::READONLY);
+	    	    std::string(argv[1]), BE::IO::READONLY);
 	} catch (BE::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (1);

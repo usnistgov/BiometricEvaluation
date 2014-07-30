@@ -146,7 +146,6 @@ void usage(char *exe)
 	std::cerr << "\t-c\t\tIf hashing, hash file/record contents" <<
 	    std::endl;
 	std::cerr << "\t-p\t\tIf hashing, hash file path" << std::endl;
-	std::cerr << "\t-o <...>\tOutput directory" << std::endl;
 	std::cerr << "\t-s <path>\tRecordStore" << std::endl;
 
 	std::cerr << std::endl;
@@ -180,6 +179,7 @@ void usage(char *exe)
 	    "translation RecordStore" << std::endl;
 	std::cerr << "\t-k <key>\tKey to dump" << std::endl;
 	std::cerr << "\t-r <#-#>\tRange of keys" << std::endl;
+	std::cerr << "\t-o <dir>\tOutput directory" << std::endl;
 	std::cerr << "\t-f\t\tVisualize image/AN2K record (display only)" <<
 	    std::endl;
 
@@ -242,8 +242,7 @@ void usage(char *exe)
 
 bool
 isRecordStoreAccessible(
-    const std::string &name,
-    const std::string &parentDir,
+    const std::string &pathname,
     const uint8_t mode)
 {
 	bool (*isAccessible)(const std::string&) = NULL;
@@ -258,13 +257,10 @@ isRecordStoreAccessible(
 		break;
 	}
 	
-	std::string path;
-	BE::IO::Utility::constructAndCheckPath(name, parentDir, path);
-	
 	/* Test if the generic RecordStore files have the correct permissions */
-	return ((isAccessible(path) && 
-	    isAccessible(path + '/' + BE::IO::RecordStore::CONTROLFILENAME) &&
-	    isAccessible(path + '/' + name)));
+	return (isAccessible(pathname) && 
+	    isAccessible(pathname + '/'
+		+ BE::IO::RecordStore::CONTROLFILENAME));
 }
 
 BiometricEvaluation::IO::RecordStore::Kind
@@ -325,33 +321,13 @@ Action procargs(int argc, char *argv[])
 		return (Action::QUIT);
 	}
 
-
 	/* Parse out common options first */
 	char c;
 	optind = 2;
 	while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
-		case 'o':	/* Output directory */
-			if (BE::IO::Utility::constructAndCheckPath(
-			    BE::Text::filename(optarg),
-			    BE::Text::dirname(optarg),
-			    oflagval)) {
-				if (!BE::IO::Utility::pathIsDirectory(optarg)) {
-					std::cerr << optarg << " is not a "
-					    "directory." << std::endl;
-					return (Action::QUIT);
-				}
-			} else {
-				if (mkdir(oflagval.c_str(), S_IRWXU) != 0) {
-					std::cerr << "Could not create " <<
-					    oflagval << " - " <<
-					    BE::Error::errorStr();
-					return (Action::QUIT);
-				}
-			}
-			break;
 		case 's':	/* Main RecordStore */
-			sflagval = optarg;
+			sflagval = std::string(optarg);
 			break;
 		}
 	}
@@ -392,13 +368,11 @@ procargs_extract(
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg),
+				    std::string(optarg),
 				    BE::IO::READONLY);
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg),
+				    std::string(optarg),
 				    BE::IO::READONLY))
     					std::cerr << "Could not open " << 
 					    optarg <<
@@ -411,6 +385,24 @@ procargs_extract(
 			break;
 		case 'k':	/* Extract key */
 			key.assign(optarg);
+			break;
+		case 'o':	/* Output directory */
+			oflagval = std::string(optarg);
+			if (BE::IO::Utility::fileExists(oflagval)) {
+				if (!BE::IO::Utility::pathIsDirectory(
+				    oflagval)) {
+					std::cerr << optarg << " is not a "
+					    "directory." << std::endl;
+					return (EXIT_FAILURE);
+				}
+			} else {
+				if (mkdir(oflagval.c_str(), S_IRWXU) != 0) {
+					std::cerr << "Could not create " <<
+					    oflagval << " - " <<
+					    BE::Error::errorStr();
+					return (EXIT_FAILURE);
+				}
+			}
 			break;
 		case 'r':	/* Extract range of keys */
 			range.assign(optarg);
@@ -430,11 +422,10 @@ procargs_extract(
 	}
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READONLY);
+		    std::string(sflagval), BE::IO::READONLY);
 	} catch (BE::Error::Exception &e) {
-  		if (isRecordStoreAccessible(BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READONLY))
+  		if (isRecordStoreAccessible(std::string(sflagval),
+		    BE::IO::READONLY))
 			std::cerr << "Could not open " << sflagval << ".  " <<
 			    e.what() << std::endl;
 		else
@@ -692,11 +683,10 @@ int listRecordStore(int argc, char *argv[])
 	std::shared_ptr<BE::IO::RecordStore> rs;
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READONLY);
+		    std::string(sflagval), BE::IO::READONLY);
 	} catch (BE::Error::Exception &e) {
-		if (isRecordStoreAccessible(BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READONLY))
+		if (isRecordStoreAccessible(std::string(sflagval),
+		    BE::IO::READONLY))
 			std::cerr << "Could not open RecordStore - " <<
 			    e.what() << std::endl;
 		else
@@ -727,7 +717,7 @@ int
 procargs_make(
     int argc,
     char *argv[],
-    std::string &hash_filename,
+    std::string &hash_pathname,
     HashablePart &what_to_hash,
     KeyFormat &hashed_key_format,
     BiometricEvaluation::IO::RecordStore::Kind &kind,
@@ -750,7 +740,7 @@ procargs_make(
 		switch (c) {
 		case 'a': {	/* Text file with paths to be added */
 			std::string path = BE::Text::dirname(optarg) + '/' + 
-			    BE::Text::filename(optarg);
+			    BE::Text::basename(optarg);
 			if (!BE::IO::Utility::fileExists(path)) {
 				std::cerr << optarg << " does not exist." <<
 				    std::endl;
@@ -790,7 +780,7 @@ procargs_make(
 				}
 				
 				elements.push_back(BE::Text::dirname(line) +
-				    '/' + BE::Text::filename(line));
+				    '/' + BE::Text::basename(line));
 			}
 			input.close();
 			break;
@@ -808,7 +798,7 @@ procargs_make(
 			stopOnDuplicate = false;
 			break;
 		case 'h':	/* Hash translation RecordStore */
-			hash_filename.assign(optarg);
+			hash_pathname.assign(optarg);
 			break;
 		case 'k':	/* Hash key display type */
 			switch (optarg[0]) {
@@ -865,7 +855,7 @@ procargs_make(
 	for (int i = optind; i < argc; i++) {
 		otherProvided = true;
 		elements.push_back(BE::Text::dirname(argv[i]) + "/" +
-		    BE::Text::filename(argv[i]));
+		    BE::Text::basename(argv[i]));
 	}
 	
 	if (hashed_key_format == KeyFormat::DEFAULT) {
@@ -878,7 +868,7 @@ procargs_make(
 	}
 
 	/* Sanity check -- don't hash without recording a translation */
-	if (hash_filename.empty() && (what_to_hash != HashablePart::NOTHING)) {
+	if (hash_pathname.empty() && (what_to_hash != HashablePart::NOTHING)) {
 		std::cerr << "Specified hash method without -h." << std::endl;
 		return (EXIT_FAILURE);
 	}
@@ -891,7 +881,7 @@ procargs_make(
 	}
 
 	/* Choose to hash filename by default */
-	if ((hash_filename.empty() == false) && (what_to_hash ==
+	if ((hash_pathname.empty() == false) && (what_to_hash ==
 	    HashablePart::NOTHING))
 		what_to_hash = HashablePart::FILENAME;
 
@@ -899,7 +889,7 @@ procargs_make(
 		return (EXIT_SUCCESS);
 
 	return (makeHumanConfirmation(argc, argv, kind, what_to_hash,
-	    hashed_key_format, hash_filename, textProvided, dirProvided,
+	    hashed_key_format, hash_pathname, textProvided, dirProvided,
 	    otherProvided, compress, compressorKind, stopOnDuplicate));
 }
 
@@ -910,7 +900,7 @@ makeHumanConfirmation(
     BiometricEvaluation::IO::RecordStore::Kind kind,
     HashablePart what_to_hash,
     KeyFormat hashed_key_format,
-    const std::string &hash_filename,
+    const std::string &hash_pathname,
     bool textProvided,
     bool dirProvided,
     bool otherProvided,
@@ -937,15 +927,18 @@ makeHumanConfirmation(
 			if (rsName != "")
 				break;
 		}
-	} else
+	} else {
 		rsName = sflagval;
+	}
 
 	std::cout << rsName << '"' << std::endl;
-	if (kind == BE::IO::RecordStore::Kind::List)
+	if (kind == BE::IO::RecordStore::Kind::List) {
 		std::cout << "* \"" << rsName << "\" will refer to keys " <<
 		    "from \"" << sflagval << "\"" << std::endl;
-	std::cout << "* \"" << rsName << "\" will be stored in \"" <<
-	    oflagval << '"' << std::endl;
+	} else {
+		std::cout << "* \"" << rsName << "\" will be created"
+		    << std::endl;
+	}
 	if (textProvided)
 		std::cout << "* You provided one or more text files of file "
 		    "paths whose contents will be added" << std::endl;
@@ -986,8 +979,8 @@ makeHumanConfirmation(
 		else
 			std::cout << "will be ";
 
-		std::cout << "named \"" << hash_filename << '"' << std::endl;
-		std::cout << "* The values in \"" << hash_filename <<
+		std::cout << "named \"" << hash_pathname << '"' << std::endl;
+		std::cout << "* The values in \"" << hash_pathname <<
 		    "\" will be the ";
 		switch (hashed_key_format) {
 		case KeyFormat::FILEPATH:
@@ -1051,7 +1044,7 @@ int make_insert_contents(const std::string &filename,
 	
 	static std::string key = "", hash_value = "";
 	try {
-		key = BE::Text::filename(filename);
+		key = BE::Text::basename(filename);
 		if (hash_rs.get() == NULL) {
 			try {
 				rs->insert(key, buffer, buffer_size);
@@ -1199,7 +1192,7 @@ makeListRecordStore(
     HashablePart what_to_hash,
     KeyFormat hashed_key_format)
 {
-	std::string newRSName, existingRSPath;
+	std::string newRSPath, existingRSPath;
 	std::shared_ptr<BE::IO::RecordStore> targetRS;
 	
 	/*
@@ -1215,8 +1208,7 @@ makeListRecordStore(
 		case 'h':
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg), BE::IO::READONLY);
+				    std::string(optarg), BE::IO::READONLY);
 			} catch (BE::Error::Exception &e) {
 				std::cerr << "Could not open hash RecordStore, "
 				    "but it must exist when creating a hashed "
@@ -1227,24 +1219,22 @@ makeListRecordStore(
  		case 's':
 			switch (rsCount) {
 			case 0:
-				newRSName = optarg;
-				sflagval = newRSName;
+				newRSPath = optarg;
+				sflagval = newRSPath;
 				rsCount++;
 				break;
 			case 1:
 				try {
 					targetRS =
 					    BE::IO::RecordStore::openRecordStore
-					    (BE::Text::filename(optarg),
-					     BE::Text::dirname(optarg),
+					    (std::string(optarg),
 					     BE::IO::READONLY);
 				} catch (BE::Error::Exception &e) {
 					if (isRecordStoreAccessible(
-					     BE::Text::filename(optarg),
-					     BE::Text::dirname(optarg),
+					     std::string(optarg),
 					     BE::IO::READONLY))
 						std::cerr << "Could not open "<<
-						BE::Text::filename(optarg) <<
+						BE::Text::basename(optarg) <<
 						" - " << e.what() << std::endl;
 					else
 						std::cerr << optarg <<
@@ -1270,7 +1260,7 @@ makeListRecordStore(
 	}
 	
 	try {
-		constructListRecordStore(newRSName, oflagval, existingRSPath);
+		constructListRecordStore(newRSPath, existingRSPath);
 	} catch (BE::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (EXIT_FAILURE);
@@ -1281,7 +1271,7 @@ makeListRecordStore(
 
 int make(int argc, char *argv[])
 {
-	std::string hash_filename = "";
+	std::string hash_pathname = "";
 	BE::IO::RecordStore::Kind type = BE::IO::RecordStore::Kind::Default;
 	std::vector<std::string> elements;
 	HashablePart what_to_hash = HashablePart::NOTHING;
@@ -1290,7 +1280,7 @@ int make(int argc, char *argv[])
 	BE::IO::Compressor::Kind compressorKind;
 	bool stopOnDuplicate = true;
 
-	if (procargs_make(argc, argv, hash_filename, what_to_hash,
+	if (procargs_make(argc, argv, hash_pathname, what_to_hash,
 	    hashed_key_format, type, elements, compress, compressorKind,
 	    stopOnDuplicate) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
@@ -1308,15 +1298,15 @@ int make(int argc, char *argv[])
 	try {
 		if (compress)
 			rs.reset(new BE::IO::CompressedRecordStore(sflagval,
-			    "<Description>", type, oflagval, compressorKind));
+			    "<Description>", type, compressorKind));
 		else
 			rs = BE::IO::RecordStore::createRecordStore(sflagval,
-			    "<Description>", type, oflagval);
-		if (!hash_filename.empty())
+			    "<Description>", type);
+		if (!hash_pathname.empty())
 			/* No need to compress hash translation RS */
 			hash_rs = BE::IO::RecordStore::createRecordStore(
-			    hash_filename,
-			    "Hash Translation for " + sflagval, type, oflagval);
+			    hash_pathname,
+			    "Hash Translation for " + sflagval, type);
 	} catch (BE::Error::Exception &e) {
 		std::cerr << "Could not create " << sflagval << " - " <<
 		    e.what() << std::endl;
@@ -1328,7 +1318,7 @@ int make(int argc, char *argv[])
 			try {
 				/* Recursively insert contents of directory */
 				if (make_insert_directory_contents(
-				    BE::Text::filename(elements[i]),
+				    BE::Text::basename(elements[i]),
 				    BE::Text::dirname(elements[i]),
 				    rs, hash_rs, what_to_hash,
 				    hashed_key_format,
@@ -1357,7 +1347,7 @@ procargs_merge(
     char *argv[],
     BiometricEvaluation::IO::RecordStore::Kind &kind,
     std::vector<std::string> &child_rs,
-    std::string &hash_filename,
+    std::string &hash_pathname,
     HashablePart &what_to_hash,
     KeyFormat &hashed_key_format)
 {
@@ -1391,7 +1381,7 @@ procargs_merge(
 			}
 			break;
 		case 'h':	/* Hash translation RecordStore */
-			hash_filename.assign(optarg);
+			hash_pathname.assign(optarg);
 			break;
 		case 'k':	/* Hash key display type */
 			switch (optarg[0]) {
@@ -1435,14 +1425,14 @@ procargs_merge(
 	}
 
 	/* Sanity check -- don't hash without recording a translation */
-	if (hash_filename.empty() && (what_to_hash !=
+	if (hash_pathname.empty() && (what_to_hash !=
 	    HashablePart::NOTHING)) {
 		std::cerr << "Specified hash method without -h." << std::endl;
 		return (EXIT_FAILURE);
 	}
 
 	/* Choose to hash filename by default */
-	if ((hash_filename.empty() == false) && (what_to_hash ==
+	if ((hash_pathname.empty() == false) && (what_to_hash ==
 	    HashablePart::NOTHING))
 		what_to_hash = HashablePart::FILENAME;
 
@@ -1453,7 +1443,6 @@ void mergeAndHashRecordStores(
     const std::string &mergedName,
     const std::string &mergedDescription,
     const std::string &hashName,
-    const std::string &parentDir,
     const BiometricEvaluation::IO::RecordStore::Kind &kind,
     std::vector<std::string> &recordStores,
     const HashablePart what_to_hash,
@@ -1465,24 +1454,24 @@ void mergeAndHashRecordStores(
 	std::string hash_description = "Hash translation of " + mergedName;
 	if (kind == BE::IO::RecordStore::Kind::BerkeleyDB) {
 		merged_rs.reset(new BE::IO::DBRecordStore(mergedName,
-		    mergedDescription, parentDir));
+		    mergedDescription));
 		hash_rs.reset(new BE::IO::DBRecordStore(hashName,
-		    hash_description, parentDir));
+		    hash_description));
 	} else if (kind == BE::IO::RecordStore::Kind::Archive) {
 		merged_rs.reset(new BE::IO::ArchiveRecordStore(mergedName, 
-		    mergedDescription, parentDir));
+		    mergedDescription));
 		hash_rs.reset(new BE::IO::ArchiveRecordStore(hashName,
-		    hash_description, parentDir));
+		    hash_description));
 	} else if (kind == BE::IO::RecordStore::Kind::File) {
 		merged_rs.reset(new BE::IO::FileRecordStore(mergedName,
-		    mergedDescription, parentDir));
+		    mergedDescription));
 		hash_rs.reset(new BE::IO::FileRecordStore(hashName,
-		    hash_description, parentDir));
+		    hash_description));
 	} else if (kind == BE::IO::RecordStore::Kind::SQLite) {
 		merged_rs.reset(new BE::IO::SQLiteRecordStore(mergedName,
-		    mergedDescription, parentDir));
+		    mergedDescription));
     		hash_rs.reset(new BE::IO::SQLiteRecordStore(hashName,
-		    hash_description, parentDir));
+		    hash_description));
 	} else if (kind == BE::IO::RecordStore::Kind::Compressed)
 		throw BE::Error::StrategyError("Invalid RecordStore type");
 	else
@@ -1496,9 +1485,7 @@ void mergeAndHashRecordStores(
 	for (size_t i = 0; i < recordStores.size(); i++) {
 		try {
 			rs = BE::IO::RecordStore::openRecordStore(
-			    BE::Text::filename(recordStores[i]),
-			    BE::Text::dirname(recordStores[i]),
-			    BE::IO::READONLY);
+			    recordStores[i], BE::IO::READONLY);
 		} catch (BE::Error::Exception &e) {
 			throw BE::Error::StrategyError(e.what());
 		}
@@ -1568,27 +1555,27 @@ int merge(int argc, char *argv[])
 {
 	HashablePart what_to_hash = HashablePart::NOTHING;
 	KeyFormat hashed_key_format = KeyFormat::DEFAULT;
-	std::string hash_filename = "";
+	std::string hash_pathname = "";
 	BiometricEvaluation::IO::RecordStore::Kind kind =
 	    BiometricEvaluation::IO::RecordStore::Kind::Default;
 	std::vector<std::string> child_rs;
-	if (procargs_merge(argc, argv, kind, child_rs, hash_filename,
+	if (procargs_merge(argc, argv, kind, child_rs, hash_pathname,
 	    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
 	std::string description = "A merge of ";
 	for (int i = 0; i < child_rs.size(); i++) {
-		description += BE::Text::filename(child_rs[i]);
+		description += BE::Text::basename(child_rs[i]);
 		if (i != (child_rs.size() - 1)) description += ", ";
 	}
 
 	try {
-		if (hash_filename.empty()) {
+		if (hash_pathname.empty()) {
 			BE::IO::RecordStore::mergeRecordStores(
-			    sflagval, description, oflagval, kind, child_rs);
+			    sflagval, description, kind, child_rs);
 		} else {
 			mergeAndHashRecordStores(
-			    sflagval, description, hash_filename, oflagval,
+			    sflagval, description, hash_pathname,
 			    kind, child_rs, what_to_hash, hashed_key_format);
 		}
 	} catch (BE::Error::Exception &e) {
@@ -1632,12 +1619,10 @@ int procargs_unhash(int argc, char *argv[], std::string &hash,
 	/* sflagval here is the hashed RecordStore */
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval),
-		    BE::IO::READONLY);
+		    std::string(sflagval), BE::IO::READONLY);
 	} catch (BE::Error::Exception &e) {
-		if (isRecordStoreAccessible(BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READONLY))
+		if (isRecordStoreAccessible(std::string(sflagval),
+		    BE::IO::READONLY))
 			std::cerr << "Could not open " << sflagval << " - " << 
 			    e.what() << std::endl;
 		else
@@ -1662,8 +1647,8 @@ int unhash(int argc, char *argv[])
 		rs->read(hash, buffer);
 		std::cout << buffer << std::endl;
 	} catch (BE::Error::ObjectDoesNotExist) {
-		std::cerr << hash << " was not found in " << rs->getName() <<
-		    std::endl;
+		std::cerr << hash << " was not found in " << rs->getPathname()
+		    << std::endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -1733,12 +1718,10 @@ procargs_add(
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg));
+				    std::string(optarg));
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg)))
+				    std::string(optarg), BE::IO::READONLY))
 					std::cerr << "Could not open " <<
 					     optarg << " -- " << e.what() <<
 					     std::endl;
@@ -1771,11 +1754,9 @@ procargs_add(
 	/* sflagval is the RecordStore we will be adding to */
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval));
+		    std::string(sflagval));
 	} catch (BE::Error::Exception &e) {
-		if (isRecordStoreAccessible(BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval)))
+		if (isRecordStoreAccessible(std::string(sflagval)))
 			std::cerr << "Could not open " << sflagval << " -- " <<
 			    e.what() << std::endl;
 		else
@@ -1844,12 +1825,10 @@ procargs_modifyListRecordStore(
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg));
+				    std::string(optarg));
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg)))
+				    std::string(optarg)))
 					std::cerr << "Could not open " <<
 					    optarg << " -- " << e.what() <<
 					    std::endl;
@@ -1920,13 +1899,13 @@ modifyListRecordStore(
 			hash = BE::Text::digest(buffer, buffer.size());
 			break;
 		case HashablePart::FILENAME:
-			hash = BE::Text::digest(BE::Text::filename(*file_path));
+			hash = BE::Text::digest(BE::Text::basename(*file_path));
 			break;
 		case HashablePart::FILEPATH:
 			hash = BE::Text::digest(*file_path);
 			break;
 		case HashablePart::NOTHING:
-			hash = BE::Text::filename(*file_path);
+			hash = BE::Text::basename(*file_path);
 			break;
 		}
 		
@@ -2015,7 +1994,7 @@ add(
 		 */
 		if (BE::IO::Utility::pathIsDirectory(*file_path))
 			make_insert_directory_contents(
-			    BE::Text::filename(*file_path),
+			    BE::Text::basename(*file_path),
 			    BE::Text::dirname(*file_path), rs, hash_rs,
 			    what_to_hash, hashed_key_format,
 			    stopOnDuplicate);
@@ -2056,11 +2035,10 @@ procargs_remove(
 	/* sflagval here is the RecordStore */
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READWRITE);
+		    std::string(sflagval), BE::IO::READWRITE);
 	} catch (BE::Error::Exception &e) {
-		if (isRecordStoreAccessible(BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READWRITE))
+		if (isRecordStoreAccessible(
+		    std::string(sflagval), BE::IO::READWRITE))
 			std::cerr << "Could not open " << sflagval << " - " <<
 			    e.what() << std::endl;
 		else
@@ -2146,12 +2124,10 @@ procargs_diff(
 		case 'a': {	/* Text file of keys to diff */
 			std::vector<std::string> fileKeys;
 			try {
-				std::string path;
-				if (BE::IO::Utility::constructAndCheckPath(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg), path) == false)
+				std::string path = std::string(optarg);;
+				if (!BE::IO::Utility::fileExists(path))
 					throw BE::Error::ObjectDoesNotExist(
-					    optarg);
+					    path);
 				fileKeys = readTextFileToVector(path);
 			} catch (BE::Error::Exception &e) {
 				std::cerr << e.what() << std::endl;
@@ -2180,17 +2156,14 @@ procargs_diff(
 				/* Assign sourceRS first */
 				((rsCount == 1) ? sourceRS : targetRS) =
 				    BE::IO::RecordStore::openRecordStore(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg),
-				    BE::IO::READONLY);
+				    std::string(optarg), BE::IO::READONLY);
 				rsCount++;
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
-				    BE::Text::filename(optarg),
-				    BE::Text::dirname(optarg),
+				    std::string(optarg),
 				    BE::IO::READONLY))
 					std::cerr << "Could not open " <<
-					    BE::Text::filename(optarg) <<
+					    BE::Text::basename(optarg) <<
 					    " - " << e.what() << std::endl;
 				else
 				    	std::cerr << optarg << ": Permission "
@@ -2222,15 +2195,15 @@ diff(
 	    byte_for_byte) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
-	std::string sourceName = sourceRS->getName();
-	std::string targetName = targetRS->getName();
+	std::string sourcePath = sourceRS->getPathname();
+	std::string targetPath = targetRS->getPathname();
 
 	/* Don't attempt diff if either RecordStore is empty */
 	if (sourceRS->getCount() == 0) {
-		std::cerr << "No entries in " << sourceName << '.' << std::endl;
+		std::cerr << "No entries in " << sourcePath << '.' << std::endl;
 		return (EXIT_FAILURE);
 	} else if (targetRS->getCount() == 0) {
-		std::cerr << "No entries in " << targetName << '.' << std::endl;
+		std::cerr << "No entries in " << targetPath << '.' << std::endl;
 		return (EXIT_FAILURE);
 	}
 
@@ -2273,19 +2246,19 @@ diff(
 			status = EXIT_FAILURE;
 			continue;
 		} else if ((sourceExists == true) && (targetExists == false)) {
-			std::cout << *key << ": only in " << sourceName << std::endl;
+			std::cout << *key << ": only in " << sourcePath << std::endl;
 			status = EXIT_FAILURE;
 			continue;
 		} else if ((sourceExists == false) && (targetExists == true)) {
-			std::cout << *key << ": only in " << targetName << std::endl;
+			std::cout << *key << ": only in " << targetPath << std::endl;
 			status = EXIT_FAILURE;
 			continue;
 		}
 		
 		/* Difference based on size */
 		if (sourceLength != targetLength) {
-			std::cout << *key << ':' << sourceName << " and " <<
-			    *key << ':' << targetName << " differ (size)" <<
+			std::cout << *key << ':' << sourcePath << " and " <<
+			    *key << ':' << targetPath << " differ (size)" <<
 			    std::endl;
 			status = EXIT_FAILURE;
 			continue;
@@ -2309,9 +2282,9 @@ diff(
 		if (byte_for_byte) {
 			for (uint64_t i = 0; i < sourceLength; i++) {
 				if (sourceBuf[i] != targetBuf[i]) {
-					std::cout << *key << ':' << sourceName
+					std::cout << *key << ':' << sourcePath
 					    << " and " << *key << ':' <<
-					    targetName << " differ " <<
+					    targetPath << " differ " <<
 					    "(byte for byte)" << std::endl;
 					status = EXIT_FAILURE;
 					break;
@@ -2321,9 +2294,9 @@ diff(
 			try {
 				if (BE::Text::digest(sourceBuf, sourceLength) !=
 				    BE::Text::digest(targetBuf, targetLength)) {
-					std::cout << *key << ':' << sourceName <<
+					std::cout << *key << ':' << sourcePath <<
 					    " and " << *key << ':' <<
-					    targetName << " differ " <<
+					    targetPath << " differ " <<
 					    "(MD5)" << std::endl;
 					status = EXIT_FAILURE;
 				}
@@ -2343,9 +2316,8 @@ int
 procargs_rename(
     int argc,
     char *argv[],
-    std::string &newName)
+    std::string &newPath)
 {
-	newName = "";
 	int rsCount = 0;
 	char c;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
@@ -2356,17 +2328,14 @@ procargs_rename(
 				/* Ensure first RecordStore exists */
 				try {
 					BE::IO::RecordStore::openRecordStore(
-					    BE::Text::filename(optarg),
-					    BE::Text::dirname(optarg),
+					    std::string(optarg),
 					    BE::IO::READWRITE);
 				} catch (BE::Error::Exception &e) {
 					if (isRecordStoreAccessible(
-					    BE::Text::filename(optarg),
-					    BE::Text::dirname(optarg),
+					    std::string(optarg),
 					    BE::IO::READWRITE))
 						std::cerr << "Could not "
-						    "open " << BE::Text::
-						    filename(optarg) <<
+						    "open " << optarg <<
 						    " - " << e.what() <<
 						    std::endl;
 					else
@@ -2378,7 +2347,7 @@ procargs_rename(
 				sflagval = optarg;
 				break;
 			default:
-				newName = optarg;
+				newPath = optarg;
 				break;
 			}
 			rsCount++;
@@ -2393,12 +2362,10 @@ procargs_rename(
 	}
 
 	/* Ensure new path doesn't already exist */
-	if (BE::IO::Utility::constructAndCheckPath(newName, oflagval,
-	    newName)) {
-		std::cerr << newName << " already exists." << std::endl;
+	if (BE::IO::Utility::fileExists(newPath)) {
+		std::cerr << newPath << " already exists." << std::endl;
 		return (EXIT_FAILURE);
 	}
-	newName = BE::Text::filename(newName);
 
 	return (EXIT_SUCCESS);
 }
@@ -2408,48 +2375,17 @@ rename(
     int argc,
     char *argv[])
 {
-	std::string newName;
-	if (procargs_rename(argc, argv, newName) != EXIT_SUCCESS)
-		return (EXIT_FAILURE);
-
-	/* Ensure we can temporarily change the name in the current directory */
 	std::string newPath;
-	if (BE::IO::Utility::constructAndCheckPath(newName,
-	    BE::Text::dirname(sflagval), newPath)) {
-		std::cerr << newPath << " exists (needed temporarily)." <<
-		    std::endl;
+	if (procargs_rename(argc, argv, newPath) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
-	}
-
-	/* Ensure destination path will allow for name change */
-	if (BE::IO::Utility::constructAndCheckPath(newName, oflagval,
-	    newPath)) {
-		std::cerr << newPath << " exists." << std::endl;
-		return (EXIT_FAILURE);
-	}
 
 	/* Change name in same directory */
 	try {
 		std::shared_ptr<BE::IO::RecordStore> rs = BE::IO::RecordStore::
-		    openRecordStore(BE::Text::filename(sflagval),
-		    BE::Text::dirname(sflagval), BE::IO::READWRITE);
-		rs->changeName(newName);
+		    openRecordStore(std::string(sflagval), BE::IO::READWRITE);
+		rs->move(newPath);
 	} catch (BE::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;
-		return (EXIT_FAILURE);
-	}
-
-	/* Move the RecordStore */
-	std::string existingPath;
-	if (!BE::IO::Utility::constructAndCheckPath(newName,
-	    BE::Text::dirname(sflagval), existingPath)) {
-		std::cerr << existingPath << " does not exist." << std::endl;
-		return (EXIT_FAILURE);
-	}
-	if (rename(existingPath.c_str(), newPath.c_str()) != 0) {
-		std::cerr << "Could not move \"" << existingPath << "\" "
-		    "to \"" << newPath << "\" (" << BE::Error::errorStr() <<
-		    ")" << std::endl;
 		return (EXIT_FAILURE);
 	}
 
