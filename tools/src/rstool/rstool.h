@@ -29,7 +29,6 @@
 
 #include <dirent.h>
 #include <getopt.h>
-#include <libgen.h>
 
 #include <be_error.h>
 #include <be_error_exception.h>
