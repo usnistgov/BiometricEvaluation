@@ -15,20 +15,17 @@
 		0862BDB116C40A8C0032C14F /* rstool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rstool.h; path = ../rstool.h; sourceTree = "<group>"; };
 		088134121885B03A00250D45 /* image_additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = image_additions.h; path = ../image_additions.h; sourceTree = "<group>"; };
 		088134151885B05B00250D45 /* image_additions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = image_additions.cpp; path = ../image_additions.cpp; sourceTree = "<group>"; };
+		08B809A21AA9E6D100217EE4 /* ordered_set.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ordered_set.h; path = ../ordered_set.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		084A71DA1559924800C84756 = {
 			isa = PBXGroup;
 			children = (
-				088134121885B03A00250D45 /* image_additions.h */,
-				088134151885B05B00250D45 /* image_additions.cpp */,
-				0862BDB116C40A8C0032C14F /* rstool.h */,
-				084A71EC1559927900C84756 /* rstool.cpp */,
-				0862BDB016C40A8C0032C14F /* lrs_additions.h */,
-				0862BDAF16C40A8C0032C14F /* lrs_additions.cpp */,
 				084A71EA1559927900C84756 /* Makefile */,
 				084A71EE1559928100C84756 /* docs */,
+				08B809A31AA9E6F100217EE4 /* include */,
+				08B809A61AA9E7A100217EE4 /* implementation */,
 			);
 			sourceTree = "<group>";
 		};
@@ -38,6 +35,27 @@
 				084A71EB1559927900C84756 /* rstool.1 */,
 			);
 			name = docs;
+			sourceTree = "<group>";
+		};
+		08B809A31AA9E6F100217EE4 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				088134121885B03A00250D45 /* image_additions.h */,
+				0862BDB016C40A8C0032C14F /* lrs_additions.h */,
+				08B809A21AA9E6D100217EE4 /* ordered_set.h */,
+				0862BDB116C40A8C0032C14F /* rstool.h */,
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+		08B809A61AA9E7A100217EE4 /* implementation */ = {
+			isa = PBXGroup;
+			children = (
+				088134151885B05B00250D45 /* image_additions.cpp */,
+				0862BDAF16C40A8C0032C14F /* lrs_additions.cpp */,
+				084A71EC1559927900C84756 /* rstool.cpp */,
+			);
+			name = implementation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -63,7 +81,7 @@
 		084A71DC1559924800C84756 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 084A71DF1559924800C84756 /* Build configuration list for PBXProject "rstool" */;
 			compatibilityVersion = "Xcode 3.2";
