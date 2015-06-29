@@ -17,6 +17,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		081BCD1B1B41CAD9009E7190 /* be_data_interchange_ansi2004.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_data_interchange_ansi2004.h; path = ../src/include/be_data_interchange_ansi2004.h; sourceTree = "<group>"; };
+		081BCD1C1B41CAD9009E7190 /* be_mpi_csvdistributor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvdistributor.h; path = ../src/include/be_mpi_csvdistributor.h; sourceTree = "<group>"; };
+		081BCD1D1B41CAD9009E7190 /* be_mpi_csvprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvprocessor.h; path = ../src/include/be_mpi_csvprocessor.h; sourceTree = "<group>"; };
+		081BCD1E1B41CAD9009E7190 /* be_mpi_csvresources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvresources.h; path = ../src/include/be_mpi_csvresources.h; sourceTree = "<group>"; };
+		081BCD1F1B41CB26009E7190 /* be_data_interchange_ansi2004.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_data_interchange_ansi2004.cpp; path = ../src/libbiomeval/be_data_interchange_ansi2004.cpp; sourceTree = "<group>"; };
+		081BCD201B41CB26009E7190 /* be_mpi_csvdistributor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_mpi_csvdistributor.cpp; path = ../src/libbiomeval/be_mpi_csvdistributor.cpp; sourceTree = "<group>"; };
+		081BCD211B41CB26009E7190 /* be_mpi_csvprocessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_mpi_csvprocessor.cpp; path = ../src/libbiomeval/be_mpi_csvprocessor.cpp; sourceTree = "<group>"; };
+		081BCD221B41CB26009E7190 /* be_mpi_csvresources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_mpi_csvresources.cpp; path = ../src/libbiomeval/be_mpi_csvresources.cpp; sourceTree = "<group>"; };
+		081BCD231B41CB26009E7190 /* be_video_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_video_impl.cpp; path = ../src/libbiomeval/be_video_impl.cpp; sourceTree = "<group>"; };
+		081BCD241B41CB26009E7190 /* be_video_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_video_impl.h; path = ../src/libbiomeval/be_video_impl.h; sourceTree = "<group>"; };
+		081BCD251B41CB26009E7190 /* be_video_stream_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_video_stream_impl.cpp; path = ../src/libbiomeval/be_video_stream_impl.cpp; sourceTree = "<group>"; };
+		081BCD261B41CB26009E7190 /* be_video_stream_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_video_stream_impl.h; path = ../src/libbiomeval/be_video_stream_impl.h; sourceTree = "<group>"; };
+		081BCD271B41CB26009E7190 /* be_video_stream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_video_stream.cpp; path = ../src/libbiomeval/be_video_stream.cpp; sourceTree = "<group>"; };
+		081BCD2E1B41CBA7009E7190 /* mpitest_csv.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = mpitest_csv.sh; path = ../src/test/mpitest_csv.sh; sourceTree = "<group>"; };
+		081BCD2F1B41CBA7009E7190 /* mpitest_rs.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = mpitest_rs.sh; path = ../src/test/mpitest_rs.sh; sourceTree = "<group>"; };
+		081BCD321B41CBA7009E7190 /* test_be_csv_mpi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_csv_mpi.cpp; path = ../src/test/test_be_csv_mpi.cpp; sourceTree = "<group>"; };
+		081BCD331B41CBA7009E7190 /* test_be_csv_mpi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_be_csv_mpi.h; path = ../src/test/test_be_csv_mpi.h; sourceTree = "<group>"; };
+		081BCD341B41CBA7009E7190 /* test_be_io_filelogcabinet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_filelogcabinet.cpp; path = ../src/test/test_be_io_filelogcabinet.cpp; sourceTree = "<group>"; };
+		081BCD371B41CBA7009E7190 /* test_be_rs_mpi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_rs_mpi.cpp; path = ../src/test/test_be_rs_mpi.cpp; sourceTree = "<group>"; };
+		081BCD381B41CBA7009E7190 /* test_be_rs_mpi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_be_rs_mpi.h; path = ../src/test/test_be_rs_mpi.h; sourceTree = "<group>"; };
 		084AB2CD15A1F540000DD259 /* be_io_compressedrecstore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressedrecstore.h; path = ../src/include/be_io_compressedrecstore.h; sourceTree = "<group>"; };
 		084AB2CF15A1F5D9000DD259 /* be_io_compressedrecstore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressedrecstore.cpp; path = ../src/libbiomeval/be_io_compressedrecstore.cpp; sourceTree = "<group>"; };
 		086A2A63154735EA00464DC5 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/test/Makefile; sourceTree = "<group>"; };
@@ -237,12 +257,29 @@
 		22DE5C0918EB29F900D460F1 /* be_process_semaphore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_process_semaphore.cpp; path = ../src/libbiomeval/be_process_semaphore.cpp; sourceTree = "<group>"; };
 		22DE5C0A18EB2A9100D460F1 /* test_be_io_syslogsheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_syslogsheet.cpp; path = ../src/test/test_be_io_syslogsheet.cpp; sourceTree = "<group>"; };
 		22DE5C0B18EB2A9100D460F1 /* test_be_process_semaphore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_process_semaphore.cpp; path = ../src/test/test_be_process_semaphore.cpp; sourceTree = "<group>"; };
-		22DE5C0D18EB2ABD00D460F1 /* mpitest.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = mpitest.sh; path = ../src/test/mpitest.sh; sourceTree = "<group>"; };
-		22DE5C0E18EB2ABD00D460F1 /* test_be_mpi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_mpi.cpp; path = ../src/test/test_be_mpi.cpp; sourceTree = "<group>"; };
-		22DE5C0F18EB2ABD00D460F1 /* test_be_mpi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_be_mpi.h; path = ../src/test/test_be_mpi.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		081BCD281B41CB35009E7190 /* public */ = {
+			isa = PBXGroup;
+			children = (
+				08B8099E1AA9E53900217EE4 /* be_video_container_impl.h */,
+				08B809981AA9E52400217EE4 /* be_video_container.h */,
+				08B809991AA9E52400217EE4 /* be_video_stream.h */,
+				08B8099A1AA9E52400217EE4 /* be_video.h */,
+			);
+			name = public;
+			sourceTree = "<group>";
+		};
+		081BCD291B41CB3C009E7190 /* private */ = {
+			isa = PBXGroup;
+			children = (
+				081BCD241B41CB26009E7190 /* be_video_impl.h */,
+				081BCD261B41CB26009E7190 /* be_video_stream_impl.h */,
+			);
+			name = private;
+			sourceTree = "<group>";
+		};
 		086A2A541547359C00464DC5 /* test */ = {
 			isa = PBXGroup;
 			children = (
@@ -298,6 +335,7 @@
 			isa = PBXGroup;
 			children = (
 				086A2A6C154735EA00464DC5 /* test_be_io_archiverecstore.cpp */,
+				081BCD341B41CBA7009E7190 /* test_be_io_filelogcabinet.cpp */,
 				086A2A6D154735EA00464DC5 /* test_be_io_filerecstore.cpp */,
 				0880D88A17BBDB13009D0EDE /* test_be_io_listrecstore.cpp */,
 				086A2A6F154735EA00464DC5 /* test_be_io_properties.cpp */,
@@ -462,10 +500,8 @@
 		08B809A01AA9E68100217EE4 /* Video */ = {
 			isa = PBXGroup;
 			children = (
-				08B8099E1AA9E53900217EE4 /* be_video_container_impl.h */,
-				08B809981AA9E52400217EE4 /* be_video_container.h */,
-				08B809991AA9E52400217EE4 /* be_video_stream.h */,
-				08B8099A1AA9E52400217EE4 /* be_video.h */,
+				081BCD291B41CB3C009E7190 /* private */,
+				081BCD281B41CB35009E7190 /* public */,
 			);
 			name = Video;
 			sourceTree = "<group>";
@@ -475,6 +511,9 @@
 			children = (
 				08B8099D1AA9E53900217EE4 /* be_video_container_impl.cpp */,
 				08B8099F1AA9E53900217EE4 /* be_video_container.cpp */,
+				081BCD231B41CB26009E7190 /* be_video_impl.cpp */,
+				081BCD251B41CB26009E7190 /* be_video_stream_impl.cpp */,
+				081BCD271B41CB26009E7190 /* be_video_stream.cpp */,
 			);
 			name = Video;
 			sourceTree = "<group>";
@@ -609,6 +648,7 @@
 			isa = PBXGroup;
 			children = (
 				08CFC4891545E14800BA89B2 /* be_data_interchange_an2k.h */,
+				081BCD1B1B41CAD9009E7190 /* be_data_interchange_ansi2004.h */,
 			);
 			name = "Data Interchange";
 			sourceTree = "<group>";
@@ -822,6 +862,7 @@
 		08CFC51B1545E44200BA89B2 /* Data Interchange */ = {
 			isa = PBXGroup;
 			children = (
+				081BCD1F1B41CB26009E7190 /* be_data_interchange_ansi2004.cpp */,
 				08CFC4C71545E1F500BA89B2 /* be_data_interchange_an2k.cpp */,
 			);
 			name = "Data Interchange";
@@ -904,7 +945,9 @@
 		22DE5BF218EB298700D460F1 /* MPI */ = {
 			isa = PBXGroup;
 			children = (
-				22DE5C0718EB29CF00D460F1 /* be_mpi.h */,
+				081BCD1C1B41CAD9009E7190 /* be_mpi_csvdistributor.h */,
+				081BCD1D1B41CAD9009E7190 /* be_mpi_csvprocessor.h */,
+				081BCD1E1B41CAD9009E7190 /* be_mpi_csvresources.h */,
 				22DE5BFE18EB29CF00D460F1 /* be_mpi_distributor.h */,
 				22DE5BFF18EB29CF00D460F1 /* be_mpi_receiver.h */,
 				22DE5C0018EB29CF00D460F1 /* be_mpi_recordprocessor.h */,
@@ -914,6 +957,7 @@
 				22DE5C0418EB29CF00D460F1 /* be_mpi_runtime.h */,
 				22DE5C0518EB29CF00D460F1 /* be_mpi_workpackage.h */,
 				22DE5C0618EB29CF00D460F1 /* be_mpi_workpackageprocessor.h */,
+				22DE5C0718EB29CF00D460F1 /* be_mpi.h */,
 			);
 			name = MPI;
 			sourceTree = "<group>";
@@ -921,7 +965,9 @@
 		22DE5BF318EB29A100D460F1 /* MPI */ = {
 			isa = PBXGroup;
 			children = (
-				22DE5BFD18EB29BE00D460F1 /* be_mpi.cpp */,
+				081BCD201B41CB26009E7190 /* be_mpi_csvdistributor.cpp */,
+				081BCD211B41CB26009E7190 /* be_mpi_csvprocessor.cpp */,
+				081BCD221B41CB26009E7190 /* be_mpi_csvresources.cpp */,
 				22DE5BF418EB29BE00D460F1 /* be_mpi_distributor.cpp */,
 				22DE5BF518EB29BE00D460F1 /* be_mpi_receiver.cpp */,
 				22DE5BF618EB29BE00D460F1 /* be_mpi_recordprocessor.cpp */,
@@ -931,6 +977,7 @@
 				22DE5BFA18EB29BE00D460F1 /* be_mpi_runtime.cpp */,
 				22DE5BFB18EB29BE00D460F1 /* be_mpi_workpackage.cpp */,
 				22DE5BFC18EB29BE00D460F1 /* be_mpi_workpackageprocessor.cpp */,
+				22DE5BFD18EB29BE00D460F1 /* be_mpi.cpp */,
 			);
 			name = MPI;
 			sourceTree = "<group>";
@@ -938,9 +985,12 @@
 		22DE5C0C18EB2AA300D460F1 /* MPI */ = {
 			isa = PBXGroup;
 			children = (
-				22DE5C0D18EB2ABD00D460F1 /* mpitest.sh */,
-				22DE5C0E18EB2ABD00D460F1 /* test_be_mpi.cpp */,
-				22DE5C0F18EB2ABD00D460F1 /* test_be_mpi.h */,
+				081BCD2E1B41CBA7009E7190 /* mpitest_csv.sh */,
+				081BCD2F1B41CBA7009E7190 /* mpitest_rs.sh */,
+				081BCD321B41CBA7009E7190 /* test_be_csv_mpi.cpp */,
+				081BCD331B41CBA7009E7190 /* test_be_csv_mpi.h */,
+				081BCD371B41CBA7009E7190 /* test_be_rs_mpi.cpp */,
+				081BCD381B41CBA7009E7190 /* test_be_rs_mpi.h */,
 			);
 			name = MPI;
 			sourceTree = "<group>";
@@ -983,7 +1033,7 @@
 		08CFC4581545DF2A00BA89B2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0620;
 			};
 			buildConfigurationList = 08CFC45B1545DF2A00BA89B2 /* Build configuration list for PBXProject "common" */;
 			compatibilityVersion = "Xcode 3.2";
