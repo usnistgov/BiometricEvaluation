@@ -213,6 +213,8 @@
 		08CFC4FB1545E1F500BA89B2 /* be_view_an2kview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_view_an2kview.cpp; path = ../src/libbiomeval/be_view_an2kview.cpp; sourceTree = "<group>"; };
 		08CFC4FC1545E1F500BA89B2 /* be_view_view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_view_view.cpp; path = ../src/libbiomeval/be_view_view.cpp; sourceTree = "<group>"; };
 		08CFC4FD1545E1F500BA89B2 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/libbiomeval/Makefile; sourceTree = "<group>"; };
+		08E01AD41B56DEBD007592F4 /* be_feature_sort.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_feature_sort.h; path = ../src/include/be_feature_sort.h; sourceTree = "<group>"; };
+		08E01AD51B56DEE2007592F4 /* be_feature_sort.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_feature_sort.cpp; path = ../src/libbiomeval/be_feature_sort.cpp; sourceTree = "<group>"; };
 		08E78F3C193CC0CF0005F0A0 /* be_memory_mutableindexedbuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_memory_mutableindexedbuffer.h; path = ../src/include/be_memory_mutableindexedbuffer.h; sourceTree = "<group>"; };
 		08E78F3D193CC0EA0005F0A0 /* be_memory_mutableindexedbuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_memory_mutableindexedbuffer.cpp; path = ../src/libbiomeval/be_memory_mutableindexedbuffer.cpp; sourceTree = "<group>"; };
 		224A58EA18D22E1F00E11798 /* be_face_incitsview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_incitsview.h; path = ../src/include/be_face_incitsview.h; sourceTree = "<group>"; };
@@ -730,6 +732,7 @@
 				08CFC48E1545E14800BA89B2 /* be_feature_incitsminutiae.h */,
 				08CFC48F1545E14800BA89B2 /* be_feature_minutiae.h */,
 				224A58ED18D22E2B00E11798 /* be_feature_mpegfacepoint.h */,
+				08E01AD41B56DEBD007592F4 /* be_feature_sort.h */,
 			);
 			name = Feature;
 			sourceTree = "<group>";
@@ -845,6 +848,7 @@
 				08CFC4CB1545E1F500BA89B2 /* be_feature_an2k7minutiae.cpp */,
 				08CFC4CC1545E1F500BA89B2 /* be_feature_incitsminutiae.cpp */,
 				08CFC4CD1545E1F500BA89B2 /* be_feature_minutiae.cpp */,
+				08E01AD51B56DEE2007592F4 /* be_feature_sort.cpp */,
 			);
 			name = Feature;
 			sourceTree = "<group>";
