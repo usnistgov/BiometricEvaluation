@@ -35,7 +35,7 @@
 #include <be_io_sqliterecstore.h>
 #include <be_io_utility.h>
 #include <be_text.h>
-#include <be_memory_autoarray.h>
+#include <be_memory_autoarrayutility.h>
 
 #include <image_additions.h>
 #include <lrs_additions.h>
@@ -540,18 +540,17 @@ int extract(int argc, char *argv[], Action action)
 	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
-	BE::Memory::AutoArray<uint8_t> buf;
-	BE::Memory::AutoArray<char> hash_buf;
+	BE::Memory::AutoArray<uint8_t> hash_buf;
 	if (!key.empty()) {
+		BE::Memory::AutoArray<uint8_t> buf;
 		try {
-			buf.resize(rs->length(key));
-			rs->read(key, buf);
+			buf = rs->read(key);
 		} catch (BE::Error::ObjectDoesNotExist) {
 			 /* It's possible the key should be hashed */
 			try {
 				std::string hash = BE::Text::digest(key);
 				buf.resize(rs->length(hash));
-				rs->read(hash, buf);
+				buf = rs->read(hash);
 			} catch (BE::Error::Exception &e) {
 				std::cerr << "Error extracting " << key <<
 				    " - " << e.what() << std::endl;	
@@ -565,10 +564,9 @@ int extract(int argc, char *argv[], Action action)
 		/* Unhash, if desired */
 		if (hash_rs.get() != NULL) {
 			try {
-				hash_buf.resize(hash_rs->length(key) + 1);
-				hash_rs->read(key, hash_buf);
-				hash_buf[hash_buf.size() - 1] = '\0';
-				key.assign(hash_buf);
+				hash_buf = hash_rs->read(key);
+				key = BE::Memory::AutoArrayUtility::getString(
+					hash_buf, hash_buf.size());
 			} catch (BE::Error::Exception &e) {
 				std::cerr << "Could not unhash " << key <<
 				    " - " << e.what() << std::endl;
@@ -622,18 +620,18 @@ int extract(int argc, char *argv[], Action action)
 		std::string next_key;
 		for (int i = 0; i < atoi(ranges[0].c_str()) - 1; i++) {
 			try {
-				rs->sequence(next_key, NULL);
+				next_key = rs->sequenceKey();
 			} catch (BE::Error::Exception &e) {
 				std::cerr << "Could not sequence to record " <<
 				    ranges[0] << std::endl;
 				return (EXIT_FAILURE);
 			}
 		}
+		BE::IO::RecordStore::Record record;
 		for (int i = atoi(ranges[0].c_str());
 		    i <= atoi(ranges[1].c_str()); i++) {
 			try {
-				buf.resize(rs->sequence(next_key, NULL));
-				rs->read(next_key, buf);
+				record = rs->sequence();
 			} catch (BE::Error::Exception &e) {
 				std::cerr << "Could not read key " << i <<
 				    " - " << e.what() << "." << std::endl;
@@ -643,26 +641,28 @@ int extract(int argc, char *argv[], Action action)
 			/* Unhash, if desired */
 			if (hash_rs.get() != NULL) {
 				try {
-					hash_buf.resize(hash_rs->length(
-					    next_key) + 1);
-					hash_rs->read(next_key, hash_buf);
-					hash_buf[hash_buf.size() - 1] = '\0';
-					next_key.assign(hash_buf);
+					hash_buf = hash_rs->read(record.key);
+					next_key =
+					    BE::Memory::AutoArrayUtility::getString(
+					    hash_buf, hash_buf.size());
 				} catch (BE::Error::Exception &e) {
 					std::cerr << "Could not unhash " << 
-					    next_key << " - " << e.what() <<
+					    record.key << " - " << e.what() <<
 					    std::endl;
 					return (EXIT_FAILURE);
 				}
+			} else {
+				next_key = record.key;
 			}
 
 			switch (action) {
 			case Action::DUMP:
-				if (dump(next_key, buf) != EXIT_SUCCESS)
+				if (dump(next_key, record.data) != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
 			case Action::DISPLAY:
-				if (display(next_key, buf) != EXIT_SUCCESS)
+				if (display(next_key, record.data)
+				    != EXIT_SUCCESS)
 					return (EXIT_FAILURE);
 				break;
 			default:
@@ -697,7 +697,7 @@ int listRecordStore(int argc, char *argv[])
 	std::string key;
 	try {
 		for (;;) {
-			rs->sequence(key, NULL);
+			key = rs->sequenceKey();
 			std::cout << key << std::endl;
 		}
 	} catch (BE::Error::ObjectDoesNotExist) {
@@ -1046,7 +1046,7 @@ int make_insert_contents(const std::string &filename,
 		key = BE::Text::basename(filename);
 		if (hash_rs.get() == NULL) {
 			try {
-				rs->insert(key, buffer, buffer_size);
+				rs->insert(key, buffer);
 			} catch (BE::Error::ObjectExists &e) {
 				if (stopOnDuplicate)
 					throw;
@@ -1055,7 +1055,7 @@ int make_insert_contents(const std::string &filename,
 				    " (key = \"" + key + "\") because "
 				    "it already exists.  Replacing..." <<
 				    std::endl;
-				rs->replace(key, buffer, buffer_size);
+				rs->replace(key, buffer);
 			}
 		} else {
 			switch (what_to_hash) {
@@ -1092,7 +1092,7 @@ int make_insert_contents(const std::string &filename,
 			}
 
 			try {
-				rs->insert(hash_value, buffer, buffer_size);
+				rs->insert(hash_value, buffer);
 			} catch (BE::Error::ObjectExists &e) {
 				if (stopOnDuplicate)
 					throw;
@@ -1100,7 +1100,7 @@ int make_insert_contents(const std::string &filename,
 				std::cerr << "Could not insert " + filename +
 				    " (key: \"" + hash_value + "\") because "
 				    "it already exists.  Replacing..." << std::endl;
-				rs->replace(hash_value, buffer, buffer_size);
+				rs->replace(hash_value, buffer);
 			}
 
 			try {
@@ -1477,10 +1477,9 @@ void mergeAndHashRecordStores(
 		throw BE::Error::StrategyError("Unknown RecordStore type");
 
 	bool exhausted;
-	uint64_t record_size;
-	std::string key, hash;
-	BE::Memory::AutoArray<char> buf;
+	std::string hash;
 	std::shared_ptr<BE::IO::RecordStore> rs;
+	BE::IO::RecordStore::Record record;
 	for (size_t i = 0; i < recordStores.size(); i++) {
 		try {
 			rs = BE::IO::RecordStore::openRecordStore(
@@ -1492,21 +1491,11 @@ void mergeAndHashRecordStores(
 		exhausted = false;
 		while (!exhausted) {
 			try {
-				record_size = rs->sequence(key);
-				buf.resize(record_size);
-				
-				try {
-					rs->read(key, buf);
-				} catch (BE::Error::ObjectDoesNotExist) {
-					throw BE::Error::StrategyError(
-					    "Could not read " + key +
-					    " from RecordStore");
-				}
-				
+				record = rs->sequence();
 				switch (what_to_hash) {
 				case HashablePart::FILECONTENTS:
-					hash = BE::Text::digest(buf,
-					    record_size);
+					hash = BE::Text::digest(
+					    record.data, record.data.size());
 					break;
 				case HashablePart::FILEPATH:
 					/*
@@ -1516,7 +1505,7 @@ void mergeAndHashRecordStores(
 					 */
 					/* FALLTHROUGH */
 				case HashablePart::FILENAME:
-					hash = BE::Text::digest(key);
+					hash = BE::Text::digest(record.key);
 					break;
 				case HashablePart::NOTHING:
 					/* FALLTHROUGH */
@@ -1539,10 +1528,9 @@ void mergeAndHashRecordStores(
 					 */
 					break;
 				}
-				
-				merged_rs->insert(hash, buf, record_size);
-				hash_rs->insert(hash, key.c_str(),
-				    key.size() + 1);
+				merged_rs->insert(hash, record.data);
+				hash_rs->insert(hash, record.key.c_str(),
+				    record.key.size() + 1);
 			} catch (BE::Error::ObjectDoesNotExist) {
 				exhausted = true;
 			}
@@ -1563,7 +1551,7 @@ int merge(int argc, char *argv[])
 		return (EXIT_FAILURE);
 
 	std::string description = "A merge of ";
-	for (int i = 0; i < child_rs.size(); i++) {
+	for (std::size_t i = 0; i < child_rs.size(); i++) {
 		description += BE::Text::basename(child_rs[i]);
 		if (i != (child_rs.size() - 1)) description += ", ";
 	}
@@ -1640,10 +1628,9 @@ int unhash(int argc, char *argv[])
 	if (procargs_unhash(argc, argv, hash, rs) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 	
-	BE::Memory::AutoArray<char> buffer;
+	BE::Memory::uint8Array buffer;
 	try {
-		buffer.resize(rs->length(hash));
-		rs->read(hash, buffer);
+		buffer = rs->read(hash);
 		std::cout << buffer << std::endl;
 	} catch (BE::Error::ObjectDoesNotExist) {
 		std::cerr << hash << " was not found in " << rs->getPathname()
@@ -2211,7 +2198,7 @@ diff(
 		std::string key;
 		for (;;) {
 			try {
-				sourceRS->sequence(key, NULL);
+				key = sourceRS->sequenceKey();
 				keys.push_back(key);
 			} catch (BE::Error::ObjectDoesNotExist) {
 				/* End of sequence */
@@ -2225,7 +2212,7 @@ diff(
 	uint64_t sourceLength, targetLength;
 	std::vector<std::string>::const_iterator key;
 	for (key = keys.begin(); key != keys.end(); key++) {		
-		/* Get sizes to check existance */
+		/* Get sizes to check existence */
 		try {
 			sourceLength = sourceRS->length(*key);
 			sourceExists = true;
@@ -2239,7 +2226,7 @@ diff(
 			targetExists = false;
 		}
 		
-		/* Difference based on existance */
+		/* Difference based on existence */
 		if ((sourceExists == false) && (targetExists == false)) {
 			std::cout << *key << ": not found." << std::endl;
 			status = EXIT_FAILURE;
@@ -2264,12 +2251,12 @@ diff(
 		}
 		
 		/* Difference based on content */
-		sourceBuf.resize(sourceLength);
-		targetBuf.resize(targetLength);
 		try {
-			if (sourceRS->read(*key, sourceBuf) != sourceLength)
+			sourceBuf = sourceRS->read(*key);
+			if (sourceBuf.size() != sourceLength)
 				throw BE::Error::StrategyError("Source size");
-			if (targetRS->read(*key, targetBuf) != targetLength)
+			targetBuf = targetRS->read(*key);
+			if (targetBuf.size() != targetLength)
 				throw BE::Error::StrategyError("Target size");
 		} catch (BE::Error::Exception &e) {
 			std::cerr << "Could not diff " << *key << " (" << 

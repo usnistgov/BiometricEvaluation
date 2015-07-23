@@ -83,12 +83,11 @@ printKeys(
     std::shared_ptr<BiometricEvaluation::IO::RecordStore> rs,
     const uint64_t targetSize)
 {
-	uint64_t size;
 	std::string key;
 
 	for (;;) {
 		try {
-			size = rs->sequence(key, NULL);
+			key = rs->sequenceKey();
 		} catch (BE::Error::ObjectDoesNotExist) {
 			break;
 		} catch (BE::Error::Exception &e) {
@@ -96,7 +95,7 @@ printKeys(
 			return;
 		}
 
-		if (size == targetSize)
+		if (rs->length(key) == targetSize)
 			std::cout << key << std::endl;
 	}
 }
