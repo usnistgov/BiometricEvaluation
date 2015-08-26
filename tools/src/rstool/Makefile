@@ -22,7 +22,13 @@ OBJECTS = $(SOURCES:%.cpp=%.o)
 #
 PROGRAM = rstool
 
-CXXFLAGS += -I.
+CXXFLAGS += -I. -I../../../common/src/include -Wall -pedantic -g
+LDFLAGS += ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjpeg -lcrypto -lX11
+ifeq ($(OS),Darwin)
+LDFLAGS += -L/opt/local/lib/db44 -ldb
+else
+LDFLAGS += -ldb
+endif
 
 all: $(PROGRAM)
 
@@ -31,12 +37,12 @@ debug: all
 
 # OS X needs Xquartz to be installed
 ifeq ($(OS),Darwin)
-LD_BIOMEVAL += -L/opt/local/lib -L/usr/X11/lib
-CXXFLAGS += -I/opt/local/include -I/usr/X11/include/
+LDFLAGS += -L/opt/local/lib -L/usr/X11/lib
+CXXFLAGS += -I/opt/local/include -I/usr/X11/include
 endif
 
 $(PROGRAM): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LD_BIOMEVAL) -lX11
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 	test -d $(LOCALBIN) || mkdir $(LOCALBIN)
 	$(CP) $@ $(LOCALBIN)/$@
 	$(CP) $@.1 $(LOCALMAN)
