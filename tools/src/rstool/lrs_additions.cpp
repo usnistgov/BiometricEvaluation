@@ -188,7 +188,7 @@ writeListRecordStoreKeys(
 	std::string newListPath;
 	try {
 		newListPath = BE::IO::Utility::createTemporaryFile(
-		    BE::IO::ListRecordStore::KEYLISTFILENAME);
+		    BE::IO::ListRecordStore::KEYLISTFILENAME, rsPath);
 	} catch (BE::Error::MemoryError &e) {
 		throw BE::Error::FileError(e.what());
 	}
