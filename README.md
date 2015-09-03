@@ -183,6 +183,6 @@ Sept. 8 2015-Sept 11 2015.
 License
 -------
 Biometric Evaluation Framework is released in the public domain. See the 
-[LICENSE](https://github.com/usnistgov/BiometricEvaluation/LICENSE.md) for
-details.
+[LICENSE](https://github.com/usnistgov/BiometricEvaluation/blob/master/LICENSE.md)
+for details.
 
