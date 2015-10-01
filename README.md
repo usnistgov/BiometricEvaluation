@@ -88,9 +88,14 @@ similarly-named packages.
 | [NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) | n/a                   | n/a           |
 
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
-| Name         | RHEL/CentOS     | MacPorts        |
-|:------------:|:---------------:|:---------------:|
-| Open MPI     | `openmpi-devel` | `openmpi-devel` |
+| Name         | RHEL/CentOS     | MacPorts  |
+|:------------:|:---------------:|:---------:|
+| Open MPI     | `openmpi-devel` | `openmpi` |
+
+With MacPorts, you may need to select a different MPI group if you have more than one
+installed:
+
+`sudo port select mpi openmpi-mp-fortran`
 
 ### VIDEO
 | Name                        | RHEL/CentOS | MacPorts       |
