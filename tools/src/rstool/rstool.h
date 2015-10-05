@@ -176,7 +176,7 @@ usage(
  * @param[in] parentDir
  *	Directory holding RecordStore.
  * @param[in] mode
- *	How attempting to open the RecordStore (IO::READONLY, IO::READWRITE)
+ *	How attempting to open the RecordStore (IO::Mode::ReadOnly, IO::Mode::ReadWrite)
  *
  * @return
  *	true if access to file exists, false otherwise.
@@ -191,7 +191,7 @@ usage(
 bool
 isRecordStoreAccessible(
     const std::string &pathname,
-    const uint8_t mode = BiometricEvaluation::IO::READWRITE);
+    const BiometricEvaluation::IO::Mode mode = BiometricEvaluation::IO::Mode::ReadWrite);
 
 /**
  * @brief

@@ -35,7 +35,7 @@ isListRecordStore(
 	
 	/* RecordStore control file lists a RecordStore type of LISTTYPE */
 	try {
-		BE::IO::PropertiesFile props(filePath, BE::IO::READONLY);
+		BE::IO::PropertiesFile props(filePath, BE::IO::Mode::ReadOnly);
 		if (props.getProperty(BE::IO::RecordStore::TYPEPROPERTY) !=
 		    to_string(BE::IO::RecordStore::Kind::List))
 			return (false);
@@ -81,7 +81,7 @@ constructListRecordStore(
 {
 	/* Make sure rsPath is actually a RecordStore (exceptions float out) */
 	std::shared_ptr<BE::IO::RecordStore> rs =
-	    BE::IO::RecordStore::openRecordStore(rsPath, BE::IO::READONLY);
+	    BE::IO::RecordStore::openRecordStore(rsPath, BE::IO::Mode::ReadOnly);
 
 	/* LRS directory */
 	if (BE::IO::Utility::fileExists(lrsPath))
@@ -127,7 +127,7 @@ readListRecordStoreKeys(
 	std::string controlFilePath = rsPath + '/' +
 	    BE::IO::RecordStore::CONTROLFILENAME;;
 	std::shared_ptr<BE::IO::PropertiesFile> props(
-	    new BE::IO::PropertiesFile(controlFilePath, BE::IO::READONLY));
+	    new BE::IO::PropertiesFile(controlFilePath, BE::IO::Mode::ReadOnly));
 
 	std::string sourceRSPath;
 	try {
@@ -140,7 +140,7 @@ readListRecordStoreKeys(
 	}
 	try {
 		srs = BE::IO::RecordStore::openRecordStore(
-		    std::string(sourceRSPath), BE::IO::READONLY);
+		    std::string(sourceRSPath), BE::IO::Mode::ReadOnly);
 	} catch (BE::Error::Exception &e) {
 		throw BE::Error::StrategyError("Could not open source "
 		    "RecordStore " + sourceRSPath + " (" + e.what() + ")");
@@ -234,7 +234,7 @@ insertKeysIntoListRecordStore(
 	
 	std::shared_ptr<BE::IO::RecordStore> lrs =
 	    BE::IO::RecordStore::openRecordStore(
-	    std::string(rsPath), BE::IO::READONLY);
+	    std::string(rsPath), BE::IO::Mode::ReadOnly);
 	
 	/* Add unique keys */
 	std::string badKeys;

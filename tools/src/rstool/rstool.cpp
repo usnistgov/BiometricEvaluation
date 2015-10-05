@@ -242,16 +242,14 @@ void usage(char *exe)
 bool
 isRecordStoreAccessible(
     const std::string &pathname,
-    const uint8_t mode)
+    const BiometricEvaluation::IO::Mode mode)
 {
 	bool (*isAccessible)(const std::string&) = NULL;
 	switch (mode) {
-	case BE::IO::READONLY:
+	case BE::IO::Mode::ReadOnly:
 		isAccessible = BE::IO::Utility::isReadable;
 		break;
-	case BE::IO::READWRITE:
-		/* FALLTHROUGH */
-	default:
+	case BE::IO::Mode::ReadWrite:
 		isAccessible = BE::IO::Utility::isWritable;
 		break;
 	}
@@ -368,11 +366,11 @@ procargs_extract(
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
 				    std::string(optarg),
-				    BE::IO::READONLY);
+				    BE::IO::Mode::ReadOnly);
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
 				    std::string(optarg),
-				    BE::IO::READONLY))
+				    BE::IO::Mode::ReadOnly))
     					std::cerr << "Could not open " << 
 					    optarg <<
 					    " -- " << e.what() << std::endl;
@@ -421,10 +419,10 @@ procargs_extract(
 	}
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    std::string(sflagval), BE::IO::READONLY);
+		    std::string(sflagval), BE::IO::Mode::ReadOnly);
 	} catch (BE::Error::Exception &e) {
   		if (isRecordStoreAccessible(std::string(sflagval),
-		    BE::IO::READONLY))
+		    BE::IO::Mode::ReadOnly))
 			std::cerr << "Could not open " << sflagval << ".  " <<
 			    e.what() << std::endl;
 		else
@@ -682,10 +680,10 @@ int listRecordStore(int argc, char *argv[])
 	std::shared_ptr<BE::IO::RecordStore> rs;
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    std::string(sflagval), BE::IO::READONLY);
+		    std::string(sflagval), BE::IO::Mode::ReadOnly);
 	} catch (BE::Error::Exception &e) {
 		if (isRecordStoreAccessible(std::string(sflagval),
-		    BE::IO::READONLY))
+		    BE::IO::Mode::ReadOnly))
 			std::cerr << "Could not open RecordStore - " <<
 			    e.what() << std::endl;
 		else
@@ -1207,7 +1205,7 @@ makeListRecordStore(
 		case 'h':
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    std::string(optarg), BE::IO::READONLY);
+				    std::string(optarg), BE::IO::Mode::ReadOnly);
 			} catch (BE::Error::Exception &e) {
 				std::cerr << "Could not open hash RecordStore, "
 				    "but it must exist when creating a hashed "
@@ -1227,11 +1225,11 @@ makeListRecordStore(
 					targetRS =
 					    BE::IO::RecordStore::openRecordStore
 					    (std::string(optarg),
-					     BE::IO::READONLY);
+					     BE::IO::Mode::ReadOnly);
 				} catch (BE::Error::Exception &e) {
 					if (isRecordStoreAccessible(
 					     std::string(optarg),
-					     BE::IO::READONLY))
+					     BE::IO::Mode::ReadOnly))
 						std::cerr << "Could not open "<<
 						BE::Text::basename(optarg) <<
 						" - " << e.what() << std::endl;
@@ -1483,7 +1481,7 @@ void mergeAndHashRecordStores(
 	for (size_t i = 0; i < recordStores.size(); i++) {
 		try {
 			rs = BE::IO::RecordStore::openRecordStore(
-			    recordStores[i], BE::IO::READONLY);
+			    recordStores[i], BE::IO::Mode::ReadOnly);
 		} catch (BE::Error::Exception &e) {
 			throw BE::Error::StrategyError(e.what());
 		}
@@ -1606,10 +1604,10 @@ int procargs_unhash(int argc, char *argv[], std::string &hash,
 	/* sflagval here is the hashed RecordStore */
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    std::string(sflagval), BE::IO::READONLY);
+		    std::string(sflagval), BE::IO::Mode::ReadOnly);
 	} catch (BE::Error::Exception &e) {
 		if (isRecordStoreAccessible(std::string(sflagval),
-		    BE::IO::READONLY))
+		    BE::IO::Mode::ReadOnly))
 			std::cerr << "Could not open " << sflagval << " - " << 
 			    e.what() << std::endl;
 		else
@@ -1707,7 +1705,7 @@ procargs_add(
 				    std::string(optarg));
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
-				    std::string(optarg), BE::IO::READONLY))
+				    std::string(optarg), BE::IO::Mode::ReadOnly))
 					std::cerr << "Could not open " <<
 					     optarg << " -- " << e.what() <<
 					     std::endl;
@@ -2021,10 +2019,10 @@ procargs_remove(
 	/* sflagval here is the RecordStore */
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    std::string(sflagval), BE::IO::READWRITE);
+		    std::string(sflagval), BE::IO::Mode::ReadWrite);
 	} catch (BE::Error::Exception &e) {
 		if (isRecordStoreAccessible(
-		    std::string(sflagval), BE::IO::READWRITE))
+		    std::string(sflagval), BE::IO::Mode::ReadWrite))
 			std::cerr << "Could not open " << sflagval << " - " <<
 			    e.what() << std::endl;
 		else
@@ -2142,12 +2140,12 @@ procargs_diff(
 				/* Assign sourceRS first */
 				((rsCount == 1) ? sourceRS : targetRS) =
 				    BE::IO::RecordStore::openRecordStore(
-				    std::string(optarg), BE::IO::READONLY);
+				    std::string(optarg), BE::IO::Mode::ReadOnly);
 				rsCount++;
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
 				    std::string(optarg),
-				    BE::IO::READONLY))
+				    BE::IO::Mode::ReadOnly))
 					std::cerr << "Could not open " <<
 					    BE::Text::basename(optarg) <<
 					    " - " << e.what() << std::endl;
@@ -2315,11 +2313,11 @@ procargs_rename(
 				try {
 					BE::IO::RecordStore::openRecordStore(
 					    std::string(optarg),
-					    BE::IO::READWRITE);
+					    BE::IO::Mode::ReadWrite);
 				} catch (BE::Error::Exception &e) {
 					if (isRecordStoreAccessible(
 					    std::string(optarg),
-					    BE::IO::READWRITE))
+					    BE::IO::Mode::ReadWrite))
 						std::cerr << "Could not "
 						    "open " << optarg <<
 						    " - " << e.what() <<
@@ -2368,7 +2366,7 @@ rename(
 	/* Change name in same directory */
 	try {
 		std::shared_ptr<BE::IO::RecordStore> rs = BE::IO::RecordStore::
-		    openRecordStore(std::string(sflagval), BE::IO::READWRITE);
+		    openRecordStore(std::string(sflagval), BE::IO::Mode::ReadWrite);
 		rs->move(newPath);
 	} catch (BE::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;

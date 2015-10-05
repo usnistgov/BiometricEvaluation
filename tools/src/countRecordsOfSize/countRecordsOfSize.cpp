@@ -56,7 +56,7 @@ main(
 	std::shared_ptr<BE::IO::RecordStore> rs;
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-	    	    std::string(argv[1]), BE::IO::READONLY);
+	    	    std::string(argv[1]), BE::IO::Mode::ReadOnly);
 	} catch (BE::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (1);
