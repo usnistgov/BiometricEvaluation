@@ -1702,7 +1702,7 @@ procargs_add(
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    std::string(optarg));
+				    std::string(optarg), BE::IO::Mode::ReadWrite);
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
 				    std::string(optarg), BE::IO::Mode::ReadOnly))
@@ -1738,9 +1738,10 @@ procargs_add(
 	/* sflagval is the RecordStore we will be adding to */
 	try {
 		rs = BE::IO::RecordStore::openRecordStore(
-		    std::string(sflagval));
+		    std::string(sflagval), BE::IO::Mode::ReadWrite);
 	} catch (BE::Error::Exception &e) {
-		if (isRecordStoreAccessible(std::string(sflagval)))
+		if (isRecordStoreAccessible(std::string(sflagval),
+		    BE::IO::Mode::ReadWrite))
 			std::cerr << "Could not open " << sflagval << " -- " <<
 			    e.what() << std::endl;
 		else
@@ -1809,10 +1810,11 @@ procargs_modifyListRecordStore(
 		case 'h':	/* Existing hash translation RecordStore */
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
-				    std::string(optarg));
+				    std::string(optarg), BE::IO::Mode::ReadWrite);
 			} catch (BE::Error::Exception &e) {
 				if (isRecordStoreAccessible(
-				    std::string(optarg)))
+				    std::string(optarg),
+				    BE::IO::Mode::ReadWrite))
 					std::cerr << "Could not open " <<
 					    optarg << " -- " << e.what() <<
 					    std::endl;

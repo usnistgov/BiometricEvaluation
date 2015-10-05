@@ -191,7 +191,7 @@ usage(
 bool
 isRecordStoreAccessible(
     const std::string &pathname,
-    const BiometricEvaluation::IO::Mode mode = BiometricEvaluation::IO::Mode::ReadWrite);
+    const BiometricEvaluation::IO::Mode mode);
 
 /**
  * @brief
