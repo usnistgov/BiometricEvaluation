@@ -65,7 +65,7 @@ updateListRecordStoreCount(
 	std::string propsFilePath = rsPath + '/' +
 	    BE::IO::RecordStore::CONTROLFILENAME;
 
-	BE::IO::PropertiesFile props(propsFilePath);
+	BE::IO::PropertiesFile props(propsFilePath, BE::IO::Mode::ReadWrite);
 	props.setPropertyFromInteger(BE::IO::RecordStore::COUNTPROPERTY,
 	     newCount);
 	props.sync();
@@ -95,7 +95,7 @@ constructListRecordStore(
 	std::string controlFilePath = lrsPath + '/' +
 	    BE::IO::RecordStore::CONTROLFILENAME;
 
-	BE::IO::PropertiesFile props(controlFilePath);
+	BE::IO::PropertiesFile props(controlFilePath, BE::IO::Mode::ReadWrite);
 	props.setPropertyFromInteger(BE::IO::RecordStore::COUNTPROPERTY, 0);
 	props.setProperty(BE::IO::RecordStore::DESCRIPTIONPROPERTY,
 	    "<Description>");
@@ -127,7 +127,8 @@ readListRecordStoreKeys(
 	std::string controlFilePath = rsPath + '/' +
 	    BE::IO::RecordStore::CONTROLFILENAME;;
 	std::shared_ptr<BE::IO::PropertiesFile> props(
-	    new BE::IO::PropertiesFile(controlFilePath, BE::IO::Mode::ReadOnly));
+	    new BE::IO::PropertiesFile(controlFilePath,
+	    BE::IO::Mode::ReadOnly));
 
 	std::string sourceRSPath;
 	try {
