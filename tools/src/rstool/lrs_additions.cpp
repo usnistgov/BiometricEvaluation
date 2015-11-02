@@ -172,8 +172,7 @@ readListRecordStoreKeys(
 			throw BE::Error::FileError("Error reading " +
 			    BE::IO::ListRecordStore::KEYLISTFILENAME);
 		}
-		BE::Text::removeLeadingTrailingWhitespace(line);
-		existingKeys->push_back(line);
+		existingKeys->push_back(BE::Text::trimWhitespace(line));
 	}
 	keyListFile.close();
 }
