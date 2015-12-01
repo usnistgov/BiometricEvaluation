@@ -76,7 +76,6 @@ similarly-named packages.
 ### IMAGE
 | Name                                        | RHEL/CentOS           | MacPorts      |
 |:-------------------------------------------:|:---------------------:|:-------------:|
-| [NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) | n/a                   | n/a           |
 | OpenJPEG 1.x                                | `openjpeg-devel`      | `libopenjpeg` |
 | libjpeg                                     | `libjpeg-turbo-devel` | `jpeg`        |
 | libpng                                      | `libpng-devel`        | `libpng`      |
@@ -85,7 +84,6 @@ similarly-named packages.
 ### FEATURE, FINGER
 | Name                                        | RHEL/CentOS           | MacPorts      |
 |:-------------------------------------------:|:---------------------:|:-------------:|
-| [NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) | n/a                   | n/a           |
 
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
 | Name         | RHEL/CentOS     | MacPorts  |
@@ -105,9 +103,12 @@ installed:
 
 #### NIST Biometric Image Software (NBIS)
 [NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) is supported under current versions
-of RHEL/CentOS, Ubuntu, and OS X, but must be built from source that is not
-included in this repository. Biometric Evaluation Framework will look for NBIS
-to be installed at `/usr/local/nbis`:
+of RHEL/CentOS, Ubuntu, and OS X. The Framework repository contains a subset
+of NBIS that is built from the top-level make file. However, if there is a need
+to use the `official` NBIS, then the make file in common/src/libbiomeval can
+changed to use that NBIS build. Biometric Evaluation Framework will look for NBIS
+to be installed at `/usr/local/nbis`. To build NBIS, download the source from
+http://nist.gov/itl/iad/ig/nigos.cfm, and follow this basic build procedure:
 
 ```
 ./setup.sh /usr/local/nbis [--without-X11]
@@ -115,7 +116,7 @@ make config it
 sudo make install
 ```
 
-Alternatively, under RHEL/CentOS, build an with our provided SPEC.
+Alternatively, under RHEL/CentOS, build with the NIST-provided SPEC.
 
 ---
 
