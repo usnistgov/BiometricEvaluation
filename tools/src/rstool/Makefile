@@ -23,7 +23,7 @@ OBJECTS = $(SOURCES:%.cpp=%.o)
 PROGRAM = rstool
 
 CXXFLAGS += -I. -I../../../common/src/include -Wall -pedantic -g
-LDFLAGS += ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjpeg -lcrypto -lX11
+LDFLAGS += ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjpeg -lcrypto -lX11 -ljpeg
 ifeq ($(OS),Darwin)
 LDFLAGS += -L/opt/local/lib/db44 -ldb
 else
