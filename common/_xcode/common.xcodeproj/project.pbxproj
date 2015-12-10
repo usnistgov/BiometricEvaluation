@@ -1009,7 +1009,7 @@
 			buildPhases = (
 			);
 			buildToolPath = /usr/bin/make;
-			buildWorkingDirectory = ../src/libbiomeval;
+			buildWorkingDirectory = ../;
 			dependencies = (
 			);
 			name = libbiomeval;
