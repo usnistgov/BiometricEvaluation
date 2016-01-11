@@ -6,6 +6,7 @@ management, error handling, and other functionality that is needed for many
 applications used in the testing of biometric software.
 
 The goals of Biometric Evaluation Framework include:
+
  * reduce the amount of I/O error handling implemented by applications;
  * provide standard interfaces for data management and logging;
  * remove the need for applications to handle low-level events from the 
@@ -22,7 +23,8 @@ make -C common/
 ```
 
 ### Build Configuration
-The `Makefile` understands several variables:
+The makefile understands several variables:
+
  * **`CC`**: C compiler;
  * **`CXX`**: C++ compiler;
  * **`MPICXX`**: OpenMPI compiler;
@@ -81,10 +83,6 @@ similarly-named packages.
 | libpng                                      | `libpng-devel`        | `libpng`      |
 | Zlib                                        | `zlib-devel`          | `zlib`        |
 
-### FEATURE, FINGER
-| Name                                        | RHEL/CentOS           | MacPorts      |
-|:-------------------------------------------:|:---------------------:|:-------------:|
-
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
 | Name         | RHEL/CentOS     | MacPorts  |
 |:------------:|:---------------:|:---------:|
@@ -104,19 +102,18 @@ installed:
 #### NIST Biometric Image Software (NBIS)
 [NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) is supported under current versions
 of RHEL/CentOS, Ubuntu, and OS X. The Framework repository contains a subset
-of NBIS that is built from the top-level make file. However, if there is a need
-to use the `official` NBIS, then the make file in common/src/libbiomeval can
+of NBIS that is built from the top-level makefile. However, if there is a need
+to use the _official_ NBIS, then the makefile in `common/src/libbiomeval` can
 changed to use that NBIS build. Biometric Evaluation Framework will look for NBIS
-to be installed at `/usr/local/nbis`. To build NBIS, download the source from
-http://nist.gov/itl/iad/ig/nigos.cfm, and follow this basic build procedure:
+to be installed at `/usr/local/nbis`. To build NBIS,
+[download the source](http://nist.gov/itl/iad/ig/nigos.cfm),
+and follow this basic build procedure:
 
 ```
 ./setup.sh /usr/local/nbis [--without-X11]
 make config it
 sudo make install
 ```
-
-Alternatively, under RHEL/CentOS, build with the NIST-provided SPEC.
 
 ---
 
@@ -144,6 +141,7 @@ Pull Requests
 -------------
 Thanks for your interest in submitting code to Biometric Evaluation Framework.
 In order to maintain our project goals, pull requests must:
+
  * adhere to the existing coding style;
  * use Framework types consistently wherever possible;
  * compile without warning under OS X and RHEL/CentOS 7.x;
@@ -165,23 +163,25 @@ Citing
 ------
 If you use Biometric Evaluation Framework in the course of your work, please
 consider linking back to
-[our website](http://www.nist.gov/itl/iad/ig/framework.cfm) or citing our
-manuscript:
+[our website](http://www.nist.gov/itl/iad/ig/framework.cfm) or citing
+[our manuscript](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=7358800):
 
 Fiumara, G.; Salamon, W.; Watson, C, "Towards Repeatable, Reproducible, and
 Efficient Biometric Technology Evaluations," in Biometrics: Theory,
-Applications and Systems (BTAS), 2015 IEEE Seventh International Conference on,
+Applications and Systems (BTAS), 2015 IEEE 7th International Conference on,
 Sept. 8 2015-Sept 11 2015.
 
 ### BibTeX
 ```latex
-@INPROCEEDINGS{biometricEvaluationFrameworkBTAS2015,
+@INPROCEEDINGS{7358800,
 	author={Gregory Fiumara and Wayne Salamon and Craig Watson},
 	title={{Towards Repeatable, Reproducible, and Efficient Biometric
 	Technology Evaluations}},
-	booktitle={Biometrics: Theory, Applications and Systems (BTAS), 2015
-	IEEE Seventh International Conference on}, 
+	booktitle={Biometrics Theory, Applications and Systems (BTAS), 2015 IEEE
+	7th International Conference on}, 
 	year={2015},
+	pages={1-8},
+	doi={10.1109/BTAS.2015.7358800},
 	month={Sept}
 }
 ```
