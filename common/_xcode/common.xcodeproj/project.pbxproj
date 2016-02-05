@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
+		08A2BC311940C117003D3697 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08CFC4581545DF2A00BA89B2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 08CFC45D1545DF2B00BA89B2;
+			remoteInfo = libbiomeval;
+		};
 		08CFC4761545E00300BA89B2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08CFC4581545DF2A00BA89B2 /* Project object */;
@@ -37,6 +44,10 @@
 		081BCD341B41CBA7009E7190 /* test_be_io_filelogcabinet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_filelogcabinet.cpp; path = ../src/test/test_be_io_filelogcabinet.cpp; sourceTree = "<group>"; };
 		081BCD371B41CBA7009E7190 /* test_be_rs_mpi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_rs_mpi.cpp; path = ../src/test/test_be_rs_mpi.cpp; sourceTree = "<group>"; };
 		081BCD381B41CBA7009E7190 /* test_be_rs_mpi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = test_be_rs_mpi.h; path = ../src/test/test_be_rs_mpi.h; sourceTree = "<group>"; };
+		083EBDBB1C19EFDA0092D6D2 /* be_io_recordstoreunion_impl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_io_recordstoreunion_impl.h; path = ../src/libbiomeval/be_io_recordstoreunion_impl.h; sourceTree = "<group>"; };
+		083EBDBD1C19EFF00092D6D2 /* be_io_recordstoreunion_impl.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_recordstoreunion_impl.cpp; path = ../src/libbiomeval/be_io_recordstoreunion_impl.cpp; sourceTree = "<group>"; };
+		083EBDBE1C19EFF00092D6D2 /* be_io_recordstoreunion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_recordstoreunion.cpp; path = ../src/libbiomeval/be_io_recordstoreunion.cpp; sourceTree = "<group>"; };
+		083EBDBF1C19F00B0092D6D2 /* be_io_recordstoreunion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_io_recordstoreunion.h; path = ../src/include/be_io_recordstoreunion.h; sourceTree = "<group>"; };
 		084AB2CD15A1F540000DD259 /* be_io_compressedrecstore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressedrecstore.h; path = ../src/include/be_io_compressedrecstore.h; sourceTree = "<group>"; };
 		084AB2CF15A1F5D9000DD259 /* be_io_compressedrecstore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressedrecstore.cpp; path = ../src/libbiomeval/be_io_compressedrecstore.cpp; sourceTree = "<group>"; };
 		086A2A63154735EA00464DC5 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/test/Makefile; sourceTree = "<group>"; };
@@ -217,6 +228,7 @@
 		08E01AD51B56DEE2007592F4 /* be_feature_sort.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_feature_sort.cpp; path = ../src/libbiomeval/be_feature_sort.cpp; sourceTree = "<group>"; };
 		08E78F3C193CC0CF0005F0A0 /* be_memory_mutableindexedbuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_memory_mutableindexedbuffer.h; path = ../src/include/be_memory_mutableindexedbuffer.h; sourceTree = "<group>"; };
 		08E78F3D193CC0EA0005F0A0 /* be_memory_mutableindexedbuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_memory_mutableindexedbuffer.cpp; path = ../src/libbiomeval/be_memory_mutableindexedbuffer.cpp; sourceTree = "<group>"; };
+		08FCB2561C21C04F005E892C /* test_be_io_recordstoreunion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_recordstoreunion.cpp; path = ../src/test/test_be_io_recordstoreunion.cpp; sourceTree = "<group>"; };
 		224A58EA18D22E1F00E11798 /* be_face_incitsview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_incitsview.h; path = ../src/include/be_face_incitsview.h; sourceTree = "<group>"; };
 		224A58EB18D22E1F00E11798 /* be_face_iso2005view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_iso2005view.h; path = ../src/include/be_face_iso2005view.h; sourceTree = "<group>"; };
 		224A58EC18D22E1F00E11798 /* be_face.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face.h; path = ../src/include/be_face.h; sourceTree = "<group>"; };
@@ -265,7 +277,6 @@
 		081BCD281B41CB35009E7190 /* public */ = {
 			isa = PBXGroup;
 			children = (
-				08B8099E1AA9E53900217EE4 /* be_video_container_impl.h */,
 				08B809981AA9E52400217EE4 /* be_video_container.h */,
 				08B809991AA9E52400217EE4 /* be_video_stream.h */,
 				08B8099A1AA9E52400217EE4 /* be_video.h */,
@@ -278,8 +289,61 @@
 			children = (
 				081BCD241B41CB26009E7190 /* be_video_impl.h */,
 				081BCD261B41CB26009E7190 /* be_video_stream_impl.h */,
+				08B8099E1AA9E53900217EE4 /* be_video_container_impl.h */,
 			);
 			name = private;
+			sourceTree = "<group>";
+		};
+		083EBDBA1C19EFC60092D6D2 /* private */ = {
+			isa = PBXGroup;
+			children = (
+				083EBDBB1C19EFDA0092D6D2 /* be_io_recordstoreunion_impl.h */,
+			);
+			name = private;
+			sourceTree = "<group>";
+		};
+		083EBDBC1C19EFE50092D6D2 /* private */ = {
+			isa = PBXGroup;
+			children = (
+				083EBDBD1C19EFF00092D6D2 /* be_io_recordstoreunion_impl.cpp */,
+			);
+			name = private;
+			sourceTree = "<group>";
+		};
+		083EBDC01C19F25D0092D6D2 /* public */ = {
+			isa = PBXGroup;
+			children = (
+				08C0465B156E9E5A00E2A097 /* be_io_compressor.h */,
+				08B809961AA9E52400217EE4 /* be_io_filelogcabinet.h */,
+				08B809971AA9E52400217EE4 /* be_io_filelogsheet.h */,
+				08C0465A156E9E4B00E2A097 /* be_io_gzip.h */,
+				08CFC4A91545E14800BA89B2 /* be_io_logsheet.h */,
+				08CFC4AA1545E14800BA89B2 /* be_io_properties.h */,
+				08CFC4AB1545E14800BA89B2 /* be_io_propertiesfile.h */,
+				083EBDBF1C19F00B0092D6D2 /* be_io_recordstoreunion.h */,
+				22DE5BF018EB295000D460F1 /* be_io_syslogsheet.h */,
+				08CFC4AE1545E14800BA89B2 /* be_io_utility.h */,
+				08CFC4AF1545E14800BA89B2 /* be_io.h */,
+				0890143718D9EC030079696B /* RecordStore */,
+			);
+			name = public;
+			sourceTree = "<group>";
+		};
+		083EBDC11C19F2700092D6D2 /* public */ = {
+			isa = PBXGroup;
+			children = (
+				08B8099B1AA9E53900217EE4 /* be_io_filelogcabinet.cpp */,
+				08B8099C1AA9E53900217EE4 /* be_io_filelogsheet.cpp */,
+				08C0465D156E9E8D00E2A097 /* be_io_gzip.cpp */,
+				08CFC4E81545E1F500BA89B2 /* be_io_logsheet.cpp */,
+				08CFC4E91545E1F500BA89B2 /* be_io_properties.cpp */,
+				08CFC4EA1545E1F500BA89B2 /* be_io_propertiesfile.cpp */,
+				083EBDBE1C19EFF00092D6D2 /* be_io_recordstoreunion.cpp */,
+				22DE5BF118EB296100D460F1 /* be_io_syslogsheet.cpp */,
+				08CFC4ED1545E1F500BA89B2 /* be_io_utility.cpp */,
+				0890143518D9EBDA0079696B /* RecordStore */,
+			);
+			name = public;
 			sourceTree = "<group>";
 		};
 		086A2A541547359C00464DC5 /* test */ = {
@@ -344,6 +408,7 @@
 				086A2A70154735EA00464DC5 /* test_be_io_propertiesfile.cpp */,
 				086A2A71154735EA00464DC5 /* test_be_io_recordstore-stress.cpp */,
 				086A2A72154735EA00464DC5 /* test_be_io_recordstore.cpp */,
+				08FCB2561C21C04F005E892C /* test_be_io_recordstoreunion.cpp */,
 				22DE5C0A18EB2A9100D460F1 /* test_be_io_syslogsheet.cpp */,
 				086A2A73154735EA00464DC5 /* test_be_io_utility.cpp */,
 			);
@@ -658,17 +723,8 @@
 		08CFC5071545E22800BA89B2 /* IO */ = {
 			isa = PBXGroup;
 			children = (
-				08C0465B156E9E5A00E2A097 /* be_io_compressor.h */,
-				08B809961AA9E52400217EE4 /* be_io_filelogcabinet.h */,
-				08B809971AA9E52400217EE4 /* be_io_filelogsheet.h */,
-				08C0465A156E9E4B00E2A097 /* be_io_gzip.h */,
-				08CFC4A91545E14800BA89B2 /* be_io_logsheet.h */,
-				08CFC4AA1545E14800BA89B2 /* be_io_properties.h */,
-				08CFC4AB1545E14800BA89B2 /* be_io_propertiesfile.h */,
-				22DE5BF018EB295000D460F1 /* be_io_syslogsheet.h */,
-				08CFC4AE1545E14800BA89B2 /* be_io_utility.h */,
-				08CFC4AF1545E14800BA89B2 /* be_io.h */,
-				0890143718D9EC030079696B /* RecordStore */,
+				083EBDC01C19F25D0092D6D2 /* public */,
+				083EBDBA1C19EFC60092D6D2 /* private */,
 			);
 			name = IO;
 			sourceTree = "<group>";
@@ -804,15 +860,8 @@
 		08CFC5161545E43F00BA89B2 /* IO */ = {
 			isa = PBXGroup;
 			children = (
-				08B8099B1AA9E53900217EE4 /* be_io_filelogcabinet.cpp */,
-				08B8099C1AA9E53900217EE4 /* be_io_filelogsheet.cpp */,
-				08C0465D156E9E8D00E2A097 /* be_io_gzip.cpp */,
-				08CFC4E81545E1F500BA89B2 /* be_io_logsheet.cpp */,
-				08CFC4E91545E1F500BA89B2 /* be_io_properties.cpp */,
-				08CFC4EA1545E1F500BA89B2 /* be_io_propertiesfile.cpp */,
-				22DE5BF118EB296100D460F1 /* be_io_syslogsheet.cpp */,
-				08CFC4ED1545E1F500BA89B2 /* be_io_utility.cpp */,
-				0890143518D9EBDA0079696B /* RecordStore */,
+				083EBDC11C19F2700092D6D2 /* public */,
+				083EBDBC1C19EFE50092D6D2 /* private */,
 			);
 			name = IO;
 			sourceTree = "<group>";
@@ -1002,6 +1051,21 @@
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
+		08A2BC2D1940C0CC003D3697 /* Unit Tests */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 08A2BC301940C0D1003D3697 /* Build configuration list for PBXLegacyTarget "Unit Tests" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = ../src/test/gtest;
+			dependencies = (
+				08A2BC321940C117003D3697 /* PBXTargetDependency */,
+			);
+			name = "Unit Tests";
+			passBuildSettingsInEnvironment = 1;
+			productName = UnitTests;
+		};
 		08CFC45D1545DF2B00BA89B2 /* libbiomeval */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION) $(MAKE_VARS)";
@@ -1037,7 +1101,7 @@
 		08CFC4581545DF2A00BA89B2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0620;
+				LastUpgradeCheck = 0720;
 			};
 			buildConfigurationList = 08CFC45B1545DF2A00BA89B2 /* Build configuration list for PBXProject "common" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1053,11 +1117,17 @@
 			targets = (
 				08CFC45D1545DF2B00BA89B2 /* libbiomeval */,
 				08CFC4721545DFCF00BA89B2 /* libbiomeval Tests */,
+				08A2BC2D1940C0CC003D3697 /* Unit Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXTargetDependency section */
+		08A2BC321940C117003D3697 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 08CFC45D1545DF2B00BA89B2 /* libbiomeval */;
+			targetProxy = 08A2BC311940C117003D3697 /* PBXContainerItemProxy */;
+		};
 		08CFC4771545E00300BA89B2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 08CFC45D1545DF2B00BA89B2 /* libbiomeval */;
@@ -1066,6 +1136,18 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		08A2BC2E1940C0CC003D3697 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		08A2BC2F1940C0CC003D3697 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
 		08CFC45E1545DF2B00BA89B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1121,6 +1203,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		08A2BC301940C0D1003D3697 /* Build configuration list for PBXLegacyTarget "Unit Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				08A2BC2E1940C0CC003D3697 /* Debug */,
+				08A2BC2F1940C0CC003D3697 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		08CFC45B1545DF2A00BA89B2 /* Build configuration list for PBXProject "common" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
