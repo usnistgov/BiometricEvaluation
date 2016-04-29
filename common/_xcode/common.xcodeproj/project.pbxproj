@@ -50,6 +50,8 @@
 		083EBDBF1C19F00B0092D6D2 /* be_io_recordstoreunion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_io_recordstoreunion.h; path = ../src/include/be_io_recordstoreunion.h; sourceTree = "<group>"; };
 		084AB2CD15A1F540000DD259 /* be_io_compressedrecstore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressedrecstore.h; path = ../src/include/be_io_compressedrecstore.h; sourceTree = "<group>"; };
 		084AB2CF15A1F5D9000DD259 /* be_io_compressedrecstore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressedrecstore.cpp; path = ../src/libbiomeval/be_io_compressedrecstore.cpp; sourceTree = "<group>"; };
+		0853F87D1CD3C7B600348233 /* test_be_io_persistentrecordstoreunion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_persistentrecordstoreunion.cpp; path = ../src/test/test_be_io_persistentrecordstoreunion.cpp; sourceTree = "<group>"; };
+		0853F87E1CD3C7B600348233 /* test_be_framework_api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_framework_api.cpp; path = ../src/test/test_be_framework_api.cpp; sourceTree = "<group>"; };
 		086A2A63154735EA00464DC5 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/test/Makefile; sourceTree = "<group>"; };
 		086A2A64154735EA00464DC5 /* test_be_data_interchange_an2k.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_data_interchange_an2k.cpp; path = ../src/test/test_be_data_interchange_an2k.cpp; sourceTree = "<group>"; };
 		086A2A65154735EA00464DC5 /* test_be_error_signal_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_error_signal_manager.cpp; path = ../src/test/test_be_error_signal_manager.cpp; sourceTree = "<group>"; };
@@ -224,6 +226,28 @@
 		08CFC4FB1545E1F500BA89B2 /* be_view_an2kview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_view_an2kview.cpp; path = ../src/libbiomeval/be_view_an2kview.cpp; sourceTree = "<group>"; };
 		08CFC4FC1545E1F500BA89B2 /* be_view_view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_view_view.cpp; path = ../src/libbiomeval/be_view_view.cpp; sourceTree = "<group>"; };
 		08CFC4FD1545E1F500BA89B2 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/libbiomeval/Makefile; sourceTree = "<group>"; };
+		08D734501CD3C66B00007F30 /* be_framework_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_framework_api.h; path = ../src/include/be_framework_api.h; sourceTree = "<group>"; };
+		08D734511CD3C66B00007F30 /* be_framework_status.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_framework_status.h; path = ../src/include/be_framework_status.h; sourceTree = "<group>"; };
+		08D734521CD3C66B00007F30 /* be_io_persistentrecordstoreunion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_persistentrecordstoreunion.h; path = ../src/include/be_io_persistentrecordstoreunion.h; sourceTree = "<group>"; };
+		08D734531CD3C6CB00007F30 /* be_framework_api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_framework_api.cpp; path = ../src/libbiomeval/be_framework_api.cpp; sourceTree = "<group>"; };
+		08D734541CD3C6CB00007F30 /* be_framework_status.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_framework_status.cpp; path = ../src/libbiomeval/be_framework_status.cpp; sourceTree = "<group>"; };
+		08D734551CD3C6CB00007F30 /* be_io_persistentrecordstoreunion_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_persistentrecordstoreunion_impl.cpp; path = ../src/libbiomeval/be_io_persistentrecordstoreunion_impl.cpp; sourceTree = "<group>"; };
+		08D734561CD3C6CB00007F30 /* be_io_persistentrecordstoreunion_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_persistentrecordstoreunion_impl.h; path = ../src/libbiomeval/be_io_persistentrecordstoreunion_impl.h; sourceTree = "<group>"; };
+		08D734571CD3C6CB00007F30 /* be_io_persistentrecordstoreunion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_persistentrecordstoreunion.cpp; path = ../src/libbiomeval/be_io_persistentrecordstoreunion.cpp; sourceTree = "<group>"; };
+		08D734581CD3C72E00007F30 /* be_io_archiverecstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_archiverecstore_impl.h; path = ../src/libbiomeval/be_io_archiverecstore_impl.h; sourceTree = "<group>"; };
+		08D734591CD3C72E00007F30 /* be_io_compressedrecstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressedrecstore_impl.h; path = ../src/libbiomeval/be_io_compressedrecstore_impl.h; sourceTree = "<group>"; };
+		08D7345A1CD3C72E00007F30 /* be_io_dbrecstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_dbrecstore_impl.h; path = ../src/libbiomeval/be_io_dbrecstore_impl.h; sourceTree = "<group>"; };
+		08D7345B1CD3C72E00007F30 /* be_io_filerecstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_filerecstore_impl.h; path = ../src/libbiomeval/be_io_filerecstore_impl.h; sourceTree = "<group>"; };
+		08D7345C1CD3C72E00007F30 /* be_io_listrecstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_listrecstore_impl.h; path = ../src/libbiomeval/be_io_listrecstore_impl.h; sourceTree = "<group>"; };
+		08D7345D1CD3C72E00007F30 /* be_io_recordstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_recordstore_impl.h; path = ../src/libbiomeval/be_io_recordstore_impl.h; sourceTree = "<group>"; };
+		08D7345E1CD3C72E00007F30 /* be_io_sqliterecstore_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_sqliterecstore_impl.h; path = ../src/libbiomeval/be_io_sqliterecstore_impl.h; sourceTree = "<group>"; };
+		08D734611CD3C76D00007F30 /* be_io_archiverecstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_archiverecstore_impl.cpp; path = ../src/libbiomeval/be_io_archiverecstore_impl.cpp; sourceTree = "<group>"; };
+		08D734621CD3C76D00007F30 /* be_io_compressedrecstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressedrecstore_impl.cpp; path = ../src/libbiomeval/be_io_compressedrecstore_impl.cpp; sourceTree = "<group>"; };
+		08D734631CD3C76D00007F30 /* be_io_dbrecstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_dbrecstore_impl.cpp; path = ../src/libbiomeval/be_io_dbrecstore_impl.cpp; sourceTree = "<group>"; };
+		08D734641CD3C76D00007F30 /* be_io_filerecstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_filerecstore_impl.cpp; path = ../src/libbiomeval/be_io_filerecstore_impl.cpp; sourceTree = "<group>"; };
+		08D734651CD3C76D00007F30 /* be_io_listrecstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_listrecstore_impl.cpp; path = ../src/libbiomeval/be_io_listrecstore_impl.cpp; sourceTree = "<group>"; };
+		08D734661CD3C76D00007F30 /* be_io_recordstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_recordstore_impl.cpp; path = ../src/libbiomeval/be_io_recordstore_impl.cpp; sourceTree = "<group>"; };
+		08D734671CD3C76D00007F30 /* be_io_sqliterecstore_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_sqliterecstore_impl.cpp; path = ../src/libbiomeval/be_io_sqliterecstore_impl.cpp; sourceTree = "<group>"; };
 		08E01AD41B56DEBD007592F4 /* be_feature_sort.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_feature_sort.h; path = ../src/include/be_feature_sort.h; sourceTree = "<group>"; };
 		08E01AD51B56DEE2007592F4 /* be_feature_sort.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_feature_sort.cpp; path = ../src/libbiomeval/be_feature_sort.cpp; sourceTree = "<group>"; };
 		08E78F3C193CC0CF0005F0A0 /* be_memory_mutableindexedbuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_memory_mutableindexedbuffer.h; path = ../src/include/be_memory_mutableindexedbuffer.h; sourceTree = "<group>"; };
@@ -297,7 +321,9 @@
 		083EBDBA1C19EFC60092D6D2 /* private */ = {
 			isa = PBXGroup;
 			children = (
+				08D734561CD3C6CB00007F30 /* be_io_persistentrecordstoreunion_impl.h */,
 				083EBDBB1C19EFDA0092D6D2 /* be_io_recordstoreunion_impl.h */,
+				08D7345F1CD3C73A00007F30 /* RecordStore */,
 			);
 			name = private;
 			sourceTree = "<group>";
@@ -305,7 +331,9 @@
 		083EBDBC1C19EFE50092D6D2 /* private */ = {
 			isa = PBXGroup;
 			children = (
+				08D734551CD3C6CB00007F30 /* be_io_persistentrecordstoreunion_impl.cpp */,
 				083EBDBD1C19EFF00092D6D2 /* be_io_recordstoreunion_impl.cpp */,
+				08D734601CD3C75D00007F30 /* RecordStore */,
 			);
 			name = private;
 			sourceTree = "<group>";
@@ -318,6 +346,7 @@
 				08B809971AA9E52400217EE4 /* be_io_filelogsheet.h */,
 				08C0465A156E9E4B00E2A097 /* be_io_gzip.h */,
 				08CFC4A91545E14800BA89B2 /* be_io_logsheet.h */,
+				08D734521CD3C66B00007F30 /* be_io_persistentrecordstoreunion.h */,
 				08CFC4AA1545E14800BA89B2 /* be_io_properties.h */,
 				08CFC4AB1545E14800BA89B2 /* be_io_propertiesfile.h */,
 				083EBDBF1C19F00B0092D6D2 /* be_io_recordstoreunion.h */,
@@ -336,6 +365,7 @@
 				08B8099C1AA9E53900217EE4 /* be_io_filelogsheet.cpp */,
 				08C0465D156E9E8D00E2A097 /* be_io_gzip.cpp */,
 				08CFC4E81545E1F500BA89B2 /* be_io_logsheet.cpp */,
+				08D734571CD3C6CB00007F30 /* be_io_persistentrecordstoreunion.cpp */,
 				08CFC4E91545E1F500BA89B2 /* be_io_properties.cpp */,
 				08CFC4EA1545E1F500BA89B2 /* be_io_propertiesfile.cpp */,
 				083EBDBE1C19EFF00092D6D2 /* be_io_recordstoreunion.cpp */,
@@ -383,8 +413,9 @@
 		086A2A57154735A200464DC5 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
-				086A2A6A154735EA00464DC5 /* test_be_framework.cpp */,
+				0853F87E1CD3C7B600348233 /* test_be_framework_api.cpp */,
 				0890143918D9EC2C0079696B /* test_be_framework_enumeration.cpp */,
+				086A2A6A154735EA00464DC5 /* test_be_framework.cpp */,
 			);
 			name = Framework;
 			sourceTree = "<group>";
@@ -404,6 +435,7 @@
 				081BCD341B41CBA7009E7190 /* test_be_io_filelogcabinet.cpp */,
 				086A2A6D154735EA00464DC5 /* test_be_io_filerecstore.cpp */,
 				0880D88A17BBDB13009D0EDE /* test_be_io_listrecstore.cpp */,
+				0853F87D1CD3C7B600348233 /* test_be_io_persistentrecordstoreunion.cpp */,
 				086A2A6F154735EA00464DC5 /* test_be_io_properties.cpp */,
 				086A2A70154735EA00464DC5 /* test_be_io_propertiesfile.cpp */,
 				086A2A71154735EA00464DC5 /* test_be_io_recordstore-stress.cpp */,
@@ -655,8 +687,10 @@
 		08CFC4FE1545E20400BA89B2 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
-				08CFC49B1545E14800BA89B2 /* be_framework.h */,
+				08D734501CD3C66B00007F30 /* be_framework_api.h */,
 				0890142818D9EB0B0079696B /* be_framework_enumeration.h */,
+				08D734511CD3C66B00007F30 /* be_framework_status.h */,
+				08CFC49B1545E14800BA89B2 /* be_framework.h */,
 			);
 			name = Framework;
 			sourceTree = "<group>";
@@ -886,6 +920,8 @@
 		08CFC5181545E44000BA89B2 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				08D734531CD3C6CB00007F30 /* be_framework_api.cpp */,
+				08D734541CD3C6CB00007F30 /* be_framework_status.cpp */,
 				08CFC4D91545E1F500BA89B2 /* be_framework.cpp */,
 			);
 			name = Framework;
@@ -937,6 +973,34 @@
 				08CFC4D71545E1F500BA89B2 /* be_finger_iso2005view.cpp */,
 			);
 			name = Finger;
+			sourceTree = "<group>";
+		};
+		08D7345F1CD3C73A00007F30 /* RecordStore */ = {
+			isa = PBXGroup;
+			children = (
+				08D734581CD3C72E00007F30 /* be_io_archiverecstore_impl.h */,
+				08D734591CD3C72E00007F30 /* be_io_compressedrecstore_impl.h */,
+				08D7345A1CD3C72E00007F30 /* be_io_dbrecstore_impl.h */,
+				08D7345B1CD3C72E00007F30 /* be_io_filerecstore_impl.h */,
+				08D7345C1CD3C72E00007F30 /* be_io_listrecstore_impl.h */,
+				08D7345D1CD3C72E00007F30 /* be_io_recordstore_impl.h */,
+				08D7345E1CD3C72E00007F30 /* be_io_sqliterecstore_impl.h */,
+			);
+			name = RecordStore;
+			sourceTree = "<group>";
+		};
+		08D734601CD3C75D00007F30 /* RecordStore */ = {
+			isa = PBXGroup;
+			children = (
+				08D734611CD3C76D00007F30 /* be_io_archiverecstore_impl.cpp */,
+				08D734621CD3C76D00007F30 /* be_io_compressedrecstore_impl.cpp */,
+				08D734631CD3C76D00007F30 /* be_io_dbrecstore_impl.cpp */,
+				08D734641CD3C76D00007F30 /* be_io_filerecstore_impl.cpp */,
+				08D734651CD3C76D00007F30 /* be_io_listrecstore_impl.cpp */,
+				08D734661CD3C76D00007F30 /* be_io_recordstore_impl.cpp */,
+				08D734671CD3C76D00007F30 /* be_io_sqliterecstore_impl.cpp */,
+			);
+			name = RecordStore;
 			sourceTree = "<group>";
 		};
 		224A58E618D22D7F00E11798 /* Face */ = {
