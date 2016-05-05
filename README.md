@@ -9,7 +9,7 @@ The goals of Biometric Evaluation Framework include:
 
  * reduce the amount of I/O error handling implemented by applications;
  * provide standard interfaces for data management and logging;
- * remove the need for applications to handle low-level events from the 
+ * remove the need for applications to handle low-level events from the
    operating system;
  * provide time tracking and constraints for blocks of code;
  * reduce potential for memory errors and corruption;
@@ -45,12 +45,38 @@ Requirements
 	* RHEL/CentOS 7.x
 	* OS X >= 10.9
 	* Cygwin 1.7.x
-	
+
  * System packages (depending on desired modules, see below).
 
 Other operating systems and compilers are likely to work as expected, but have
 not been tested.
- 
+
+Installing
+----------
+A pre-compiled version of Biometric Evaluation framework for RHEL/CentOS 7 is
+available from the
+[releases](https://github.com/usnistgov/BiometricEvaluation/releases)
+page on GitHub. These packages have been signed with our
+[public key]
+(https://github.com/usnistgov/BiometricEvaluation/blob/master/beframework_signing_key.asc).
+
+```bash
+# Import the public key
+rpm --import beframework_signing_key.asc
+
+# Verify the signature
+rpm --checksig libbiomeval-7.0-1.x86_64.rp
+libbiomeval-7.0-1.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
+
+# Install
+rpm --install libbiomeval-7.0-1.x86_64.rpm
+```
+
+A version compiled from source can be installed via the top-level makefile.
+```bash
+make install
+```
+
 System Packages
 ---------------
 Some modules require system packages that may not be installed by default on
@@ -104,7 +130,7 @@ installed:
 of RHEL/CentOS, Ubuntu, and OS X. The Framework repository contains a subset
 of NBIS that is built from the top-level makefile. However, if there is a need
 to use the _official_ NBIS, then the makefile in `common/src/libbiomeval` can
-changed to use that NBIS build. Biometric Evaluation Framework will look for NBIS
+be changed to use that NBIS build. Biometric Evaluation Framework will look for NBIS
 to be installed at `/usr/local/nbis`. To build NBIS,
 [download the source](http://nist.gov/itl/iad/ig/nigos.cfm),
 and follow this basic build procedure:
@@ -134,7 +160,7 @@ Communication
 If you found a bug and can provide steps to reliably reproduce it, or if you
 have a feature request, please
 [open an issue](https://github.com/usnistgov/BiometricEvaluation/issues). Other
-questions may be addressed to the 
+questions may be addressed to the
 [project maintainers](mailto:beframework@nist.gov).
 
 Pull Requests
@@ -178,7 +204,7 @@ Sept. 8 2015-Sept 11 2015.
 	title={{Towards Repeatable, Reproducible, and Efficient Biometric
 	Technology Evaluations}},
 	booktitle={Biometrics Theory, Applications and Systems (BTAS), 2015 IEEE
-	7th International Conference on}, 
+	7th International Conference on},
 	year={2015},
 	pages={1-8},
 	doi={10.1109/BTAS.2015.7358800},
@@ -188,7 +214,7 @@ Sept. 8 2015-Sept 11 2015.
 
 License
 -------
-Biometric Evaluation Framework is released in the public domain. See the 
+Biometric Evaluation Framework is released in the public domain. See the
 [LICENSE](https://github.com/usnistgov/BiometricEvaluation/blob/master/LICENSE.md)
 for details.
 
