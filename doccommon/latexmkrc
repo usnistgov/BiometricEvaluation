@@ -8,3 +8,7 @@ sub runMakeGlossary
 	system("makeglossaries '$_[0]'");
 }
 
+# Remove bibliography intermediaries (bbl brf)
+# Remove draft watermark (xwm)
+$clean_ext = "bbl brf xwm"
+
