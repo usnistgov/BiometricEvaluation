@@ -28,15 +28,14 @@ isListRecordStore(
 		return (false);
 	
 	/* RecordStore control file existence */
-	std::string filePath = rsPath + '/' +
-	    BE::IO::RecordStore::CONTROLFILENAME;;
+	std::string filePath = rsPath + '/' + RSTool::CONTROLFILENAME;
 	if (!BE::IO::Utility::fileExists(filePath))
 		return (false);
 	
 	/* RecordStore control file lists a RecordStore type of LISTTYPE */
 	try {
 		BE::IO::PropertiesFile props(filePath, BE::IO::Mode::ReadOnly);
-		if (props.getProperty(BE::IO::RecordStore::TYPEPROPERTY) !=
+		if (props.getProperty(RSTool::TYPEPROPERTY) !=
 		    to_string(BE::IO::RecordStore::Kind::List))
 			return (false);
 	} catch (BE::Error::Exception) {
@@ -44,7 +43,7 @@ isListRecordStore(
 	}
 	
 	/* KeyList file existance */
-	filePath = rsPath + '/' + BE::IO::ListRecordStore::KEYLISTFILENAME;
+	filePath = rsPath + '/' + RSTool::KEYLISTFILENAME;
 	if (!BE::IO::Utility::fileExists(filePath))
 		return (false);
 			
@@ -62,12 +61,10 @@ updateListRecordStoreCount(
 		throw BE::Error::StrategyError(rsPath + " is not "
 		    " a ListRecordStore");
 	
-	std::string propsFilePath = rsPath + '/' +
-	    BE::IO::RecordStore::CONTROLFILENAME;
+	std::string propsFilePath = rsPath + '/' + RSTool::CONTROLFILENAME;
 
 	BE::IO::PropertiesFile props(propsFilePath, BE::IO::Mode::ReadWrite);
-	props.setPropertyFromInteger(BE::IO::RecordStore::COUNTPROPERTY,
-	     newCount);
+	props.setPropertyFromInteger(RSTool::COUNTPROPERTY, newCount);
 	props.sync();
 }
 
@@ -92,22 +89,18 @@ constructListRecordStore(
 		    BE::Error::errorStr());
 	    
 	/* LRS Properties file */
-	std::string controlFilePath = lrsPath + '/' +
-	    BE::IO::RecordStore::CONTROLFILENAME;
+	std::string controlFilePath = lrsPath + '/' + RSTool::CONTROLFILENAME;
 
 	BE::IO::PropertiesFile props(controlFilePath, BE::IO::Mode::ReadWrite);
-	props.setPropertyFromInteger(BE::IO::RecordStore::COUNTPROPERTY, 0);
-	props.setProperty(BE::IO::RecordStore::DESCRIPTIONPROPERTY,
-	    "<Description>");
-	props.setProperty(BE::IO::RecordStore::TYPEPROPERTY,
+	props.setPropertyFromInteger(RSTool::COUNTPROPERTY, 0);
+	props.setProperty(RSTool::DESCRIPTIONPROPERTY, "<Description>");
+	props.setProperty(RSTool::TYPEPROPERTY,
 	    to_string(BE::IO::RecordStore::Kind::List));
-	props.setProperty(BE::IO::ListRecordStore::SOURCERECORDSTOREPROPERTY,
-	    rsPath);
+	props.setProperty(RSTool::SOURCERECORDSTOREPROPERTY, rsPath);
 	props.sync();
 	
 	/* KeyList file */
-	std::string keyListFile = lrsPath + '/' +
-	    BE::IO::ListRecordStore::KEYLISTFILENAME;;
+	std::string keyListFile = lrsPath + '/' + RSTool::KEYLISTFILENAME;
 	BE::IO::Utility::writeFile(NULL, 0, keyListFile);
 }
 
@@ -124,8 +117,7 @@ readListRecordStoreKeys(
 		    "a ListRecordStore");
 
 	/* Open Source RecordStore */
-	std::string controlFilePath = rsPath + '/' +
-	    BE::IO::RecordStore::CONTROLFILENAME;;
+	std::string controlFilePath = rsPath + '/' + RSTool::CONTROLFILENAME;
 	std::shared_ptr<BE::IO::PropertiesFile> props(
 	    new BE::IO::PropertiesFile(controlFilePath,
 	    BE::IO::Mode::ReadOnly));
@@ -133,11 +125,11 @@ readListRecordStoreKeys(
 	std::string sourceRSPath;
 	try {
 		sourceRSPath = props->getProperty(
-		    BE::IO::ListRecordStore::SOURCERECORDSTOREPROPERTY);
+		    RSTool::SOURCERECORDSTOREPROPERTY);
 	} catch (BE::Error::Exception &e) {
 		throw BE::Error::StrategyError("Could not read " +
-		    BE::IO::ListRecordStore::SOURCERECORDSTOREPROPERTY +
-		    " property (" + e.what() + ")");
+		    RSTool::SOURCERECORDSTOREPROPERTY + " property (" +
+		    e.what() + ")");
 	}
 	try {
 		srs = BE::IO::RecordStore::openRecordStore(
@@ -148,12 +140,11 @@ readListRecordStoreKeys(
 	}
 	
 	/* Open KeyList */
-	std::string keyListFilePath = rsPath + '/' +
-	    BE::IO::ListRecordStore::KEYLISTFILENAME;
+	std::string keyListFilePath = rsPath + '/' + RSTool::KEYLISTFILENAME;
 	std::fstream keyListFile(keyListFilePath.c_str());
 	if (keyListFile.is_open() == false || !keyListFile)
 		throw BE::Error::FileError("Error opening " +
-		    BE::IO::ListRecordStore::KEYLISTFILENAME);
+		    RSTool::KEYLISTFILENAME);
 	
 	/* Read existing keys */
 	try {
@@ -171,7 +162,7 @@ readListRecordStoreKeys(
 		if (!keyListFile) {
 			keyListFile.close();
 			throw BE::Error::FileError("Error reading " +
-			    BE::IO::ListRecordStore::KEYLISTFILENAME);
+			    RSTool::KEYLISTFILENAME);
 		}
 		existingKeys->push_back(BE::Text::trimWhitespace(line));
 	}
@@ -188,7 +179,7 @@ writeListRecordStoreKeys(
 	std::string newListPath;
 	try {
 		newListPath = BE::IO::Utility::createTemporaryFile(
-		    BE::IO::ListRecordStore::KEYLISTFILENAME, rsPath);
+		    RSTool::KEYLISTFILENAME, rsPath);
 	} catch (BE::Error::MemoryError &e) {
 		throw BE::Error::FileError(e.what());
 	}
@@ -210,8 +201,7 @@ writeListRecordStoreKeys(
                 throw BE::Error::FileError("Could not close " + newListPath);
 
         /* Atomically replace contents of key list with temporary file */
-	std::string existingListPath = rsPath +'/' +
-	    BE::IO::ListRecordStore::KEYLISTFILENAME;
+	std::string existingListPath = rsPath +'/' + RSTool::KEYLISTFILENAME;
         if (std::rename(newListPath.c_str(), existingListPath.c_str()) != 0)
                 throw BE::Error::FileError("Could not replace key list: " +
                     BE::Error::errorStr());

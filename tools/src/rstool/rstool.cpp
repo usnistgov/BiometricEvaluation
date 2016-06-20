@@ -256,8 +256,7 @@ isRecordStoreAccessible(
 	
 	/* Test if the generic RecordStore files have the correct permissions */
 	return (isAccessible(pathname) && 
-	    isAccessible(pathname + '/'
-		+ BE::IO::RecordStore::CONTROLFILENAME));
+	    isAccessible(pathname + '/' + RSTool::CONTROLFILENAME));
 }
 
 BiometricEvaluation::IO::RecordStore::Kind

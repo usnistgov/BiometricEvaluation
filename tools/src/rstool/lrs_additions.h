@@ -24,6 +24,19 @@
 
 #include <ordered_set.h>
 
+namespace RSTool
+{
+	/* Constants cloned from be_io_recstore_impl.cpp */
+	const std::string CONTROLFILENAME{".rscontrol.prop"};
+	const std::string DESCRIPTIONPROPERTY{"Description"};
+	const std::string COUNTPROPERTY{"Count"};
+	const std::string TYPEPROPERTY{"Type"};
+
+	/* Constants cloned from be_io_listrecstore_impl.cpp */
+	const std::string KEYLISTFILENAME{"KeyList.txt"};
+	const std::string SOURCERECORDSTOREPROPERTY{"Source Record Store"};
+}
+
 /**
  * @brief
  * Determine if a directory on disk is a ListRecordStore.
