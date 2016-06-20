@@ -51,8 +51,6 @@ readTextFileToVector(
     const std::string &filePath,
     bool ignoreComments,
     bool ignoreBlankLines)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::ObjectDoesNotExist)
 {
 	if (BE::IO::Utility::fileExists(filePath) == false)
 		throw BE::Error::ObjectDoesNotExist();
@@ -1134,8 +1132,6 @@ make_insert_directory_contents(
     const HashablePart what_to_hash,
     const KeyFormat hashed_key_format,
     bool stopOnDuplicate)
-    throw (BiometricEvaluation::Error::ObjectDoesNotExist,
-    BiometricEvaluation::Error::StrategyError)
 {
 	struct dirent *entry;
 	DIR *dir = NULL;
@@ -1443,8 +1439,6 @@ void mergeAndHashRecordStores(
     std::vector<std::string> &recordStores,
     const HashablePart what_to_hash,
     const KeyFormat hashed_key_format)
-    throw (BiometricEvaluation::Error::ObjectExists,
-    BiometricEvaluation::Error::StrategyError)
 {
 	std::unique_ptr<BE::IO::RecordStore> merged_rs, hash_rs;
 	std::string hash_description = "Hash translation of " + mergedName;

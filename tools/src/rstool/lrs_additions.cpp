@@ -55,7 +55,6 @@ void
 updateListRecordStoreCount(
     const std::string &rsPath,
     uint64_t newCount)
-    throw (BiometricEvaluation::Error::StrategyError)
 {
 	if (isListRecordStore(rsPath) == false)
 		throw BE::Error::StrategyError(rsPath + " is not "
@@ -72,9 +71,6 @@ void
 constructListRecordStore(
     std::string lrsPath,
     std::string rsPath)
-    throw (BiometricEvaluation::Error::ObjectDoesNotExist,
-    BiometricEvaluation::Error::ObjectExists,
-    BiometricEvaluation::Error::StrategyError)
 {
 	/* Make sure rsPath is actually a RecordStore (exceptions float out) */
 	std::shared_ptr<BE::IO::RecordStore> rs =
@@ -109,8 +105,6 @@ readListRecordStoreKeys(
     const std::string &rsPath,
     std::shared_ptr<BiometricEvaluation::IO::RecordStore> &srs,
     std::shared_ptr<OrderedSet<std::string>> &existingKeys)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::StrategyError)
 {
 	if (isListRecordStore(rsPath) == false)
 		throw BE::Error::StrategyError(rsPath + " is not "
@@ -173,7 +167,6 @@ void
 writeListRecordStoreKeys(
     const std::string &rsPath,
     const std::shared_ptr<OrderedSet<std::string>> &keys)
-    throw (BiometricEvaluation::Error::FileError)
 {
         /* Write key list to temporary file */
 	std::string newListPath;
@@ -213,10 +206,6 @@ void
 insertKeysIntoListRecordStore(
     const std::string &rsPath,
     std::shared_ptr<OrderedSet<std::string>> keys)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::ObjectDoesNotExist,
-    BiometricEvaluation::Error::ObjectExists,
-    BiometricEvaluation::Error::StrategyError)
 {
 	std::shared_ptr<OrderedSet<std::string>> existingKeys;
 	std::shared_ptr<BE::IO::RecordStore> srs;
@@ -249,8 +238,6 @@ void
 removeKeysFromListRecordStore(
     const std::string &rsPath,
     std::shared_ptr<OrderedSet<std::string>> keys)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::StrategyError)
 {
 	std::shared_ptr<OrderedSet<std::string>> existingKeys;
 	std::shared_ptr<BE::IO::RecordStore> srs;

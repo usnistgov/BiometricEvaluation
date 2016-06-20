@@ -128,9 +128,7 @@ std::vector<std::string>
 readTextFileToVector(
     const std::string &filePath,
     bool ignoreComments = true,
-    bool ignoreBlankLines = true)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::ObjectDoesNotExist);
+    bool ignoreBlankLines = true);
 
 /**
  * @brief
@@ -477,9 +475,7 @@ make_insert_directory_contents(
     const std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs,
     const HashablePart what_to_hash,
     const KeyFormat hashed_key_format,
-    bool stopOnDuplicate)
-    throw (BiometricEvaluation::Error::ObjectDoesNotExist,
-    BiometricEvaluation::Error::StrategyError);
+    bool stopOnDuplicate);
 
 /**
  * @brief
@@ -600,9 +596,7 @@ void mergeAndHashRecordStores(
     const BiometricEvaluation::IO::RecordStore::Kind &kind,
     std::vector<std::string> &recordStores,
     const HashablePart what_to_hash,
-    const KeyFormat hashed_key_format)
-    throw (BiometricEvaluation::Error::ObjectExists,
-    BiometricEvaluation::Error::StrategyError);
+    const KeyFormat hashed_key_format);
 
 /**
  * @brief

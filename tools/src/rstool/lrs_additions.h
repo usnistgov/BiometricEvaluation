@@ -71,10 +71,7 @@ isListRecordStore(
 void
 constructListRecordStore(
     std::string lrsPath,
-    std::string rsPath)
-    throw (BiometricEvaluation::Error::ObjectDoesNotExist,
-    BiometricEvaluation::Error::ObjectExists,
-    BiometricEvaluation::Error::StrategyError);
+    std::string rsPath);
 
 /**
  * @brief
@@ -91,8 +88,7 @@ constructListRecordStore(
 void
 updateListRecordStoreCount(
     const std::string &rsPath,
-    uint64_t newCount)
-    throw (BiometricEvaluation::Error::StrategyError);
+    uint64_t newCount);
 
 /**
  * @brief
@@ -114,9 +110,7 @@ void
 readListRecordStoreKeys(
     const std::string &rsPath,
     std::shared_ptr<BiometricEvaluation::IO::RecordStore> &srs,
-    std::shared_ptr<OrderedSet<std::string>> &keys)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::StrategyError);
+    std::shared_ptr<OrderedSet<std::string>> &keys);
 
 /**
  * @brief
@@ -133,8 +127,7 @@ readListRecordStoreKeys(
 void
 writeListRecordStoreKeys(
     const std::string &rsPath,
-    const std::shared_ptr<OrderedSet<std::string>> &keys)
-    throw (BiometricEvaluation::Error::FileError);
+    const std::shared_ptr<OrderedSet<std::string>> &keys);
 
 /**
  * @brief
@@ -162,11 +155,7 @@ writeListRecordStoreKeys(
 void
 insertKeysIntoListRecordStore(
     const std::string &rsPath,
-    std::shared_ptr<OrderedSet<std::string>> keys)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::ObjectDoesNotExist,
-    BiometricEvaluation::Error::ObjectExists,
-    BiometricEvaluation::Error::StrategyError);
+    std::shared_ptr<OrderedSet<std::string>> keys);
 
 /**
  * @brief
@@ -185,8 +174,6 @@ insertKeysIntoListRecordStore(
 void
 removeKeysFromListRecordStore(
     const std::string &rsPath,
-    std::shared_ptr<OrderedSet<std::string>> keys)
-    throw (BiometricEvaluation::Error::FileError,
-    BiometricEvaluation::Error::StrategyError);
+    std::shared_ptr<OrderedSet<std::string>> keys);
 
 #endif /* __RSTOOL_LRS_ADDITIONS_H__ */
