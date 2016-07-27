@@ -65,7 +65,7 @@ page on GitHub. These packages have been signed with our
 rpm --import beframework_signing_key.asc
 
 # Verify the signature
-rpm --checksig libbiomeval-7.0-1.x86_64.rp
+rpm --checksig libbiomeval-7.0-1.x86_64.rpm
 libbiomeval-7.0-1.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
 
 # Install
@@ -104,7 +104,7 @@ similarly-named packages.
 ### IMAGE
 | Name                                        | RHEL/CentOS           | MacPorts      |
 |:-------------------------------------------:|:---------------------:|:-------------:|
-| OpenJPEG 1.x                                | `openjpeg-devel`      | `libopenjpeg` |
+| OpenJPEG 1.x                                | `openjpeg-devel`      | `openjpeg15`  |
 | libjpeg                                     | `libjpeg-turbo-devel` | `jpeg`        |
 | libpng                                      | `libpng-devel`        | `libpng`      |
 | Zlib                                        | `zlib-devel`          | `zlib`        |
