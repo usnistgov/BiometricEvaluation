@@ -89,7 +89,13 @@ similarly-named packages.
 ### CORE
 | Name         | RHEL/CentOS           | MacPorts                     |
 |:------------:|:---------------------:|:----------------------------:|
-| OpenSSL      | `openssl-devel`       | n/a (uses macOS CommonCrypto) |
+| OpenSSL      | `openssl-devel`       | n/a (uses macOS CommonCrypto)|
+
+### DEVICE
+
+| Name      | RHEL/CentOS       | MacPorts                         |
+|:---------:|:-----------------:|:--------------------------------:|
+| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/ios/technotes/tn2339/_index.html)) |
 
 ### IO
 | Name         | RHEL/CentOS  | MacPorts |
