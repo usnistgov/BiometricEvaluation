@@ -9,7 +9,7 @@
 #
 
 # The 'core' library and programs, that always build
-CORE := rstool countRecordsOfSize
+CORE := rstool countRecordsOfSize asegcrop
 SUBDIRS := $(CORE)
 
 all:
