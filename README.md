@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/usnistgov/BiometricEvaluation/master/common/doc/puzzleLogo.svg" title="Biometric Evaluation Framework" alt="Biometric Evaluation Framework Puzzle Logo"></p>
+
 Biometric Evaluation Framework
 ==============================
 Biometric Evaluation Framework is a set of C++ classes, error codes, and design
@@ -43,7 +45,7 @@ Requirements
 
  * A supported operating system:
 	* RHEL/CentOS 7.x
-	* OS X >= 10.9
+	* macOS >= 10.9
 	* Cygwin 1.7.x
 
  * System packages (depending on desired modules, see below).
@@ -80,14 +82,14 @@ make install
 System Packages
 ---------------
 Some modules require system packages that may not be installed by default on
-all operating systems. Package names are listed below for RHEL/CentOS and OS X
+all operating systems. Package names are listed below for RHEL/CentOS and macOS
 (via [MacPorts](https://www.macports.org)). Other operating systems may use
 similarly-named packages.
 
 ### CORE
 | Name         | RHEL/CentOS           | MacPorts                     |
 |:------------:|:---------------------:|:----------------------------:|
-| OpenSSL      | `openssl-devel`       | n/a (uses OS X CommonCrypto) |
+| OpenSSL      | `openssl-devel`       | n/a (uses macOS CommonCrypto) |
 
 ### IO
 | Name         | RHEL/CentOS  | MacPorts |
@@ -127,7 +129,7 @@ installed:
 
 #### NIST Biometric Image Software (NBIS)
 [NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) is supported under current versions
-of RHEL/CentOS, Ubuntu, and OS X. The Framework repository contains a subset
+of RHEL/CentOS, Ubuntu, and macOS. The Framework repository contains a subset
 of NBIS that is built from the top-level makefile. However, if there is a need
 to use the _official_ NBIS, then the makefile in `common/src/libbiomeval` can
 be changed to use that NBIS build. Biometric Evaluation Framework will look for NBIS
@@ -170,7 +172,7 @@ In order to maintain our project goals, pull requests must:
 
  * adhere to the existing coding style;
  * use Framework types consistently wherever possible;
- * compile without warning under OS X and RHEL/CentOS 7.x;
+ * compile without warning under macOS and RHEL/CentOS 7.x;
  * only make use of POSIX APIs;
  * be in the public domain.
 
