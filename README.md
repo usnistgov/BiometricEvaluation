@@ -1,4 +1,4 @@
-<p align="center"><img src="https://cdn.rawgit.com/usnistgov/BiometricEvaluation/master/doccommon/assets/puzzleLogo.svg" title="Biometric Evaluation Framework" alt="Biometric Evaluation Framework Puzzle Logo"></p>
+<p align="center"><img src="http://nigos.nist.gov:8080/nist/puzzleLogo.svg" title="Biometric Evaluation Framework" alt="Biometric Evaluation Framework Puzzle Logo"></p>
 
 Biometric Evaluation Framework
 ==============================
