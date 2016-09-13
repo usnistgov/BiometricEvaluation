@@ -37,4 +37,4 @@ Permission to use this data is contingent upon your acceptance of the terms of
 this agreement and upon your providing appropriate acknowledgments of NIST's
 creation of the data.
 
-(Source: http://www.nist.gov/data/license.cfm)
+(Source: https://www.nist.gov/pba/licensing)

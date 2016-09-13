@@ -134,13 +134,13 @@ installed:
 
 
 #### NIST Biometric Image Software (NBIS)
-[NBIS](http://nist.gov/itl/iad/ig/nbis.cfm) is supported under current versions
+[NBIS](https://www.nist.gov/services-resources/software/nist-biometric-image-software-nbis) is supported under current versions
 of RHEL/CentOS, Ubuntu, and macOS. The Framework repository contains a subset
 of NBIS that is built from the top-level makefile. However, if there is a need
 to use the _official_ NBIS, then the makefile in `common/src/libbiomeval` can
 be changed to use that NBIS build. Biometric Evaluation Framework will look for NBIS
 to be installed at `/usr/local/nbis`. To build NBIS,
-[download the source](http://nist.gov/itl/iad/ig/nigos.cfm),
+[download the source](https://www.nist.gov/itl/iad/image-group/products-and-services/image-group-open-source-server-nigos),
 and follow this basic build procedure:
 
 ```
@@ -156,11 +156,11 @@ As Seen In...
 NIST is committed to using Biometric Evaluation Framework in their biometric
 evaluations, including:
 
- * [FpVTE 2012](http://www.nist.gov/itl/iad/ig/fpvte2012.cfm);
- * [MINEX III](http://www.nist.gov/itl/iad/ig/minexiii.cfm);
- * [IREX III](http://www.nist.gov/itl/iad/ig/irexiii.cfm);
- * [FaCE](http://www.nist.gov/itl/iad/ig/facechallenges.cfm);
- * [FIVE](http://www.nist.gov/itl/iad/ig/five.cfm);
+ * [FpVTE 2012](https://www.nist.gov/itl/iad/image-group/fpvte-2012);
+ * [MINEX III](hhttps://www.nist.gov/itl/iad/image-group/minutiae-interoperability-exchange-minex-iii);
+ * [IREX III](https://www.nist.gov/itl/iad/image-group/irex-iii-homepage);
+ * [FaCE](https://www.nist.gov/programs-projects/face-challenges);
+ * [FIVE](https://www.nist.gov/programs-projects/face-video-evaluation-five);
  * ...and more.
 
 Communication
@@ -197,8 +197,8 @@ Citing
 ------
 If you use Biometric Evaluation Framework in the course of your work, please
 consider linking back to
-[our website](http://www.nist.gov/itl/iad/ig/framework.cfm) or citing
-[our manuscript](http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=7358800):
+[our website](https://www.nist.gov/services-resources/software/biometric-evaluation-framework) or citing
+[our manuscript](http://ieeexplore.ieee.org/document/7358800/):
 
 Fiumara, G.; Salamon, W.; Watson, C, "Towards Repeatable, Reproducible, and
 Efficient Biometric Technology Evaluations," in Biometrics: Theory,
