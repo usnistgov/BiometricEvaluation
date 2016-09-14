@@ -157,7 +157,7 @@ NIST is committed to using Biometric Evaluation Framework in their biometric
 evaluations, including:
 
  * [FpVTE 2012](https://www.nist.gov/itl/iad/image-group/fpvte-2012);
- * [MINEX III](hhttps://www.nist.gov/itl/iad/image-group/minutiae-interoperability-exchange-minex-iii);
+ * [MINEX III](https://www.nist.gov/itl/iad/image-group/minutiae-interoperability-exchange-minex-iii);
  * [IREX III](https://www.nist.gov/itl/iad/image-group/irex-iii-homepage);
  * [FaCE](https://www.nist.gov/programs-projects/face-challenges);
  * [FIVE](https://www.nist.gov/programs-projects/face-video-evaluation-five);
