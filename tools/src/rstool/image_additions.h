@@ -68,6 +68,12 @@ namespace ImageAdditions
 	 *
 	 * @param image
 	 *	Pointer to image data.
+	 * @param xOffset
+	 *	Create the window this number of horizontal pixels away from
+	 *	the left edge of the screen.
+	 * @param yOffset
+	 *	Create the window this number of vertical pixels away from
+	 *	the top edge of the screen.
 	 *
 	 * @throw Error::NotImplemented
 	 *	Image with an invalid bit depth was passed.
@@ -84,7 +90,9 @@ namespace ImageAdditions
 	 */
 	void
 	createWindowAndDisplayImage(
-	    std::shared_ptr<BiometricEvaluation::Image::Image> image);
+	    std::shared_ptr<BiometricEvaluation::Image::Image> image,
+	    int xOffset = 0,
+	    int yOffset = 0);
 
 	/**
 	 * @brief
@@ -119,6 +127,8 @@ namespace ImageAdditions
 	 *
 	 * @param images
 	 *	Vector of pointers to image data.
+	 * @param tile
+	 *	Attempt to tile multiple windows.
 	 *
 	 * @throw Error::NotImplemented
 	 *	Image with an invalid bit depth was passed.
@@ -134,7 +144,8 @@ namespace ImageAdditions
 	 */
 	void
 	displayImages(
-	    std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images);
+	    std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images,
+	    bool tile = true);
 
 	/**
 	 * @brief
@@ -177,6 +188,10 @@ namespace ImageAdditions
 
 		/** Name of the parameter containing an Image */
 		static const std::string ImageParameterKey;
+		/** Name of the parameter containing the window's X offset */
+		static const std::string WindowXOffsetKey;
+		/** Name of the parameter containing the window's Y offset */
+		static const std::string WindowYOffsetKey;
 
 		/** Constructor */
 		ImageViewerWorker() = default;

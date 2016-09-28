@@ -8,6 +8,7 @@
  * about its quality, reliability, or any other characteristic.
  */
 
+#include <algorithm>
 #include <string>
 
 #include <be_data_interchange_an2k.h>
@@ -22,6 +23,8 @@
  */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
+namespace BE = BiometricEvaluation;
 
 void
 ImageAdditions::grayToBGRA(
@@ -78,7 +81,9 @@ ImageAdditions::RGBAToBGRA(
 
 void
 ImageAdditions::createWindowAndDisplayImage(
-    std::shared_ptr<BiometricEvaluation::Image::Image> image)
+    std::shared_ptr<BiometricEvaluation::Image::Image> image,
+    int xOffset,
+    int yOffset)
 {
 	/*
 	 * Init the X11 environment.
@@ -96,10 +101,18 @@ ImageAdditions::createWindowAndDisplayImage(
 		throw BiometricEvaluation::Error::StrategyError("Could not "
 		    "create Visual");
 
+	XSizeHints locationHint{0};
+	locationHint.flags = PPosition;
+	locationHint.x = xOffset;
+	locationHint.y = yOffset;
+
 	Window window = XCreateSimpleWindow(display,
-	    DefaultRootWindow(display), 0, 0, image->getDimensions().xSize,
-	    image->getDimensions().ySize, 0, WhitePixel(display, screen),
-	    BlackPixel(display, screen));
+	    DefaultRootWindow(display), locationHint.x, locationHint.y,
+	    image->getDimensions().xSize, image->getDimensions().ySize, 0,
+	    WhitePixel(display, screen), BlackPixel(display, screen));
+	/* Use default stacking if no offsets provided */
+	if (xOffset != 0 || yOffset != 0)
+		XSetNormalHints(display, window, &locationHint);
 
 	/* 
 	 * Create BGRA XImage.
@@ -171,9 +184,14 @@ ImageAdditions::createWindowAndDisplayImage(
 	XUnmapWindow(display, window);
 	XDestroyWindow(display, window);
 	XFree(xImage);
+	XCloseDisplay(display);
 }
 
-const std::string ImageAdditions::ImageViewerWorker::ImageParameterKey = "image";
+const std::string ImageAdditions::ImageViewerWorker::ImageParameterKey{"image"};
+const std::string ImageAdditions::ImageViewerWorker::WindowXOffsetKey{
+    "WindowXOffset"};
+const std::string ImageAdditions::ImageViewerWorker::WindowYOffsetKey{
+    "WindowYOffset"};
 
 int32_t
 ImageAdditions::ImageViewerWorker::workerMain()
@@ -181,8 +199,22 @@ ImageAdditions::ImageViewerWorker::workerMain()
 	std::shared_ptr<BiometricEvaluation::Image::Image> image =
 	    std::static_pointer_cast<BiometricEvaluation::Image::Image>(
 	    getParameter(ImageViewerWorker::ImageParameterKey));
+
+	int xOffset = 0;
 	try {
-		ImageAdditions::createWindowAndDisplayImage(image);
+		xOffset = this->getParameterAsInteger(
+		    ImageViewerWorker::WindowXOffsetKey);
+	} catch (std::out_of_range) {}
+
+	int yOffset = 0;
+	try {
+		yOffset = this->getParameterAsInteger(
+		    ImageViewerWorker::WindowYOffsetKey);
+	} catch (std::out_of_range) {}
+
+	try {
+		ImageAdditions::createWindowAndDisplayImage(image, xOffset,
+		    yOffset);
 	} catch (BiometricEvaluation::Error::Exception &e) {
 		std::cerr << e.what() << std::endl;
 		return (EXIT_FAILURE);
@@ -195,26 +227,82 @@ void
 ImageAdditions::displayImage(
     std::shared_ptr<BiometricEvaluation::Image::Image> image)
 {
-	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images {
-	    1};
+	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images;
 	images.push_back(image);
-	displayImages(images);
+	displayImages(images, false);
 }
 
 void
 ImageAdditions::displayImages(
-    std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images)
+    std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> &images,
+    bool tile)
 {
-	std::shared_ptr<BiometricEvaluation::Process::ForkManager> manager {
-	    new BiometricEvaluation::Process::ForkManager()};
+	auto manager = std::make_shared<BE::Process::ForkManager>();
 
-	for (auto image = images.begin(); image != images.end(); image++) {
-		std::shared_ptr<BiometricEvaluation::Process::
-		    WorkerController> worker =
-		    manager->addWorker(std::shared_ptr<ImageViewerWorker>(
-		    new ImageViewerWorker()));
+        Display *display = XOpenDisplay(nullptr);
+        if (display == nullptr) {
+                std::string displayName = XDisplayName(nullptr);
+                throw BiometricEvaluation::Error::StrategyError("Could not "
+                    "open DISPLAY (" + displayName + ")");
+        }
+	Screen *screen = DefaultScreenOfDisplay(display);
+	const uint64_t screenWidth = XWidthOfScreen(screen);
+	const uint64_t screenHeight = XHeightOfScreen(screen);
+
+	bool startNewRow{false}, stopTiling{false};
+	uint64_t prevX{0}, prevY{0}, maxY{0};
+
+	for (auto &image : images) {
+		auto worker = manager->addWorker(
+		    std::make_shared<ImageViewerWorker>());
 		worker->setParameter(ImageViewerWorker::ImageParameterKey,
-		    *image);
+		    image);
+
+		if (!tile) continue;
+		const auto size = image->getDimensions();
+		if (stopTiling) {
+			worker->setParameterFromInteger(ImageViewerWorker::
+			    WindowXOffsetKey, 0);
+		} if (prevX == 0) {
+			worker->setParameterFromInteger(ImageViewerWorker::
+			    WindowXOffsetKey, 0);
+			prevX = size.xSize;
+			startNewRow = false;
+		} else if ((prevX + size.xSize) > screenWidth) {
+			worker->setParameterFromInteger(ImageViewerWorker::
+			    WindowXOffsetKey, 0);
+			prevX = size.xSize;
+			startNewRow = true;
+		} else {
+			worker->setParameterFromInteger(ImageViewerWorker::
+			    WindowXOffsetKey, prevX);
+			prevX += size.xSize;
+			startNewRow = false;
+		}
+
+		if (stopTiling) {
+			worker->setParameterFromInteger(
+			    ImageViewerWorker::WindowYOffsetKey, 0);
+		} else if (startNewRow) {
+			/* If new row won't fit on the screen... */
+			if (prevY + size.ySize > screenHeight) {
+				/* Revert to default stacking */
+				worker->setParameterFromInteger(
+				    ImageViewerWorker::WindowYOffsetKey, 0);
+				prevX = prevY = 0;
+				stopTiling = true;
+			} else {
+				worker->setParameterFromInteger(
+				    ImageViewerWorker::WindowYOffsetKey, maxY);
+				prevY = maxY;
+			}
+		} else {
+			worker->setParameterFromInteger(ImageViewerWorker::
+			    WindowYOffsetKey, prevY);
+		}
+
+		startNewRow = false;
+		maxY = std::max(maxY, static_cast<uint64_t>(size.ySize));
 	}
 
 	manager->startWorkers(true);
@@ -227,8 +315,7 @@ ImageAdditions::displayAN2K(
 	std::shared_ptr<BiometricEvaluation::DataInterchange::AN2KRecord> an2k {
 	    new BiometricEvaluation::DataInterchange::AN2KRecord(data)};
 
-	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images {
-	    an2k->getFingerLatentCount() + an2k->getFingerCaptureCount()};
+	std::vector<std::shared_ptr<BiometricEvaluation::Image::Image>> images;
 
 	/* Finger Captures */
 	std::vector<BiometricEvaluation::Finger::AN2KViewCapture>
