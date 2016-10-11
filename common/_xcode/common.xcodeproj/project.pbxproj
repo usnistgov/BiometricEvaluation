@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0846C4F41DA3E762003FEC3A /* be_mpi_exception.h in Headers */ = {isa = PBXBuildFile; fileRef = 0846C4F31DA3E750003FEC3A /* be_mpi_exception.h */; };
+		0846C4F51DA3E76F003FEC3A /* be_mpi_exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0846C4F21DA3E741003FEC3A /* be_mpi_exception.cpp */; };
 		08F8CF7A1D9AB37F002FEA59 /* be_data_interchange_an2k.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4891545E14800BA89B2 /* be_data_interchange_an2k.h */; };
 		08F8CF7B1D9AB37F002FEA59 /* be_data_interchange_ansi2004.h in Headers */ = {isa = PBXBuildFile; fileRef = 081BCD1B1B41CAD9009E7190 /* be_data_interchange_ansi2004.h */; };
 		08F8CF7C1D9AB37F002FEA59 /* be_data_interchange_finger.h in Headers */ = {isa = PBXBuildFile; fileRef = 08F8CA971D9AA9EF002FEA59 /* be_data_interchange_finger.h */; };
@@ -433,6 +435,9 @@
 		083EBDBD1C19EFF00092D6D2 /* be_io_recordstoreunion_impl.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_recordstoreunion_impl.cpp; path = ../src/libbiomeval/be_io_recordstoreunion_impl.cpp; sourceTree = "<group>"; };
 		083EBDBE1C19EFF00092D6D2 /* be_io_recordstoreunion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_recordstoreunion.cpp; path = ../src/libbiomeval/be_io_recordstoreunion.cpp; sourceTree = "<group>"; };
 		083EBDBF1C19F00B0092D6D2 /* be_io_recordstoreunion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = be_io_recordstoreunion.h; path = ../src/include/be_io_recordstoreunion.h; sourceTree = "<group>"; };
+		0846C4F11DA3E722003FEC3A /* .dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = .dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		0846C4F21DA3E741003FEC3A /* be_mpi_exception.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_mpi_exception.cpp; path = ../src/libbiomeval/be_mpi_exception.cpp; sourceTree = "<group>"; };
+		0846C4F31DA3E750003FEC3A /* be_mpi_exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_exception.h; path = ../src/include/be_mpi_exception.h; sourceTree = "<group>"; };
 		084AB2CD15A1F540000DD259 /* be_io_compressedrecstore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_compressedrecstore.h; path = ../src/include/be_io_compressedrecstore.h; sourceTree = "<group>"; };
 		084AB2CF15A1F5D9000DD259 /* be_io_compressedrecstore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_compressedrecstore.cpp; path = ../src/libbiomeval/be_io_compressedrecstore.cpp; sourceTree = "<group>"; };
 		0853F87D1CD3C7B600348233 /* test_be_io_persistentrecordstoreunion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_persistentrecordstoreunion.cpp; path = ../src/test/test_be_io_persistentrecordstoreunion.cpp; sourceTree = "<group>"; };
@@ -760,7 +765,6 @@
 		08F8CB171D9AAB9E002FEA59 /* time.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = time.c; path = ../nbis/lib/time.c; sourceTree = "<group>"; };
 		08F8CB181D9AAB9E002FEA59 /* updatfet.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = updatfet.c; path = ../nbis/lib/updatfet.c; sourceTree = "<group>"; };
 		08F8CB191D9AAB9E002FEA59 /* writefet.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = writefet.c; path = ../nbis/lib/writefet.c; sourceTree = "<group>"; };
-		08F8D1021D9AB4EE002FEA59 /* .dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; name = .dylib; path = /Users/gfiumara/work/p4/projects/EVALUATION/Main/common/_xcode/build/Debug/.dylib; sourceTree = "<absolute>"; };
 		08FCB2561C21C04F005E892C /* test_be_io_recordstoreunion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = test_be_io_recordstoreunion.cpp; path = ../src/test/test_be_io_recordstoreunion.cpp; sourceTree = "<group>"; };
 		224A58EA18D22E1F00E11798 /* be_face_incitsview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_incitsview.h; path = ../src/include/be_face_incitsview.h; sourceTree = "<group>"; };
 		224A58EB18D22E1F00E11798 /* be_face_iso2005view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_face_iso2005view.h; path = ../src/include/be_face_iso2005view.h; sourceTree = "<group>"; };
@@ -1152,6 +1156,7 @@
 				08CFC4C61545E1D600BA89B2 /* implementation */,
 				08F8CAA61D9AAAE7002FEA59 /* nbis */,
 				086A2A541547359C00464DC5 /* test */,
+				0846C4F11DA3E722003FEC3A /* .dylib */,
 			);
 			indentWidth = 8;
 			sourceTree = "<group>";
@@ -1799,6 +1804,7 @@
 				081BCD1D1B41CAD9009E7190 /* be_mpi_csvprocessor.h */,
 				081BCD1E1B41CAD9009E7190 /* be_mpi_csvresources.h */,
 				22DE5BFE18EB29CF00D460F1 /* be_mpi_distributor.h */,
+				0846C4F31DA3E750003FEC3A /* be_mpi_exception.h */,
 				22DE5BFF18EB29CF00D460F1 /* be_mpi_receiver.h */,
 				22DE5C0018EB29CF00D460F1 /* be_mpi_recordprocessor.h */,
 				22DE5C0118EB29CF00D460F1 /* be_mpi_recordstoredistributor.h */,
@@ -1819,6 +1825,7 @@
 				081BCD211B41CB26009E7190 /* be_mpi_csvprocessor.cpp */,
 				081BCD221B41CB26009E7190 /* be_mpi_csvresources.cpp */,
 				22DE5BF418EB29BE00D460F1 /* be_mpi_distributor.cpp */,
+				0846C4F21DA3E741003FEC3A /* be_mpi_exception.cpp */,
 				22DE5BF518EB29BE00D460F1 /* be_mpi_receiver.cpp */,
 				22DE5BF618EB29BE00D460F1 /* be_mpi_recordprocessor.cpp */,
 				22DE5BF718EB29BE00D460F1 /* be_mpi_recordstoredistributor.cpp */,
@@ -1972,6 +1979,7 @@
 				08F8CFEF1D9AB380002FEA59 /* be_video_container_impl.h in Headers */,
 				08F8CFF01D9AB380002FEA59 /* be_video_container.h in Headers */,
 				08F8CFF11D9AB380002FEA59 /* be_video_stream.h in Headers */,
+				0846C4F41DA3E762003FEC3A /* be_mpi_exception.h in Headers */,
 				08F8CFF21D9AB380002FEA59 /* be_video.h in Headers */,
 				08F8CFF31D9AB380002FEA59 /* be_view.h in Headers */,
 				08F8CFF41D9AB380002FEA59 /* be_view_an2kview.h in Headers */,
@@ -2062,7 +2070,7 @@
 			);
 			name = XCodeIndexingTarget;
 			productName = XCodeIndexingTarget;
-			productReference = 08F8D1021D9AB4EE002FEA59 /* .dylib */;
+			productReference = 0846C4F11DA3E722003FEC3A /* .dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -2126,6 +2134,7 @@
 				08F8D02D1D9AB38D002FEA59 /* be_finger_an2kview_capture.cpp in Sources */,
 				08F8D02E1D9AB38D002FEA59 /* be_finger_an2kview_fixedres.cpp in Sources */,
 				08F8D02F1D9AB38D002FEA59 /* be_finger_an2kview_latent.cpp in Sources */,
+				0846C4F51DA3E76F003FEC3A /* be_mpi_exception.cpp in Sources */,
 				08F8D0301D9AB38D002FEA59 /* be_finger_an2kview_varres.cpp in Sources */,
 				08F8D0311D9AB38D002FEA59 /* be_finger_ansi2004view.cpp in Sources */,
 				08F8D0321D9AB38D002FEA59 /* be_finger_ansi2007view.cpp in Sources */,
@@ -2449,6 +2458,7 @@
 				08F8CF791D9AB36E002FEA59 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
