@@ -110,12 +110,12 @@ similarly-named packages.
 | Zlib         | `zlib-devel`   | `zlib`    |
 
 ### IMAGE
-| Name                                        | RHEL/CentOS           | MacPorts      |
-|:-------------------------------------------:|:---------------------:|:-------------:|
-| OpenJPEG 1.x                                | `openjpeg-devel`      | `openjpeg15`  |
-| libjpeg                                     | `libjpeg-turbo-devel` | `jpeg`        |
-| libpng                                      | `libpng-devel`        | `libpng`      |
-| Zlib                                        | `zlib-devel`          | `zlib`        |
+| Name         | RHEL/CentOS           | MacPorts   |
+|:------------:|:---------------------:|:----------:|
+| OpenJPEG 2.x | `openjp2-devel`       | `openjpeg` |
+| libjpeg      | `libjpeg-turbo-devel` | `jpeg`     |
+| libpng       | `libpng-devel`        | `libpng`   |
+| Zlib         | `zlib-devel`          | `zlib`     |
 
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
 | Name         | RHEL/CentOS     | MacPorts  |
