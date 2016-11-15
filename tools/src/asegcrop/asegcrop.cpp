@@ -55,7 +55,7 @@ main(
 		}
 
 		for (const auto &capture : an2k->getFingerCaptures()) {
-			if (capture.getImageDepth() != 8)
+			if (capture.getImageColorDepth() != 8)
 				continue;
 			try {
 				writeSegments(std::string(argv[i]) + "." +
@@ -198,13 +198,14 @@ cropSingleASEG(
 		    new BE::Image::Raw(data, data.size(),
 		    {static_cast<uint32_t>(maxX - minX),
 		    static_cast<uint32_t>(maxY - minY)},
-		    capture.getImageDepth(),
+		    capture.getImageColorDepth(), 8,
 		    capture.getImageResolution()));
 		return (rotateImage(rawImage, angleOfRotation));
 	} else
 		return {data, data.size(), {static_cast<uint32_t>(maxX - minX),
 		    static_cast<uint32_t>(maxY - minY)},
-		    capture.getImageDepth(),capture.getImageResolution()};
+		    capture.getImageColorDepth(), 8,
+		    capture.getImageResolution()};
 }
 
 BE::Image::Raw
@@ -276,7 +277,7 @@ trim(
 		}
 	}
 
-	return {trimmed, trimmed.size(), {maxX - minX, maxY - minY}, 8, res};
+	return {trimmed, trimmed.size(), {maxX - minX, maxY - minY}, 8, 8, res};
 }
 
 BiometricEvaluation::Image::Raw

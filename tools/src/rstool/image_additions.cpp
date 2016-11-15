@@ -121,7 +121,7 @@ ImageAdditions::createWindowAndDisplayImage(
 	BiometricEvaluation::Memory::uint8Array bgraBytes(
 	    (image->getDimensions().xSize * image->getDimensions().ySize) * 4);
 	uint8_t *bgraBytesPtr = NULL;
-	switch (image->getDepth()) {
+	switch (image->getColorDepth()) {
 	case 8:
 		ImageAdditions::grayToBGRA(rawBytes, bgraBytes);
 		break;
@@ -132,8 +132,8 @@ ImageAdditions::createWindowAndDisplayImage(
 		ImageAdditions::RGBAToBGRA(rawBytes, bgraBytes);
 		break;
 	default:
-		throw BiometricEvaluation::Error::NotImplemented("Depth " +
-		    std::to_string(image->getDepth()));
+		throw BiometricEvaluation::Error::NotImplemented("Color "
+		    "Depth " + std::to_string(image->getColorDepth()));
 		/* Not reached */
 		break;
 	}

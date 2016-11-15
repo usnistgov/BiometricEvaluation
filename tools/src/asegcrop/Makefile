@@ -16,7 +16,7 @@ PROGRAM := asegcrop
 SOURCES := $(PROGRAM).cpp
 OBJECTS := $(SOURCES:%.cpp=%.o)
 CXXFLAGS += -std=c++11 -Wall -pedantic -I. -I../../../common/src/include -O3
-LDFLAGS += ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjpeg -lcrypto -lX11 -ljpeg -lopencv_core -lopencv_imgproc -lopencv_highgui
+LDFLAGS += ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjp2 -lcrypto -lX11 -ljpeg -lopencv_core -lopencv_imgproc -lopencv_highgui
 ifeq ($(OS),Darwin)
         LDFLAGS += -L/opt/local/lib/db44 -ldb -L/opt/local/lib
         CXXFLAGS += -I/opt/local/include
