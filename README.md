@@ -51,7 +51,7 @@ Requirements
  * System packages (depending on desired modules, see below).
 
 Other operating systems and compilers are likely to work as expected, but have
-not been tested.
+not been thoroughly tested.
 
 Installing
 ----------
@@ -87,40 +87,43 @@ all operating systems. Package names are listed below for RHEL/CentOS and macOS
 similarly-named packages.
 
 ### CORE
-| Name         | RHEL/CentOS           | MacPorts                     |
-|:------------:|:---------------------:|:----------------------------:|
-| OpenSSL      | `openssl-devel`       | n/a (uses macOS CommonCrypto)|
+| Name         | RHEL/CentOS     | MacPorts                     | Ubuntu       |
+|:------------:|:---------------:|:----------------------------:|:------------:|
+| pkg-config   | `pkgconfig`     | `pkgconfig`                  | `pkg-config` |
+| OpenSSL      | `openssl-devel` | n/a (uses macOS CommonCrypto)| `libssl-dev` |
 
 ### DEVICE
 
-| Name      | RHEL/CentOS       | MacPorts                         |
-|:---------:|:-----------------:|:--------------------------------:|
-| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/ios/technotes/tn2339/_index.html)) |
+| Name      | RHEL/CentOS       | MacPorts                         | Ubuntu   |
+|:---------:|:-----------------:|:--------------------------------:|:--------:|
+| PCSC Lite | `pcsc-lite-devel` | n/a (requires \
+[Command Line Tools](https://developer.apple.com/library/ios/technotes/tn2339/_index.html))\
+| `libpcsclite-dev` |
 
 ### IO
-| Name         | RHEL/CentOS  | MacPorts |
-|:------------:|:------------:|:--------:|
-| Zlib         | `zlib-devel` | `zlib`   |
+| Name         | RHEL/CentOS  | MacPorts | Ubuntu       |
+|:------------:|:------------:|:--------:|:-------------|
+| Zlib         | `zlib-devel` | `zlib`   | `zlib1g-dev` |
 
 ### RECORDSTORE
-| Name         | RHEL/CentOS    | MacPorts  |
-|:------------:|:--------------:|:---------:|
-| Berkeley DB  | `libdb-devel`  | `db44`    |
-| SQLite 3     | `sqlite-devel` | `sqlite3` |
-| Zlib         | `zlib-devel`   | `zlib`    |
+| Name         | RHEL/CentOS    | MacPorts  | Ubuntu           |
+|:------------:|:--------------:|:---------:|:----------------:|
+| Berkeley DB  | `libdb-devel`  | `db44`    | `libdb-dev`      |
+| SQLite 3     | `sqlite-devel` | `sqlite3` | `libsqlite3-dev` |
+| Zlib         | `zlib-devel`   | `zlib`    | `zlib1g-dev`     |
 
 ### IMAGE
-| Name         | RHEL/CentOS           | MacPorts   |
-|:------------:|:---------------------:|:----------:|
-| OpenJPEG 2.x | `openjp2-devel`       | `openjpeg` |
-| libjpeg      | `libjpeg-turbo-devel` | `jpeg`     |
-| libpng       | `libpng-devel`        | `libpng`   |
-| Zlib         | `zlib-devel`          | `zlib`     |
+| Name         | RHEL/CentOS           | MacPorts   | Ubuntu             |
+|:------------:|:---------------------:|:----------:|:------------------:|
+| OpenJPEG 2.x | `openjp2-devel`       | `openjpeg` | `libopenjp2-7-dev` |
+| libjpeg      | `libjpeg-turbo-devel` | `jpeg`     | `libjpeg-dev`      |
+| libpng       | `libpng-devel`        | `libpng`   | `libpng-dev`       |
+| Zlib         | `zlib-devel`          | `zlib`     | `zlib1g-dev`       |
 
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
-| Name         | RHEL/CentOS     | MacPorts  |
-|:------------:|:---------------:|:---------:|
-| Open MPI     | `openmpi-devel` | `openmpi` |
+| Name         | RHEL/CentOS     | MacPorts  | Ubuntu           |
+|:------------:|:---------------:|:---------:|:----------------:|
+| Open MPI     | `openmpi-devel` | `openmpi` | `libopenmpi-dev` |
 
 With MacPorts, you may need to select a different MPI group if you have more than one
 installed:
@@ -128,9 +131,10 @@ installed:
 `sudo port select mpi openmpi-mp-fortran`
 
 ### VIDEO
-| Name                        | RHEL/CentOS | MacPorts       |
-|:---------------------------:|:-----------:|:--------------:|
-| [ffmpeg](http://ffmpeg.org) | n/a         | `ffmpeg-devel` |
+| Name                        | RHEL/CentOS | MacPorts       | Ubuntu          |
+|:---------------------------:|:-----------:|:--------------:|:---------------:|
+| [ffmpeg](http://ffmpeg.org) | n/a         | `ffmpeg-devel` | `libavcodec-dev`,\
+`libavformat-dev`, `libswscale-dev` |
 
 
 #### NIST Biometric Image Software (NBIS)
