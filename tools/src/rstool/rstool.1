@@ -21,6 +21,13 @@ add
 .Pp
 \#
 .Nm
+describe
+.Fl s
+.Ar rs
+.Op Fl r Ar new_description
+.Pp
+\#
+.Nm
 diff
 .Fl s
 .Ar rs1
@@ -56,6 +63,7 @@ make
 .Op Fl f
 .Op Fl h Ar hash_rs Op Fl c | Fl p
 .Op Fl k Ar (fp)
+.Op Fl r Ar description
 .Op Fl t Ar rs_type Op Fl s Ar source_rs
 .Op Fl z
 .Op Fl Z Ar compressor
@@ -72,6 +80,7 @@ merge
 .Ar existing_rs
 .Op Fl a Ar ...
 .Op Fl h Ar hash_rs Op Fl c
+.Op Fl r Ar description
 .Op Fl t Ar rs_type
 .Op RS ...
 .Pp
@@ -162,6 +171,17 @@ should be added.
 .It Fa file/dir ...
 Files or directories to be added to
 .Fa rs .
+.El
+\#
+.It Cm describe
+View or change the description of a RecordStore.
+.\"
+.Bl -tag -compact -width "description    "
+.It Cm -r Fa description
+Change the RecordStore's description to
+.Fa description .
+.It Cm -s Fa rs
+The RecordStore whose description should be printed or changed.
 .El
 \#
 .It Cm diff
@@ -283,6 +303,10 @@ by default if no other
 option is specified.
 .It Cm -q
 Don't show confirmation verbiage ("quiet").
+.It Cm -r Fa description
+Set
+.Fa description
+as the description of the new RecordStore.
 .It Cm -s Fa new_rs
 The RecordStore that will be created.
 .It Cm -t Fa type
@@ -349,6 +373,10 @@ before merging into
 The merge of all
 .Cm -a
 options.
+.It Cm -r Fa description
+Set
+.Fa description
+as the description for the merged RecordStore.
 .It Cm -t Fa type
 Create a
 .Fa type
@@ -483,10 +511,10 @@ It's somewhat important to use an absolute path for the source RecordStore.
 .\"
 .\"
 .Sh VERSION
-This man page is current for version 2.0 of
+This man page is current for version 2.1 of
 .Nm .
 .Sh HISTORY
 First released March 07, 2011 by NIST.
 
-Updated to match changes to Evaluation Framework Record Store construction,
-May 06, 2014 by NIST.
+Updated to match changes to Biometric Evaluation Framework Record Store
+construction, May 06, 2014 by NIST.

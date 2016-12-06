@@ -52,6 +52,7 @@ static const char optstr[] = "a:cfh:k:m:o:pqr:s:t:zZ:";
 
 /* Possible actions performed by this utility */
 static const std::string ADD_ARG = "add";
+static const std::string DESCRIBE_ARG = "describe";
 static const std::string DISPLAY_ARG = "display";
 static const std::string DIFF_ARG = "diff";
 static const std::string DUMP_ARG = "dump";
@@ -66,6 +67,7 @@ static const std::string UNHASH_ARG = "unhash";
 enum class Action
 {
 	ADD,
+	DESCRIBE,
 	DISPLAY,
 	DIFF,
 	DUMP,
@@ -368,6 +370,8 @@ listRecordStore(
  *	argc from main()
  * @param[in] argv
  *	argv from main()
+ * @param[in/out] description
+ *	Description to set on the new RecordStore.
  * @param[in/out] hash_filename
  *	Reference to a string to store a path to a hash translation RecordStore,
  *	indicating that the keys should be hashed
@@ -400,6 +404,7 @@ int
 procargs_make(
     int argc,
     char *argv[],
+    std::string &description,
     std::string &hash_filename,
     HashablePart &what_to_hash,
     KeyFormat &hashed_key_format,
@@ -533,6 +538,10 @@ make(
  *	argc from main()
  * @param[in] argv
  *	argv from main()
+ * @param[in/out] descriptionSet
+ *	Whether or not the description parameter has been populated.
+ * @param[in/out] description
+ *	Description for the merged RecordStore.
  * @param[in/out] kind
  *	Kind of RecordStore to create
  * @param[in/out] child_rs
@@ -555,6 +564,8 @@ int
 procargs_merge(
     int argc,
     char *argv[],
+    bool &descriptionSet,
+    std::string &description,
     BiometricEvaluation::IO::RecordStore::Kind &kind,
     std::vector<std::string> &child_rs,
     std::string &hash_filename,
@@ -976,6 +987,49 @@ makeHumanConfirmation(
  */
 int
 diff(
+    int argc,
+    char *argv[]);
+
+/**
+ * @brief
+ * Process command-line arguments specific to the DESCRIBE Action.
+ *
+ * @param[in] argc
+ * argc from main().
+ * @param[in] argv
+ * argv from main().
+ * @param[in/out] rs
+ * Reference to a shared pointer that will hold the open RecordStore.
+ * @param[in/out] newDescription
+ * Reference to a new description to set on rs.
+ *
+ * @return
+ * An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be returned
+ * from main().
+ */
+int
+procargs_describe(
+    int argc,
+    char *argv[],
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs,
+    bool &newDescriptionSet,
+    std::string &newDescription);
+
+/**
+ * @brief
+ * View or change the description of a RecordStore.
+ *
+ * @param[in] argc
+ * argc from main().
+ * @param[in] argv
+ * argv from main().
+ *
+ * @return
+ * An exit status, either EXIT_SUCCESS or EXIT_FAILURE, that can be returned
+ * from main().
+ */
+int
+describe(
     int argc,
     char *argv[]);
 

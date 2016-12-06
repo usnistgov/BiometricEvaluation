@@ -13,7 +13,7 @@
 # rstool versioning
 # 
 MAJOR_VERSION=2
-MINOR_VERSION=0
+MINOR_VERSION=1
 #
 include ../common.mk
 #

@@ -163,6 +163,11 @@ void usage(char *exe)
 
 	std::cerr << std::endl;
 
+	std::cerr << "Describe Options:" << std::endl;
+	std::cerr << "\t-r <...>\tChange the description" << std::endl;
+
+	std::cerr << std::endl;
+
 	std::cerr << "Diff Options:" << std::endl;
 	std::cerr << "\t-a <file>\tText file with keys to compare" << std::endl;
 	std::cerr << "\t-f\t\tCompare files byte for byte " <<
@@ -196,6 +201,7 @@ void usage(char *exe)
 	std::cerr << "\t-t <type>\tType of RecordStore to make" << std::endl;
 	std::cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File, List, "
 	    "SQLite" << std::endl;
+	std::cerr << "\t-r <...>\tDescription of the RecordStore" << std::endl;
 	std::cerr << "\t-s <sourceRS>\tSource RecordStore, if -t is List" <<
 	    std::endl;
 	std::cerr << "\t-z\t\tCompress records with default strategy\n" <<
@@ -212,6 +218,8 @@ void usage(char *exe)
 	    std::endl;
 	std::cerr << "\t-h <RS>\t\tHash keys and store a hash translation "
 	    "RecordStore" << std::endl;
+	std::cerr << "\t-r <...>\t\tDescription of the merged RecordStore" <<
+	    std::endl;
 	std::cerr << "\t-t <type>\tType of RecordStore to make" << std::endl;
 	std::cerr << "\t\t\tWhere <type> is Archive, BerkeleyDB, File" <<
 	    std::endl;
@@ -294,6 +302,8 @@ Action procargs(int argc, char *argv[])
 		action = Action::DIFF;
 	else if (strcasecmp(argv[1], DISPLAY_ARG.c_str()) == 0)
 		action = Action::DISPLAY;
+	else if (strcasecmp(argv[1], DESCRIBE_ARG.c_str()) == 0)
+		action = Action::DESCRIBE;
 	else if (strcasecmp(argv[1], LIST_ARG.c_str()) == 0)
 		action = Action::LIST;
 	else if (strcasecmp(argv[1], MAKE_ARG.c_str()) == 0)
@@ -711,6 +721,7 @@ int
 procargs_make(
     int argc,
     char *argv[],
+    std::string &description,
     std::string &hash_pathname,
     HashablePart &what_to_hash,
     KeyFormat &hashed_key_format,
@@ -819,6 +830,9 @@ procargs_make(
 			break;
 		case 'q':	/* Don't show confirmation */
 			quiet = true;
+			break;
+		case 'r':	/* Description */
+			description = optarg;
 			break;
 		case 't':	/* Destination RecordStore type */
 			try {
@@ -1264,6 +1278,7 @@ makeListRecordStore(
 int make(int argc, char *argv[])
 {
 	std::string hash_pathname = "";
+	std::string description{"<Description>"};
 	BE::IO::RecordStore::Kind type = BE::IO::RecordStore::Kind::Default;
 	std::vector<std::string> elements;
 	HashablePart what_to_hash = HashablePart::NOTHING;
@@ -1272,7 +1287,7 @@ int make(int argc, char *argv[])
 	BE::IO::Compressor::Kind compressorKind;
 	bool stopOnDuplicate = true;
 
-	if (procargs_make(argc, argv, hash_pathname, what_to_hash,
+	if (procargs_make(argc, argv, description, hash_pathname, what_to_hash,
 	    hashed_key_format, type, elements, compress, compressorKind,
 	    stopOnDuplicate) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
@@ -1290,10 +1305,10 @@ int make(int argc, char *argv[])
 	try {
 		if (compress)
 			rs.reset(new BE::IO::CompressedRecordStore(sflagval,
-			    "<Description>", type, compressorKind));
+			    description, type, compressorKind));
 		else
 			rs = BE::IO::RecordStore::createRecordStore(sflagval,
-			    "<Description>", type);
+			    description, type);
 		if (!hash_pathname.empty())
 			/* No need to compress hash translation RS */
 			hash_rs = BE::IO::RecordStore::createRecordStore(
@@ -1337,6 +1352,8 @@ int
 procargs_merge(
     int argc,
     char *argv[],
+    bool &descriptionSet,
+    std::string &description,
     BiometricEvaluation::IO::RecordStore::Kind &kind,
     std::vector<std::string> &child_rs,
     std::string &hash_pathname,
@@ -1349,6 +1366,7 @@ procargs_merge(
 
 	char c;
 	child_rs.empty();
+	descriptionSet = false;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
 		case 't':	/* Destination RecordStore type */
@@ -1394,6 +1412,10 @@ procargs_merge(
 			std::cerr << "Cannot hash file path when merging "
 			    "RecordStores -- there are no paths." << std::endl;
 			return (EXIT_FAILURE);
+		case 'r':	/* Description */
+			descriptionSet = true;
+			description = optarg;
+			break;
 		}
 	}
 	
@@ -1537,14 +1559,19 @@ int merge(int argc, char *argv[])
 	BiometricEvaluation::IO::RecordStore::Kind kind =
 	    BiometricEvaluation::IO::RecordStore::Kind::Default;
 	std::vector<std::string> child_rs;
-	if (procargs_merge(argc, argv, kind, child_rs, hash_pathname,
-	    what_to_hash, hashed_key_format) != EXIT_SUCCESS)
+	bool descriptionSet{false};
+	std::string description{};
+	if (procargs_merge(argc, argv, descriptionSet, description, kind,
+	    child_rs, hash_pathname, what_to_hash, hashed_key_format) !=
+	    EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 
-	std::string description = "A merge of ";
-	for (std::size_t i = 0; i < child_rs.size(); i++) {
-		description += BE::Text::basename(child_rs[i]);
-		if (i != (child_rs.size() - 1)) description += ", ";
+	if (!descriptionSet) {
+		description = "A merge of ";
+		for (std::size_t i = 0; i < child_rs.size(); i++) {
+			description += BE::Text::basename(child_rs[i]);
+			if (i != (child_rs.size() - 1)) description += ", ";
+		}
 	}
 
 	try {
@@ -2292,6 +2319,75 @@ diff(
 }
 
 int
+procargs_describe(
+    int argc,
+    char *argv[],
+    std::shared_ptr<BiometricEvaluation::IO::RecordStore> &rs,
+    bool &newDescriptionSet,
+    std::string &newDescription)
+{
+	char c{};
+	newDescriptionSet = false;
+	while ((c = getopt(argc, argv, optstr)) != EOF) {
+		switch (c) {
+		case 'r':	/* Re-describe */
+			newDescriptionSet = true;
+			newDescription = optarg;
+			break;
+		case 's':
+			/* Handled in sflagval */
+			break;
+		default:
+			std::cerr << "Invalid argument" << std::endl;
+			return (EXIT_FAILURE);
+		}
+	}
+
+	/* Open RW if a new description was set */
+	const auto mode = newDescriptionSet ? BE::IO::Mode::ReadWrite :
+	    BE::IO::Mode::ReadOnly;
+	try {
+		rs = BE::IO::RecordStore::openRecordStore(sflagval, mode);
+	} catch (BE::Error::Exception &e) {
+		if (isRecordStoreAccessible(sflagval, mode))
+			std::cerr << "Could not open " << sflagval << " - " <<
+			    e.what() << std::endl;
+		else
+			std::cerr << sflagval << ": Permission denied." <<
+			    std::endl;
+
+		return (EXIT_FAILURE);
+	}
+
+	return (EXIT_SUCCESS);
+}
+
+int
+describe(
+    int argc,
+    char *argv[])
+{
+	std::shared_ptr<BE::IO::RecordStore> rs{};
+	std::string newDescription{};
+	bool newDescriptionSet{false};
+	if (procargs_describe(argc, argv, rs, newDescriptionSet,
+	    newDescription) != EXIT_SUCCESS)
+		return (EXIT_FAILURE);
+
+	try {
+		if (newDescriptionSet)
+			rs->changeDescription(newDescription);
+		else
+			std::cout << rs->getDescription() << std::endl;
+
+		return (EXIT_SUCCESS);
+	} catch (BE::Error::Exception &e) {
+		std::cerr << e.whatString() << std::endl;
+		return (EXIT_FAILURE);
+	}
+}
+
+int
 procargs_rename(
     int argc,
     char *argv[],
@@ -2381,6 +2477,8 @@ int main(int argc, char *argv[])
 		    SpecialProcessing::LISTRECORDSTORE))
 			return (modifyListRecordStore(argc, argv, action));
 		return (add(argc, argv));
+	case Action::DESCRIBE:
+		return (describe(argc, argv));
 	case Action::DIFF:
 		return (diff(argc, argv));
 	case Action::DISPLAY:
