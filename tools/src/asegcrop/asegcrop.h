@@ -85,6 +85,8 @@ cropSingleASEG(
  * Dimensions of the image represented in data.
  * @param res
  * Resolution of the image represented in data.
+ * @param hasAlphaChannel
+ * Presence of alpha channel.
  *
  * @return
  * Raw image of data without white border.
@@ -93,7 +95,8 @@ BiometricEvaluation::Image::Raw
 trim(
     const BiometricEvaluation::Memory::uint8Array &data,
     const BiometricEvaluation::Image::Size &dims,
-    const BiometricEvaluation::Image::Resolution &res);
+    const BiometricEvaluation::Image::Resolution &res,
+    const bool hasAlphaChannel);
 
 
 /**

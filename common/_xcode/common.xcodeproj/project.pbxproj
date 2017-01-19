@@ -71,7 +71,6 @@
 		08F8CFB51D9AB37F002FEA59 /* be_io_filerecstore.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4A71545E14800BA89B2 /* be_io_filerecstore.h */; };
 		08F8CFB61D9AB37F002FEA59 /* be_io_listrecstore.h in Headers */ = {isa = PBXBuildFile; fileRef = 0880D88717BBDAC1009D0EDE /* be_io_listrecstore.h */; };
 		08F8CFB71D9AB37F002FEA59 /* be_io_recordstore.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4AC1545E14800BA89B2 /* be_io_recordstore.h */; };
-		08F8CFB81D9AB37F002FEA59 /* be_io_recordstoreiterator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0890142918D9EB0B0079696B /* be_io_recordstoreiterator.h */; };
 		08F8CFB91D9AB37F002FEA59 /* be_io_sqliterecstore.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4AD1545E14800BA89B2 /* be_io_sqliterecstore.h */; };
 		08F8CFBA1D9AB37F002FEA59 /* be_io_persistentrecordstoreunion_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 08D734561CD3C6CB00007F30 /* be_io_persistentrecordstoreunion_impl.h */; };
 		08F8CFBB1D9AB37F002FEA59 /* be_io_recordstoreunion_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 083EBDBB1C19EFDA0092D6D2 /* be_io_recordstoreunion_impl.h */; };
@@ -225,7 +224,6 @@
 		08F8D0501D9AB38D002FEA59 /* be_io_filerecstore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4E61545E1F500BA89B2 /* be_io_filerecstore.cpp */; };
 		08F8D0511D9AB38D002FEA59 /* be_io_listrecstore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0880D88917BBDAF8009D0EDE /* be_io_listrecstore.cpp */; };
 		08F8D0521D9AB38D002FEA59 /* be_io_recordstore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4EB1545E1F500BA89B2 /* be_io_recordstore.cpp */; };
-		08F8D0531D9AB38D002FEA59 /* be_io_recordstoreiterator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0890142E18D9EB9B0079696B /* be_io_recordstoreiterator.cpp */; };
 		08F8D0541D9AB38D002FEA59 /* be_io_sqliterecstore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4EC1545E1F500BA89B2 /* be_io_sqliterecstore.cpp */; };
 		08F8D0551D9AB38D002FEA59 /* be_io_persistentrecordstoreunion_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08D734551CD3C6CB00007F30 /* be_io_persistentrecordstoreunion_impl.cpp */; };
 		08F8D0561D9AB38D002FEA59 /* be_io_recordstoreunion_impl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 083EBDBD1C19EFF00092D6D2 /* be_io_recordstoreunion_impl.cpp */; };
@@ -478,10 +476,8 @@
 		0890142618D9EAFB0079696B /* be_process_mcutility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_process_mcutility.h; path = ../src/include/be_process_mcutility.h; sourceTree = "<group>"; };
 		0890142718D9EAFB0079696B /* be_process_messagecenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_process_messagecenter.h; path = ../src/include/be_process_messagecenter.h; sourceTree = "<group>"; };
 		0890142818D9EB0B0079696B /* be_framework_enumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_framework_enumeration.h; path = ../src/include/be_framework_enumeration.h; sourceTree = "<group>"; };
-		0890142918D9EB0B0079696B /* be_io_recordstoreiterator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_io_recordstoreiterator.h; path = ../src/include/be_io_recordstoreiterator.h; sourceTree = "<group>"; };
 		0890142A18D9EB0B0079696B /* be_memory_autoarrayiterator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_memory_autoarrayiterator.h; path = ../src/include/be_memory_autoarrayiterator.h; sourceTree = "<group>"; };
 		0890142B18D9EB0B0079696B /* be_memory_autoarrayutility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_memory_autoarrayutility.h; path = ../src/include/be_memory_autoarrayutility.h; sourceTree = "<group>"; };
-		0890142E18D9EB9B0079696B /* be_io_recordstoreiterator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_io_recordstoreiterator.cpp; path = ../src/libbiomeval/be_io_recordstoreiterator.cpp; sourceTree = "<group>"; };
 		0890142F18D9EB9B0079696B /* be_process_mclistener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_process_mclistener.cpp; path = ../src/libbiomeval/be_process_mclistener.cpp; sourceTree = "<group>"; };
 		0890143018D9EB9B0079696B /* be_process_mcreceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_process_mcreceiver.cpp; path = ../src/libbiomeval/be_process_mcreceiver.cpp; sourceTree = "<group>"; };
 		0890143118D9EB9B0079696B /* be_process_mcutility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_process_mcutility.cpp; path = ../src/libbiomeval/be_process_mcutility.cpp; sourceTree = "<group>"; };
@@ -1099,7 +1095,6 @@
 				08CFC4E61545E1F500BA89B2 /* be_io_filerecstore.cpp */,
 				0880D88917BBDAF8009D0EDE /* be_io_listrecstore.cpp */,
 				08CFC4EB1545E1F500BA89B2 /* be_io_recordstore.cpp */,
-				0890142E18D9EB9B0079696B /* be_io_recordstoreiterator.cpp */,
 				08CFC4EC1545E1F500BA89B2 /* be_io_sqliterecstore.cpp */,
 			);
 			name = RecordStore;
@@ -1114,7 +1109,6 @@
 				08CFC4A71545E14800BA89B2 /* be_io_filerecstore.h */,
 				0880D88717BBDAC1009D0EDE /* be_io_listrecstore.h */,
 				08CFC4AC1545E14800BA89B2 /* be_io_recordstore.h */,
-				0890142918D9EB0B0079696B /* be_io_recordstoreiterator.h */,
 				08CFC4AD1545E14800BA89B2 /* be_io_sqliterecstore.h */,
 			);
 			name = RecordStore;
@@ -1921,7 +1915,6 @@
 				08F8CFB51D9AB37F002FEA59 /* be_io_filerecstore.h in Headers */,
 				08F8CFB61D9AB37F002FEA59 /* be_io_listrecstore.h in Headers */,
 				08F8CFB71D9AB37F002FEA59 /* be_io_recordstore.h in Headers */,
-				08F8CFB81D9AB37F002FEA59 /* be_io_recordstoreiterator.h in Headers */,
 				08F8CFB91D9AB37F002FEA59 /* be_io_sqliterecstore.h in Headers */,
 				08F8CFBA1D9AB37F002FEA59 /* be_io_persistentrecordstoreunion_impl.h in Headers */,
 				08F8CFBB1D9AB37F002FEA59 /* be_io_recordstoreunion_impl.h in Headers */,
@@ -2170,7 +2163,6 @@
 				08F8D0501D9AB38D002FEA59 /* be_io_filerecstore.cpp in Sources */,
 				08F8D0511D9AB38D002FEA59 /* be_io_listrecstore.cpp in Sources */,
 				08F8D0521D9AB38D002FEA59 /* be_io_recordstore.cpp in Sources */,
-				08F8D0531D9AB38D002FEA59 /* be_io_recordstoreiterator.cpp in Sources */,
 				08F8D0541D9AB38D002FEA59 /* be_io_sqliterecstore.cpp in Sources */,
 				08F8D0551D9AB38D002FEA59 /* be_io_persistentrecordstoreunion_impl.cpp in Sources */,
 				08F8D0561D9AB38D002FEA59 /* be_io_recordstoreunion_impl.cpp in Sources */,

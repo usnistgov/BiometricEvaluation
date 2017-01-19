@@ -194,25 +194,27 @@ cropSingleASEG(
 		float angleOfRotation = getRotationAngle(segment.coordinates,
 		    capture.getImageSize());
 
-		std::shared_ptr<BE::Image::Raw> rawImage(
-		    new BE::Image::Raw(data, data.size(),
-		    {static_cast<uint32_t>(maxX - minX),
-		    static_cast<uint32_t>(maxY - minY)},
+		auto rawImage = std::make_shared<BE::Image::Raw>(data,
+		    BE::Image::Size(static_cast<uint32_t>(maxX - minX),
+		    static_cast<uint32_t>(maxY - minY)),
 		    capture.getImageColorDepth(), 8,
-		    capture.getImageResolution()));
+		    capture.getImageResolution(),
+		    capture.getImage()->hasAlphaChannel());
 		return (rotateImage(rawImage, angleOfRotation));
 	} else
-		return {data, data.size(), {static_cast<uint32_t>(maxX - minX),
+		return {data, {static_cast<uint32_t>(maxX - minX),
 		    static_cast<uint32_t>(maxY - minY)},
 		    capture.getImageColorDepth(), 8,
-		    capture.getImageResolution()};
+		    capture.getImageResolution(),
+		    capture.getImage()->hasAlphaChannel()};
 }
 
 BE::Image::Raw
 trim(
     const BE::Memory::uint8Array &data,
     const BE::Image::Size &dims,
-    const BE::Image::Resolution &res)
+    const BE::Image::Resolution &res,
+    const bool hasAlphaChannel)
 {
 	/* Find first row with a non-white pixel */
 	uint32_t minY{0};
@@ -277,7 +279,8 @@ trim(
 		}
 	}
 
-	return {trimmed, trimmed.size(), {maxX - minX, maxY - minY}, 8, 8, res};
+	return {trimmed, trimmed.size(), {maxX - minX, maxY - minY}, 8, 8, res,
+	    hasAlphaChannel};
 }
 
 BiometricEvaluation::Image::Raw
@@ -311,7 +314,7 @@ rotateImage(
 	rotatedMemory.copy(rotatedMat.data);
 	return (trim(rotatedMemory, {static_cast<uint32_t>(boundingBox.width),
 	    static_cast<uint32_t>(boundingBox.height)},
-	    image->getResolution()));
+	    image->getResolution(), image->hasAlphaChannel()));
 }
 
 /*
