@@ -67,11 +67,11 @@ page on GitHub. These packages have been signed with our
 rpm --import beframework_signing_key.asc
 
 # Verify the signature
-rpm --checksig libbiomeval-7.0-1.x86_64.rpm
-libbiomeval-7.0-1.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
+rpm --checksig libbiomeval-9.0-1.x86_64.rpm
+libbiomeval-9.0-1.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
 
 # Install
-rpm --install libbiomeval-7.0-1.x86_64.rpm
+rpm --install libbiomeval-9.0-1.x86_64.rpm
 ```
 
 A version compiled from source can be installed via the top-level makefile.
