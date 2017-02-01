@@ -96,9 +96,7 @@ similarly-named packages.
 
 | Name      | RHEL/CentOS       | MacPorts                         | Ubuntu   |
 |:---------:|:-----------------:|:--------------------------------:|:--------:|
-| PCSC Lite | `pcsc-lite-devel` | n/a (requires \
-[Command Line Tools](https://developer.apple.com/library/ios/technotes/tn2339/_index.html))\
-| `libpcsclite-dev` |
+| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/ios/technotes/tn2339/_index.html)) | `libpcsclite-dev` |
 
 ### IO
 | Name         | RHEL/CentOS  | MacPorts | Ubuntu       |
@@ -133,8 +131,7 @@ installed:
 ### VIDEO
 | Name                        | RHEL/CentOS | MacPorts       | Ubuntu          |
 |:---------------------------:|:-----------:|:--------------:|:---------------:|
-| [ffmpeg](http://ffmpeg.org) | n/a         | `ffmpeg-devel` | `libavcodec-dev`,\
-`libavformat-dev`, `libswscale-dev` |
+| [ffmpeg](http://ffmpeg.org) | n/a         | `ffmpeg-devel` | `libavcodec-dev`, `libavformat-dev`, `libswscale-dev` |
 
 
 #### NIST Biometric Image Software (NBIS)
