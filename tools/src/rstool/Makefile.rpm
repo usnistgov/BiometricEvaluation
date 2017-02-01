@@ -9,8 +9,10 @@
 #
 # Builds rstool, a tool for manipulating RecordStores.
 #
+# This Makefile is designed for building rstool in an RPM linked against the
+# version of libbiomeval installed via RPM
 
-.PHONY: all clean debug export install
+.PHONY: all clean
 
 LOCALBIN := ../../bin
 LOCALMAN := ../../man/man1
@@ -24,38 +26,18 @@ SOURCES = image_additions.cpp lrs_additions.cpp rstool.cpp
 OBJECTS = $(SOURCES:%.cpp=%.o)
 PROGRAM = rstool
 
-CXXFLAGS += -I. -Wall -pedantic -std=c++11
+CXXFLAGS += -I. -Wall -pedantic -std=c++11 -O3
 
-BIOMEVAL_CXXFLAGS = -I../../../common/src/include
-BIOMEVAL_LDFLAGS = ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjp2 -lcrypto -lX11 -ljpeg
+BIOMEVAL_CXXFLAGS = $(shell PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig pkg-config --cflags libbiomeval x11)
+BIOMEVAL_LDFLAGS = $(shell PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig pkg-config --libs libbiomeval x11)
 
 CXXFLAGS += $(BIOMEVAL_CXXFLAGS)
 LDFLAGS += $(BIOMEVAL_LDFLAGS)
 
-OS := $(shell uname -s)
-ifeq ($(OS),Darwin)
-# macOS needs libdb from MacPorts
-LDFLAGS += -L/opt/local/lib/db44 -ldb
-# macOS needs Xquartz to be installed
-LDFLAGS += -L/opt/local/lib -L/usr/X11/lib
-CXXFLAGS += -I/opt/local/include -I/usr/X11/include
-else
-LDFLAGS += -ldb
-endif
-
 all: $(PROGRAM)
-
-debug: CXXFLAGS += -g
-debug: all
 
 $(PROGRAM): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
-
-install:
-	test -d $(LOCALBIN) || mkdir -p $(LOCALBIN)
-	test -d $(LOCALMAN) || mkdir -p $(LOCALMAN)
-	$(CP) $(PROGRAM) $(LOCALBIN)/$(PROGRAM)
-	$(CP) $(PROGRAM).1 $(LOCALMAN)
 
 rstool.o: rstool.cpp lrs_additions.cpp image_additions.cpp
 	$(CXX) $(CXXFLAGS) -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) -c $< -o $@
@@ -64,17 +46,5 @@ image_additions.o: CXXFLAGS += -Wno-variadic-macros
 
 clean:
 	$(RM) $(PROGRAM) $(OBJECTS) $(PACKAGE_DIR).tar.gz
-	$(RM) -r $(PACKAGE_DIR)
-
-export: clean
-	mkdir -p $(PACKAGE_DIR)
-	cd $(PACKAGE_DIR) && ln -s	\
-	    ../VERSION			\
-	    ../*.h			\
-	    ../*.cpp			\
-	    ../rstool.1			\
-            .
-	cd $(PACKAGE_DIR) && ln -s ../Makefile.rpm Makefile
-	tar czfh $(PACKAGE_DIR).tar.gz $(PACKAGE_DIR)
 	$(RM) -r $(PACKAGE_DIR)
 
