@@ -2229,7 +2229,7 @@ diff(
 	
 	bool sourceExists, targetExists;
 	BE::Memory::AutoArray<uint8_t> sourceBuf, targetBuf;
-	uint64_t sourceLength, targetLength;
+	uint64_t sourceLength{0}, targetLength{0};
 	std::vector<std::string>::const_iterator key;
 	for (key = keys.begin(); key != keys.end(); key++) {		
 		/* Get sizes to check existence */
