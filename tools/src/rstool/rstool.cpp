@@ -947,9 +947,15 @@ makeHumanConfirmation(
 		std::cout << "* \"" << rsName << "\" will be created"
 		    << std::endl;
 	}
-	if (textProvided)
-		std::cout << "* You provided one or more text files of file "
-		    "paths whose contents will be added" << std::endl;
+	if (textProvided) {
+		if (kind == BE::IO::RecordStore::Kind::List)
+			std::cout << "* You provided one or more text files of "
+			    "RecordStore keys that will be added" << std::endl;
+		else
+			std::cout << "* You provided one or more text files of "
+			    "file paths whose contents will be added" <<
+			    std::endl;
+	}
 	if (dirProvided)
 		std::cout << "* You provided one or more directories whose "
 		    "contents will be added" << std::endl;
@@ -1211,6 +1217,11 @@ makeListRecordStore(
 	optind = 2;
         while ((c = getopt(argc, argv, optstr)) != EOF) {
 		switch (c) {
+		case 'c':
+			std::cerr << "Hashing based on file contents for "
+			    "ListRecordStores does not make sense and is not "
+			    "supported." << std::endl;
+			return (EXIT_FAILURE);
 		case 'h':
 			try {
 				hash_rs = BE::IO::RecordStore::openRecordStore(
@@ -1272,7 +1283,7 @@ makeListRecordStore(
 		return (EXIT_FAILURE);
 	}
 	
-	return (modifyListRecordStore(argc, argv, Action::ADD));
+	return (modifyListRecordStore(argc, argv, Action::MAKE));
 }
 
 int make(int argc, char *argv[])
@@ -1789,7 +1800,8 @@ procargs_modifyListRecordStore(
     int argc,
     char *argv[],
     std::shared_ptr<BiometricEvaluation::IO::RecordStore> &hash_rs,
-    std::vector<std::string> &files,
+    std::vector<std::string> &aArgFiles,
+    std::vector<std::string> &noArgFiles,
     HashablePart &what_to_hash,
     bool &prompt)
 {
@@ -1804,7 +1816,7 @@ procargs_modifyListRecordStore(
 				std::cerr << optarg << " does not exist and "
 				    "will be skipped." << std::endl;
 			else
-				files.push_back(optarg);
+				aArgFiles.push_back(optarg);
 			break;
 		case 'c':	/* Hash contents */
 			if (what_to_hash == HashablePart::NOTHING)
@@ -1848,7 +1860,7 @@ procargs_modifyListRecordStore(
 	}
 	/* Remaining arguments are files to add (same as -a) */
 	for (int i = optind; i < argc; i++)
-		files.push_back(argv[i]);
+		noArgFiles.push_back(argv[i]);
 
 	/* Sanity check -- don't hash without recording a translation */
 	if ((hash_rs.get() == NULL) && (what_to_hash !=
@@ -1881,17 +1893,63 @@ modifyListRecordStore(
 {
 	HashablePart what_to_hash = HashablePart::NOTHING;
 	std::shared_ptr<BE::IO::RecordStore> hash_rs;
-	std::vector<std::string> files;
+	std::vector<std::string> aArgFiles, noArgFiles;
 	bool prompt = true;
 	
-	if (procargs_modifyListRecordStore(argc, argv, hash_rs, files,
-	    what_to_hash, prompt) != EXIT_SUCCESS)
+	if (procargs_modifyListRecordStore(argc, argv, hash_rs, aArgFiles,
+	    noArgFiles, what_to_hash, prompt) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 	
 	std::shared_ptr<OrderedSet<std::string>> keys(
 	    new OrderedSet<std::string>);
 	BE::Memory::uint8Array buffer;
 	std::string hash, invalidHashKeys = "";
+
+	/* 
+	 * In the MAKE action for LRS, -a files are list of keys or things to
+	 * be hashed as keys that map to keys in the source RecordStore, not 
+	 * files to be added.
+	 */
+	std::vector<std::string> files;
+	std::copy(noArgFiles.begin(), noArgFiles.end(),
+		std::back_inserter(files));
+	if (action == Action::MAKE) {
+		for (const auto &aArgFileName : aArgFiles) {
+			/* Parse the keys in the text file */
+			std::ifstream input;
+			std::string line;
+			input.open(aArgFileName, std::ifstream::in);
+			for (;;) {
+				/* Read one path from text file */
+				input >> line;
+				if (input.eof())
+					break;
+				else if (input.bad()) {
+					std::cerr << "Error reading keys "
+					    "from " << aArgFileName <<
+					    std::endl;
+					return (EXIT_FAILURE);
+				}
+
+				/* Ignore comments and newlines */
+				try {
+					if (line.at(0) == '#' ||
+					    line.at(0) == '\n')
+						continue;
+				} catch (std::out_of_range) {
+					continue;
+				}
+
+				files.push_back(line);
+			}
+			input.close();
+		}
+		action = Action::ADD;
+	} else {
+		std::copy(aArgFiles.begin(), aArgFiles.end(),
+		    std::back_inserter(files));
+	}
+
 	for (std::vector<std::string>::const_iterator file_path = files.begin();
 	    file_path != files.end(); file_path++) {
 		switch (what_to_hash) {
