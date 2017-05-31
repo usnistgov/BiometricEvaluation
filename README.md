@@ -59,8 +59,8 @@ A pre-compiled version of Biometric Evaluation framework for RHEL/CentOS 7 is
 available from the
 [releases](https://github.com/usnistgov/BiometricEvaluation/releases)
 page on GitHub. These packages have been signed with our
-[public key]
-(https://github.com/usnistgov/BiometricEvaluation/blob/master/beframework_signing_key.asc).
+[public key](
+https://github.com/usnistgov/BiometricEvaluation/blob/master/beframework_signing_key.asc).
 
 ```bash
 # Import the public key
@@ -96,7 +96,7 @@ similarly-named packages.
 
 | Name      | RHEL/CentOS       | MacPorts                         | Ubuntu   |
 |:---------:|:-----------------:|:--------------------------------:|:--------:|
-| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/ios/technotes/tn2339/_index.html)) | `libpcsclite-dev` |
+| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/content/technotes/tn2339/)) | `libpcsclite-dev` |
 
 ### IO
 | Name         | RHEL/CentOS  | MacPorts | Ubuntu       |
@@ -116,6 +116,7 @@ similarly-named packages.
 | OpenJPEG 2.x | [`openjpeg2-devel`](https://dl.fedoraproject.org/pub/epel/7/x86_64/o/) | `openjpeg` | `libopenjp2-7-dev` |
 | libjpeg      | `libjpeg-turbo-devel` | `jpeg`     | `libjpeg-dev`      |
 | libpng       | `libpng-devel`        | `libpng`   | `libpng-dev`       |
+| libtiff      | `libtiff-devel`       | `tiff`     | `libtiff-dev`      |
 | Zlib         | `zlib-devel`          | `zlib`     | `zlib1g-dev`       |
 
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
@@ -131,7 +132,7 @@ installed:
 ### VIDEO
 | Name                        | RHEL/CentOS | MacPorts       | Ubuntu          |
 |:---------------------------:|:-----------:|:--------------:|:---------------:|
-| [ffmpeg](http://ffmpeg.org) | n/a         | `ffmpeg-devel` | `libavcodec-dev`, `libavformat-dev`, `libswscale-dev` |
+| [ffmpeg](http://ffmpeg.org) | Build from source, and install to `/usr/local` | `ffmpeg-devel` | `libavcodec-dev`, `libavformat-dev`, `libswscale-dev` |
 
 
 #### NIST Biometric Image Software (NBIS)
