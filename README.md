@@ -67,11 +67,11 @@ https://github.com/usnistgov/BiometricEvaluation/blob/master/beframework_signing
 rpm --import beframework_signing_key.asc
 
 # Verify the signature
-rpm --checksig libbiomeval-9.0-1.x86_64.rpm
-libbiomeval-9.0-1.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
+rpm --checksig libbiomeval-10.0-1.x86_64.rpm
+libbiomeval-10.0-1.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
 
 # Install
-rpm --install libbiomeval-9.0-1.x86_64.rpm
+rpm --install libbiomeval-10.0-1.x86_64.rpm
 ```
 
 A version compiled from source can be installed via the top-level makefile.
