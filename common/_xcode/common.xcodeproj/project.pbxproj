@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08137D221EBBA93B00ECC6EE /* be_image_tiff.h in Headers */ = {isa = PBXBuildFile; fileRef = 08137D211EBBA93B00ECC6EE /* be_image_tiff.h */; };
+		08137D261EBBA96D00ECC6EE /* be_image_tiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08137D251EBBA96D00ECC6EE /* be_image_tiff.cpp */; };
 		0846C4F41DA3E762003FEC3A /* be_mpi_exception.h in Headers */ = {isa = PBXBuildFile; fileRef = 0846C4F31DA3E750003FEC3A /* be_mpi_exception.h */; };
 		0846C4F51DA3E76F003FEC3A /* be_mpi_exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0846C4F21DA3E741003FEC3A /* be_mpi_exception.cpp */; };
 		08F8CF7A1D9AB37F002FEA59 /* be_data_interchange_an2k.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4891545E14800BA89B2 /* be_data_interchange_an2k.h */; };
@@ -409,6 +411,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		08137D211EBBA93B00ECC6EE /* be_image_tiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_image_tiff.h; path = ../src/include/be_image_tiff.h; sourceTree = "<group>"; };
+		08137D251EBBA96D00ECC6EE /* be_image_tiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_image_tiff.cpp; path = ../src/libbiomeval/be_image_tiff.cpp; sourceTree = "<group>"; };
 		081BCD1B1B41CAD9009E7190 /* be_data_interchange_ansi2004.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_data_interchange_ansi2004.h; path = ../src/include/be_data_interchange_ansi2004.h; sourceTree = "<group>"; };
 		081BCD1C1B41CAD9009E7190 /* be_mpi_csvdistributor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvdistributor.h; path = ../src/include/be_mpi_csvdistributor.h; sourceTree = "<group>"; };
 		081BCD1D1B41CAD9009E7190 /* be_mpi_csvprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvprocessor.h; path = ../src/include/be_mpi_csvprocessor.h; sourceTree = "<group>"; };
@@ -1298,6 +1302,7 @@
 				08CFC4A01545E14800BA89B2 /* be_image_netpbm.h */,
 				08CFC4A11545E14800BA89B2 /* be_image_png.h */,
 				08CFC4A21545E14800BA89B2 /* be_image_raw.h */,
+				08137D211EBBA93B00ECC6EE /* be_image_tiff.h */,
 				08CFC4A31545E14800BA89B2 /* be_image_wsq.h */,
 			);
 			name = Image;
@@ -1435,6 +1440,7 @@
 				08CFC4DE1545E1F500BA89B2 /* be_image_netpbm.cpp */,
 				08CFC4DF1545E1F500BA89B2 /* be_image_png.cpp */,
 				08CFC4E01545E1F500BA89B2 /* be_image_raw.cpp */,
+				08137D251EBBA96D00ECC6EE /* be_image_tiff.cpp */,
 				08CFC4E21545E1F500BA89B2 /* be_image_wsq.cpp */,
 			);
 			name = Image;
@@ -1854,6 +1860,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				08F8CF7A1D9AB37F002FEA59 /* be_data_interchange_an2k.h in Headers */,
+				08137D221EBBA93B00ECC6EE /* be_image_tiff.h in Headers */,
 				08F8CF7B1D9AB37F002FEA59 /* be_data_interchange_ansi2004.h in Headers */,
 				08F8CF7C1D9AB37F002FEA59 /* be_data_interchange_finger.h in Headers */,
 				08F8CF7D1D9AB37F002FEA59 /* be_device_smartcard_impl.h in Headers */,
@@ -2131,6 +2138,7 @@
 				08F8D0301D9AB38D002FEA59 /* be_finger_an2kview_varres.cpp in Sources */,
 				08F8D0311D9AB38D002FEA59 /* be_finger_ansi2004view.cpp in Sources */,
 				08F8D0321D9AB38D002FEA59 /* be_finger_ansi2007view.cpp in Sources */,
+				08137D261EBBA96D00ECC6EE /* be_image_tiff.cpp in Sources */,
 				08F8D0331D9AB38D002FEA59 /* be_finger_incitsview.cpp in Sources */,
 				08F8D0341D9AB38D002FEA59 /* be_finger_iso2005view.cpp in Sources */,
 				08F8D0351D9AB38D002FEA59 /* be_framework_api.cpp in Sources */,
