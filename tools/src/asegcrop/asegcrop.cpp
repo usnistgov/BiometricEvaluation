@@ -27,6 +27,7 @@
 #include <asegcrop.h>
 
 namespace BE = BiometricEvaluation;
+using namespace BE::Framework::Enumeration;
 
 int
 main(

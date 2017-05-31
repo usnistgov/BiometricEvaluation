@@ -39,6 +39,8 @@ LDFLAGS += -L/opt/local/lib/db44 -ldb
 # macOS needs Xquartz to be installed
 LDFLAGS += -L/opt/local/lib -L/usr/X11/lib
 CXXFLAGS += -I/opt/local/include -I/usr/X11/include
+# macOS needs frameworks when statically linking against libbiomeval.a
+LDFLAGS += -framework Foundation -framework Security -framework PCSC
 else
 LDFLAGS += -ldb
 endif

@@ -18,6 +18,7 @@
 #include <ordered_set.h>
 
 namespace BE = BiometricEvaluation;
+using namespace BE::Framework::Enumeration;
 
 bool
 isListRecordStore(

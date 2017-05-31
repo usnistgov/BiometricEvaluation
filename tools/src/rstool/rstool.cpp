@@ -45,6 +45,7 @@ uint16_t specialProcessingFlags = static_cast<std::underlying_type<
     SpecialProcessing>::type>(SpecialProcessing::NA);
 
 namespace BE = BiometricEvaluation;
+using namespace BE::Framework::Enumeration;
 
 std::vector<std::string>
 readTextFileToVector(
