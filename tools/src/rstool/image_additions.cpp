@@ -325,7 +325,7 @@ ImageAdditions::displayAN2K(
 		images.push_back(view->getImage());
 
 	/* Latent Captures */
-	std::vector<BiometricEvaluation::Finger::AN2KViewLatent>
+	std::vector<BiometricEvaluation::Latent::AN2KView>
 	    latentCaptures = an2k->getFingerLatents();
 	for (auto view = latentCaptures.begin(); view != latentCaptures.end();
 	    view++)
