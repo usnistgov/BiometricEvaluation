@@ -27,18 +27,15 @@ PROGRAM = rstool
 CXXFLAGS += -I. -Wall -pedantic -std=c++11
 
 BIOMEVAL_CXXFLAGS = -I../../../common/src/include
-BIOMEVAL_LDFLAGS = ../../../common/lib/libbiomeval.a -lz -lsqlite3 -lpng -lopenjp2 -lcrypto -lX11 -ljpeg
+BIOMEVAL_LDFLAGS = ../../../common/lib/libbiomeval.a $(shell pkg-config --libs sqlite3) $(shell pkg-config --static --libs libpng)  $(shell pkg-config --libs libopenjp2)  $(shell pkg-config --libs libcrypto) $(shell pkg-config --libs x11) $(shell pkg-config --libs libtiff-4) -ljpeg
 
-CXXFLAGS += $(BIOMEVAL_CXXFLAGS)
+CXXFLAGS += $(BIOMEVAL_CXXFLAGS) $(shell pkg-config --cflags x11)
 LDFLAGS += $(BIOMEVAL_LDFLAGS)
 
 OS := $(shell uname -s)
 ifeq ($(OS),Darwin)
 # macOS needs libdb from MacPorts
 LDFLAGS += -L/opt/local/lib/db44 -ldb
-# macOS needs Xquartz to be installed
-LDFLAGS += -L/opt/local/lib -L/usr/X11/lib
-CXXFLAGS += -I/opt/local/include -I/usr/X11/include
 # macOS needs frameworks when statically linking against libbiomeval.a
 LDFLAGS += -framework Foundation -framework Security -framework PCSC
 else
