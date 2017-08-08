@@ -61,7 +61,7 @@ main(
 			try {
 				writeSegments(std::string(argv[i]) + "." +
 				    std::to_string(to_int_type(
-				    capture.getPositions().front())),
+				    capture.getPosition())),
 				    cropASEG(capture, rotate));
 			} catch (BE::Error::Exception &e) {
 				std::cerr << e.whatString() << std::endl;
