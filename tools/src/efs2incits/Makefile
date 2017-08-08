@@ -1,24 +1,27 @@
-#
 # This software was developed at the National Institute of Standards and
 # Technology (NIST) by employees of the Federal Government in the course
 # of their official duties. Pursuant to title 17 Section 105 of the
 # United States Code, this software is not subject to copyright protection
-# and is in the public domain. NIST assumes no responsibility whatsoever for
+# and is in the public domain. NIST assumes no responsibility  whatsoever for
 # its use by other parties, and makes no guarantees, expressed or implied,
 # about its quality, reliability, or any other characteristic.
-#
 
-# The 'core' library and programs, that always build
-CORE := rstool countRecordsOfSize asegcrop efs2incits
-SUBDIRS := $(CORE)
+.PHONY: all clean
 
-all:
-	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) all) || exit 1; \
-	done
+include ../common.mk
+
+EXE=efs2incits
+SRC=$(EXE).cpp
+OBJ=$(SRC:%.cpp=%.o)
+
+CC=$(CXX)
+
+CXXFLAGS += -std=c++11 -Wall -I.
+LDFLAGS +=  $(LD_BIOMEVAL)
+
+all: $(EXE)
+
+$(EXE): $(OBJ)
 
 clean:
-	@for subdir in $(SUBDIRS); do \
-		(cd $$subdir && $(MAKE) clean) || exit 1; \
-	done
-	rm -f .gdb_history
+	$(RM) $(OBJ) $(EXE)
