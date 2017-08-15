@@ -35,8 +35,6 @@
 		08F8CF8F1D9AB37F002FEA59 /* be_finger_an2kview.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4951545E14800BA89B2 /* be_finger_an2kview.h */; };
 		08F8CF901D9AB37F002FEA59 /* be_finger_an2kview_capture.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4911545E14800BA89B2 /* be_finger_an2kview_capture.h */; };
 		08F8CF911D9AB37F002FEA59 /* be_finger_an2kview_fixedres.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4921545E14800BA89B2 /* be_finger_an2kview_fixedres.h */; };
-		08F8CF921D9AB37F002FEA59 /* be_finger_an2kview_latent.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4931545E14800BA89B2 /* be_finger_an2kview_latent.h */; };
-		08F8CF931D9AB37F002FEA59 /* be_finger_an2kview_varres.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4941545E14800BA89B2 /* be_finger_an2kview_varres.h */; };
 		08F8CF941D9AB37F002FEA59 /* be_finger_ansi2004view.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4961545E14800BA89B2 /* be_finger_ansi2004view.h */; };
 		08F8CF951D9AB37F002FEA59 /* be_finger_ansi2007view.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4971545E14800BA89B2 /* be_finger_ansi2007view.h */; };
 		08F8CF961D9AB37F002FEA59 /* be_finger_incitsview.h in Headers */ = {isa = PBXBuildFile; fileRef = 08CFC4981545E14800BA89B2 /* be_finger_incitsview.h */; };
@@ -190,8 +188,6 @@
 		08F8D02C1D9AB38D002FEA59 /* be_finger_an2kview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D31545E1F500BA89B2 /* be_finger_an2kview.cpp */; };
 		08F8D02D1D9AB38D002FEA59 /* be_finger_an2kview_capture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4CF1545E1F500BA89B2 /* be_finger_an2kview_capture.cpp */; };
 		08F8D02E1D9AB38D002FEA59 /* be_finger_an2kview_fixedres.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D01545E1F500BA89B2 /* be_finger_an2kview_fixedres.cpp */; };
-		08F8D02F1D9AB38D002FEA59 /* be_finger_an2kview_latent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D11545E1F500BA89B2 /* be_finger_an2kview_latent.cpp */; };
-		08F8D0301D9AB38D002FEA59 /* be_finger_an2kview_varres.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D21545E1F500BA89B2 /* be_finger_an2kview_varres.cpp */; };
 		08F8D0311D9AB38D002FEA59 /* be_finger_ansi2004view.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D41545E1F500BA89B2 /* be_finger_ansi2004view.cpp */; };
 		08F8D0321D9AB38D002FEA59 /* be_finger_ansi2007view.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D51545E1F500BA89B2 /* be_finger_ansi2007view.cpp */; };
 		08F8D0331D9AB38D002FEA59 /* be_finger_incitsview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08CFC4D61545E1F500BA89B2 /* be_finger_incitsview.cpp */; };
@@ -413,6 +409,21 @@
 /* Begin PBXFileReference section */
 		08137D211EBBA93B00ECC6EE /* be_image_tiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_image_tiff.h; path = ../src/include/be_image_tiff.h; sourceTree = "<group>"; };
 		08137D251EBBA96D00ECC6EE /* be_image_tiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_image_tiff.cpp; path = ../src/libbiomeval/be_image_tiff.cpp; sourceTree = "<group>"; };
+		0815CCE71F43510500A25469 /* be_feature_an2k11efs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_feature_an2k11efs.h; path = ../src/include/be_feature_an2k11efs.h; sourceTree = "<group>"; };
+		0815CCE81F43510500A25469 /* be_feature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_feature.h; path = ../src/include/be_feature.h; sourceTree = "<group>"; };
+		0815CCE91F43510500A25469 /* be_latent_an2kview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_latent_an2kview.h; path = ../src/include/be_latent_an2kview.h; sourceTree = "<group>"; };
+		0815CCEA1F43510500A25469 /* be_palm_an2kview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_palm_an2kview.h; path = ../src/include/be_palm_an2kview.h; sourceTree = "<group>"; };
+		0815CCEB1F43510500A25469 /* be_palm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_palm.h; path = ../src/include/be_palm.h; sourceTree = "<group>"; };
+		0815CCEC1F43510500A25469 /* be_plantar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_plantar.h; path = ../src/include/be_plantar.h; sourceTree = "<group>"; };
+		0815CCF01F4351B000A25469 /* be_feature_an2k11efs_impl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_feature_an2k11efs_impl.cpp; path = ../src/libbiomeval/be_feature_an2k11efs_impl.cpp; sourceTree = "<group>"; };
+		0815CCF11F4351B000A25469 /* be_feature_an2k11efs_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_feature_an2k11efs_impl.h; path = ../src/libbiomeval/be_feature_an2k11efs_impl.h; sourceTree = "<group>"; };
+		0815CCF21F4351B000A25469 /* be_feature_an2k11efs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_feature_an2k11efs.cpp; path = ../src/libbiomeval/be_feature_an2k11efs.cpp; sourceTree = "<group>"; };
+		0815CCF31F4351B000A25469 /* be_feature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_feature.cpp; path = ../src/libbiomeval/be_feature.cpp; sourceTree = "<group>"; };
+		0815CCF51F4351B000A25469 /* be_framework_enumeration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_framework_enumeration.cpp; path = ../src/libbiomeval/be_framework_enumeration.cpp; sourceTree = "<group>"; };
+		0815CCF61F4351B000A25469 /* be_latent_an2kview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_latent_an2kview.cpp; path = ../src/libbiomeval/be_latent_an2kview.cpp; sourceTree = "<group>"; };
+		0815CCF71F4351B000A25469 /* be_palm_an2kview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_palm_an2kview.cpp; path = ../src/libbiomeval/be_palm_an2kview.cpp; sourceTree = "<group>"; };
+		0815CCF81F4351B000A25469 /* be_palm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_palm.cpp; path = ../src/libbiomeval/be_palm.cpp; sourceTree = "<group>"; };
+		0815CCF91F4351B000A25469 /* be_plantar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_plantar.cpp; path = ../src/libbiomeval/be_plantar.cpp; sourceTree = "<group>"; };
 		081BCD1B1B41CAD9009E7190 /* be_data_interchange_ansi2004.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_data_interchange_ansi2004.h; path = ../src/include/be_data_interchange_ansi2004.h; sourceTree = "<group>"; };
 		081BCD1C1B41CAD9009E7190 /* be_mpi_csvdistributor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvdistributor.h; path = ../src/include/be_mpi_csvdistributor.h; sourceTree = "<group>"; };
 		081BCD1D1B41CAD9009E7190 /* be_mpi_csvprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_mpi_csvprocessor.h; path = ../src/include/be_mpi_csvprocessor.h; sourceTree = "<group>"; };
@@ -515,8 +526,6 @@
 		08CFC4901545E14800BA89B2 /* be_finger_an2kminutiae_data_record.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_an2kminutiae_data_record.h; path = ../src/include/be_finger_an2kminutiae_data_record.h; sourceTree = "<group>"; };
 		08CFC4911545E14800BA89B2 /* be_finger_an2kview_capture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_an2kview_capture.h; path = ../src/include/be_finger_an2kview_capture.h; sourceTree = "<group>"; };
 		08CFC4921545E14800BA89B2 /* be_finger_an2kview_fixedres.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_an2kview_fixedres.h; path = ../src/include/be_finger_an2kview_fixedres.h; sourceTree = "<group>"; };
-		08CFC4931545E14800BA89B2 /* be_finger_an2kview_latent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_an2kview_latent.h; path = ../src/include/be_finger_an2kview_latent.h; sourceTree = "<group>"; };
-		08CFC4941545E14800BA89B2 /* be_finger_an2kview_varres.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_an2kview_varres.h; path = ../src/include/be_finger_an2kview_varres.h; sourceTree = "<group>"; };
 		08CFC4951545E14800BA89B2 /* be_finger_an2kview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_an2kview.h; path = ../src/include/be_finger_an2kview.h; sourceTree = "<group>"; };
 		08CFC4961545E14800BA89B2 /* be_finger_ansi2004view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_ansi2004view.h; path = ../src/include/be_finger_ansi2004view.h; sourceTree = "<group>"; };
 		08CFC4971545E14800BA89B2 /* be_finger_ansi2007view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = be_finger_ansi2007view.h; path = ../src/include/be_finger_ansi2007view.h; sourceTree = "<group>"; };
@@ -573,8 +582,6 @@
 		08CFC4CE1545E1F500BA89B2 /* be_finger_an2kminutiae_data_record.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_an2kminutiae_data_record.cpp; path = ../src/libbiomeval/be_finger_an2kminutiae_data_record.cpp; sourceTree = "<group>"; };
 		08CFC4CF1545E1F500BA89B2 /* be_finger_an2kview_capture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_an2kview_capture.cpp; path = ../src/libbiomeval/be_finger_an2kview_capture.cpp; sourceTree = "<group>"; };
 		08CFC4D01545E1F500BA89B2 /* be_finger_an2kview_fixedres.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_an2kview_fixedres.cpp; path = ../src/libbiomeval/be_finger_an2kview_fixedres.cpp; sourceTree = "<group>"; };
-		08CFC4D11545E1F500BA89B2 /* be_finger_an2kview_latent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_an2kview_latent.cpp; path = ../src/libbiomeval/be_finger_an2kview_latent.cpp; sourceTree = "<group>"; };
-		08CFC4D21545E1F500BA89B2 /* be_finger_an2kview_varres.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_an2kview_varres.cpp; path = ../src/libbiomeval/be_finger_an2kview_varres.cpp; sourceTree = "<group>"; };
 		08CFC4D31545E1F500BA89B2 /* be_finger_an2kview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_an2kview.cpp; path = ../src/libbiomeval/be_finger_an2kview.cpp; sourceTree = "<group>"; };
 		08CFC4D41545E1F500BA89B2 /* be_finger_ansi2004view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_ansi2004view.cpp; path = ../src/libbiomeval/be_finger_ansi2004view.cpp; sourceTree = "<group>"; };
 		08CFC4D51545E1F500BA89B2 /* be_finger_ansi2007view.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = be_finger_ansi2007view.cpp; path = ../src/libbiomeval/be_finger_ansi2007view.cpp; sourceTree = "<group>"; };
@@ -821,6 +828,78 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0815CCED1F43511400A25469 /* Palm */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCEB1F43510500A25469 /* be_palm.h */,
+				0815CCEA1F43510500A25469 /* be_palm_an2kview.h */,
+			);
+			name = Palm;
+			sourceTree = "<group>";
+		};
+		0815CCEE1F43511A00A25469 /* Plantar */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCEC1F43510500A25469 /* be_plantar.h */,
+			);
+			name = Plantar;
+			sourceTree = "<group>";
+		};
+		0815CCEF1F43512F00A25469 /* Latent */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCE91F43510500A25469 /* be_latent_an2kview.h */,
+			);
+			name = Latent;
+			sourceTree = "<group>";
+		};
+		0815CCFA1F4351C000A25469 /* public */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCF31F4351B000A25469 /* be_feature.cpp */,
+				08CFC4CB1545E1F500BA89B2 /* be_feature_an2k7minutiae.cpp */,
+				0815CCF21F4351B000A25469 /* be_feature_an2k11efs.cpp */,
+				08CFC4CC1545E1F500BA89B2 /* be_feature_incitsminutiae.cpp */,
+				08CFC4CD1545E1F500BA89B2 /* be_feature_minutiae.cpp */,
+				08E01AD51B56DEE2007592F4 /* be_feature_sort.cpp */,
+			);
+			name = public;
+			sourceTree = "<group>";
+		};
+		0815CCFB1F4351C500A25469 /* private */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCF01F4351B000A25469 /* be_feature_an2k11efs_impl.cpp */,
+				0815CCF11F4351B000A25469 /* be_feature_an2k11efs_impl.h */,
+			);
+			name = private;
+			sourceTree = "<group>";
+		};
+		0815CCFC1F43520800A25469 /* Latent */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCF61F4351B000A25469 /* be_latent_an2kview.cpp */,
+			);
+			name = Latent;
+			sourceTree = "<group>";
+		};
+		0815CCFD1F43521000A25469 /* Palm */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCF81F4351B000A25469 /* be_palm.cpp */,
+				0815CCF71F4351B000A25469 /* be_palm_an2kview.cpp */,
+			);
+			name = Palm;
+			sourceTree = "<group>";
+		};
+		0815CCFE1F43521600A25469 /* Plantar */ = {
+			isa = PBXGroup;
+			children = (
+				0815CCF91F4351B000A25469 /* be_plantar.cpp */,
+			);
+			name = Plantar;
+			sourceTree = "<group>";
+		};
 		081BCD281B41CB35009E7190 /* public */ = {
 			isa = PBXGroup;
 			children = (
@@ -864,6 +943,7 @@
 		083EBDC01C19F25D0092D6D2 /* public */ = {
 			isa = PBXGroup;
 			children = (
+				08CFC4AF1545E14800BA89B2 /* be_io.h */,
 				08C0465B156E9E5A00E2A097 /* be_io_compressor.h */,
 				08B809961AA9E52400217EE4 /* be_io_filelogcabinet.h */,
 				08B809971AA9E52400217EE4 /* be_io_filelogsheet.h */,
@@ -875,7 +955,6 @@
 				083EBDBF1C19F00B0092D6D2 /* be_io_recordstoreunion.h */,
 				22DE5BF018EB295000D460F1 /* be_io_syslogsheet.h */,
 				08CFC4AE1545E14800BA89B2 /* be_io_utility.h */,
-				08CFC4AF1545E14800BA89B2 /* be_io.h */,
 				0890143718D9EC030079696B /* RecordStore */,
 			);
 			name = public;
@@ -1172,8 +1251,11 @@
 				08CFC5081545E22900BA89B2 /* Image */,
 				08CFC5071545E22800BA89B2 /* IO */,
 				224A58E918D22DC800E11798 /* Iris */,
+				0815CCEF1F43512F00A25469 /* Latent */,
 				08CFC50B1545E3E100BA89B2 /* Memory */,
 				22DE5BF218EB298700D460F1 /* MPI */,
+				0815CCED1F43511400A25469 /* Palm */,
+				0815CCEE1F43511A00A25469 /* Plantar */,
 				08CFC5051545E22600BA89B2 /* Process */,
 				08CFC50E1545E41C00BA89B2 /* System */,
 				08CFC5031545E22300BA89B2 /* Text */,
@@ -1187,7 +1269,6 @@
 		08CFC4C61545E1D600BA89B2 /* implementation */ = {
 			isa = PBXGroup;
 			children = (
-				08CFC4FD1545E1F500BA89B2 /* Makefile */,
 				08CFC51B1545E44200BA89B2 /* Data Interchange */,
 				08F8CAA01D9AAA36002FEA59 /* Device */,
 				08CFC51A1545E44200BA89B2 /* Error */,
@@ -1198,14 +1279,18 @@
 				08CFC5171545E44000BA89B2 /* Image */,
 				08CFC5161545E43F00BA89B2 /* IO */,
 				224A58E818D22DB700E11798 /* Iris */,
+				0815CCFC1F43520800A25469 /* Latent */,
 				08CFC5151545E43E00BA89B2 /* Memory */,
 				22DE5BF318EB29A100D460F1 /* MPI */,
+				0815CCFD1F43521000A25469 /* Palm */,
+				0815CCFE1F43521600A25469 /* Plantar */,
 				08CFC5141545E43E00BA89B2 /* Process */,
 				08CFC5131545E43D00BA89B2 /* System */,
 				08CFC5121545E43C00BA89B2 /* Text */,
 				08CFC5111545E43A00BA89B2 /* Time */,
 				08B809A11AA9E69800217EE4 /* Video */,
 				08CFC5101545E43700BA89B2 /* View */,
+				08CFC4FD1545E1F500BA89B2 /* Makefile */,
 			);
 			name = implementation;
 			sourceTree = "<group>";
@@ -1213,10 +1298,10 @@
 		08CFC4FE1545E20400BA89B2 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				08CFC49B1545E14800BA89B2 /* be_framework.h */,
 				08D734501CD3C66B00007F30 /* be_framework_api.h */,
 				0890142818D9EB0B0079696B /* be_framework_enumeration.h */,
 				08D734511CD3C66B00007F30 /* be_framework_status.h */,
-				08CFC49B1545E14800BA89B2 /* be_framework.h */,
 			);
 			name = Framework;
 			sourceTree = "<group>";
@@ -1226,11 +1311,9 @@
 			children = (
 				08CFC49A1545E14800BA89B2 /* be_finger.h */,
 				08CFC4901545E14800BA89B2 /* be_finger_an2kminutiae_data_record.h */,
-				08CFC4951545E14800BA89B2 /* be_finger_an2kview.h */,
 				08CFC4911545E14800BA89B2 /* be_finger_an2kview_capture.h */,
 				08CFC4921545E14800BA89B2 /* be_finger_an2kview_fixedres.h */,
-				08CFC4931545E14800BA89B2 /* be_finger_an2kview_latent.h */,
-				08CFC4941545E14800BA89B2 /* be_finger_an2kview_varres.h */,
+				08CFC4951545E14800BA89B2 /* be_finger_an2kview.h */,
 				08CFC4961545E14800BA89B2 /* be_finger_ansi2004view.h */,
 				08CFC4971545E14800BA89B2 /* be_finger_ansi2007view.h */,
 				08CFC4981545E14800BA89B2 /* be_finger_incitsview.h */,
@@ -1346,7 +1429,9 @@
 		08CFC50C1545E3FA00BA89B2 /* Feature */ = {
 			isa = PBXGroup;
 			children = (
+				0815CCE81F43510500A25469 /* be_feature.h */,
 				08CFC48D1545E14800BA89B2 /* be_feature_an2k7minutiae.h */,
+				0815CCE71F43510500A25469 /* be_feature_an2k11efs.h */,
 				08CFC48E1545E14800BA89B2 /* be_feature_incitsminutiae.h */,
 				08CFC48F1545E14800BA89B2 /* be_feature_minutiae.h */,
 				224A58ED18D22E2B00E11798 /* be_feature_mpegfacepoint.h */,
@@ -1449,9 +1534,10 @@
 		08CFC5181545E44000BA89B2 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
-				08D734531CD3C6CB00007F30 /* be_framework_api.cpp */,
-				08D734541CD3C6CB00007F30 /* be_framework_status.cpp */,
 				08CFC4D91545E1F500BA89B2 /* be_framework.cpp */,
+				08D734531CD3C6CB00007F30 /* be_framework_api.cpp */,
+				0815CCF51F4351B000A25469 /* be_framework_enumeration.cpp */,
+				08D734541CD3C6CB00007F30 /* be_framework_status.cpp */,
 			);
 			name = Framework;
 			sourceTree = "<group>";
@@ -1459,10 +1545,8 @@
 		08CFC5191545E44100BA89B2 /* Feature */ = {
 			isa = PBXGroup;
 			children = (
-				08CFC4CB1545E1F500BA89B2 /* be_feature_an2k7minutiae.cpp */,
-				08CFC4CC1545E1F500BA89B2 /* be_feature_incitsminutiae.cpp */,
-				08CFC4CD1545E1F500BA89B2 /* be_feature_minutiae.cpp */,
-				08E01AD51B56DEE2007592F4 /* be_feature_sort.cpp */,
+				0815CCFA1F4351C000A25469 /* public */,
+				0815CCFB1F4351C500A25469 /* private */,
 			);
 			name = Feature;
 			sourceTree = "<group>";
@@ -1495,8 +1579,6 @@
 				08CFC4D31545E1F500BA89B2 /* be_finger_an2kview.cpp */,
 				08CFC4CF1545E1F500BA89B2 /* be_finger_an2kview_capture.cpp */,
 				08CFC4D01545E1F500BA89B2 /* be_finger_an2kview_fixedres.cpp */,
-				08CFC4D11545E1F500BA89B2 /* be_finger_an2kview_latent.cpp */,
-				08CFC4D21545E1F500BA89B2 /* be_finger_an2kview_varres.cpp */,
 				08CFC4D41545E1F500BA89B2 /* be_finger_ansi2004view.cpp */,
 				08CFC4D51545E1F500BA89B2 /* be_finger_ansi2007view.cpp */,
 				08CFC4D61545E1F500BA89B2 /* be_finger_incitsview.cpp */,
@@ -1774,9 +1856,9 @@
 		224A58E918D22DC800E11798 /* Iris */ = {
 			isa = PBXGroup;
 			children = (
+				224A58F118D22E4F00E11798 /* be_iris.h */,
 				224A58EF18D22E4F00E11798 /* be_iris_incitsview.h */,
 				224A58F018D22E4F00E11798 /* be_iris_iso2011view.h */,
-				224A58F118D22E4F00E11798 /* be_iris.h */,
 			);
 			name = Iris;
 			sourceTree = "<group>";
@@ -1800,6 +1882,7 @@
 		22DE5BF218EB298700D460F1 /* MPI */ = {
 			isa = PBXGroup;
 			children = (
+				22DE5C0718EB29CF00D460F1 /* be_mpi.h */,
 				081BCD1C1B41CAD9009E7190 /* be_mpi_csvdistributor.h */,
 				081BCD1D1B41CAD9009E7190 /* be_mpi_csvprocessor.h */,
 				081BCD1E1B41CAD9009E7190 /* be_mpi_csvresources.h */,
@@ -1813,7 +1896,6 @@
 				22DE5C0418EB29CF00D460F1 /* be_mpi_runtime.h */,
 				22DE5C0518EB29CF00D460F1 /* be_mpi_workpackage.h */,
 				22DE5C0618EB29CF00D460F1 /* be_mpi_workpackageprocessor.h */,
-				22DE5C0718EB29CF00D460F1 /* be_mpi.h */,
 			);
 			name = MPI;
 			sourceTree = "<group>";
@@ -1884,8 +1966,6 @@
 				08F8CF8F1D9AB37F002FEA59 /* be_finger_an2kview.h in Headers */,
 				08F8CF901D9AB37F002FEA59 /* be_finger_an2kview_capture.h in Headers */,
 				08F8CF911D9AB37F002FEA59 /* be_finger_an2kview_fixedres.h in Headers */,
-				08F8CF921D9AB37F002FEA59 /* be_finger_an2kview_latent.h in Headers */,
-				08F8CF931D9AB37F002FEA59 /* be_finger_an2kview_varres.h in Headers */,
 				08F8CF941D9AB37F002FEA59 /* be_finger_ansi2004view.h in Headers */,
 				08F8CF951D9AB37F002FEA59 /* be_finger_ansi2007view.h in Headers */,
 				08F8CF961D9AB37F002FEA59 /* be_finger_incitsview.h in Headers */,
@@ -2133,9 +2213,7 @@
 				08F8D02C1D9AB38D002FEA59 /* be_finger_an2kview.cpp in Sources */,
 				08F8D02D1D9AB38D002FEA59 /* be_finger_an2kview_capture.cpp in Sources */,
 				08F8D02E1D9AB38D002FEA59 /* be_finger_an2kview_fixedres.cpp in Sources */,
-				08F8D02F1D9AB38D002FEA59 /* be_finger_an2kview_latent.cpp in Sources */,
 				0846C4F51DA3E76F003FEC3A /* be_mpi_exception.cpp in Sources */,
-				08F8D0301D9AB38D002FEA59 /* be_finger_an2kview_varres.cpp in Sources */,
 				08F8D0311D9AB38D002FEA59 /* be_finger_ansi2004view.cpp in Sources */,
 				08F8D0321D9AB38D002FEA59 /* be_finger_ansi2007view.cpp in Sources */,
 				08137D261EBBA96D00ECC6EE /* be_image_tiff.cpp in Sources */,
