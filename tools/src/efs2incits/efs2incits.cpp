@@ -232,7 +232,20 @@ EFSToINCITSMinutia(
 		 */
 		incitsMin.index = efsMin.index;
 		incitsMin.has_type = efsMin.has_type;
-		incitsMin.type = efsMin.type;
+		if (incitsMin.has_type) {
+			switch (efsMin.type) {
+			case BE::Feature::MinutiaeType::Bifurcation:
+				/* FALLTHROUGH */
+			case BE::Feature::MinutiaeType::RidgeEnding:
+				incitsMin.type = efsMin.type;
+				break;
+			default:
+				incitsMin.type =
+				    BE::Feature::MinutiaeType::Other;
+				break;
+			}
+		} else
+			incitsMin.type = BE::Feature::MinutiaeType::Other;
 		incitsMin.has_quality = efsMin.has_quality;
 		incitsMin.quality = efsMin.quality;
 
