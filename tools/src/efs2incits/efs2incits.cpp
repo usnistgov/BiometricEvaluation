@@ -261,11 +261,13 @@ EFSToINCITSMinutia(
 		/*
 		 * Convert coordinate.
 		 */
+		const int32_t signedX = efsMin.coordinate.x;
+		const int32_t signedY = efsMin.coordinate.y;
 		incitsMin.coordinate = {
 		    static_cast<uint32_t>(std::ceil(xROIOffsetPx +
-		    (efsMin.coordinate.x * tenUMToIn * resInch.xRes))),
+		    (signedX * tenUMToIn * resInch.xRes))),
 		    static_cast<uint32_t>(std::ceil(yROIOffsetPx +
-		    (efsMin.coordinate.y * tenUMToIn * resInch.yRes)))};
+		    (signedY * tenUMToIn * resInch.yRes)))};
 
 		incitsMinutia.push_back(incitsMin);
 	}
@@ -290,12 +292,15 @@ EFSToINCITSCore(
 	const auto yROIOffsetPx = roi.vertOffset * tenUMToIn * resInch.yRes;
 
 	BE::Feature::CorePointSet cores{};
-	for (const auto &efsCore : efs->getCPS())
+	for (const auto &efsCore : efs->getCPS()) {
+		const int32_t signedX = efsCore.location.x;
+		const int32_t signedY = efsCore.location.y;
 		cores.emplace_back(BE::Image::Coordinate(
 		    static_cast<uint32_t>(std::ceil(xROIOffsetPx +
-		    (efsCore.location.x * tenUMToIn * resInch.xRes))),
+		    (signedX * tenUMToIn * resInch.xRes))),
 		    static_cast<uint32_t>(std::ceil(yROIOffsetPx +
-		    (efsCore.location.y * tenUMToIn * resInch.yRes)))));
+		    (signedY * tenUMToIn * resInch.yRes)))));
+	}
 
 	return (cores);
 }
@@ -318,11 +323,13 @@ EFSToINCITSDelta(
 
 	BE::Feature::DeltaPointSet deltas{};
 	for (const auto &efsDelta : efs->getDPS()) {
+		const int32_t signedX = efsDelta.location.x;
+		const int32_t signedY = efsDelta.location.y;
 		BE::Feature::DeltaPoint delta(BE::Image::Coordinate(
 		    static_cast<uint32_t>(std::ceil(xROIOffsetPx +
-		    (efsDelta.location.x * tenUMToIn * resInch.xRes))),
+		    (signedX * tenUMToIn * resInch.xRes))),
 		    static_cast<uint32_t>(std::ceil(yROIOffsetPx +
-		    (efsDelta.location.y * tenUMToIn * resInch.yRes)))));
+		    (signedY * tenUMToIn * resInch.yRes)))));
 
 		if (efsDelta.has_dup && efsDelta.has_dlf && efsDelta.has_drt) {
 			delta.has_angle = true;
