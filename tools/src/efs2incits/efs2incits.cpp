@@ -278,11 +278,11 @@ EFSToINCITSCore(
 
 	BE::Feature::CorePointSet cores{};
 	for (const auto &efsCore : efs->getCPS())
-		cores.emplace_back(
+		cores.emplace_back(BE::Image::Coordinate(
 		    static_cast<uint32_t>(std::ceil(xROIOffsetPx +
 		    (efsCore.location.x * tenUMToIn * resInch.xRes))),
 		    static_cast<uint32_t>(std::ceil(yROIOffsetPx +
-		    (efsCore.location.y * tenUMToIn * resInch.yRes))));
+		    (efsCore.location.y * tenUMToIn * resInch.yRes)))));
 
 	return (cores);
 }
@@ -305,11 +305,11 @@ EFSToINCITSDelta(
 
 	BE::Feature::DeltaPointSet deltas{};
 	for (const auto &efsDelta : efs->getDPS()) {
-		BE::Feature::DeltaPoint delta(
+		BE::Feature::DeltaPoint delta(BE::Image::Coordinate(
 		    static_cast<uint32_t>(std::ceil(xROIOffsetPx +
 		    (efsDelta.location.x * tenUMToIn * resInch.xRes))),
 		    static_cast<uint32_t>(std::ceil(yROIOffsetPx +
-		    (efsDelta.location.y * tenUMToIn * resInch.yRes))));
+		    (efsDelta.location.y * tenUMToIn * resInch.yRes)))));
 
 		if (efsDelta.has_dup && efsDelta.has_dlf && efsDelta.has_drt) {
 			delta.has_angle = true;
