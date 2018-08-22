@@ -20,11 +20,11 @@
 
 #include <memory>
 #include <be_io_recordstore.h>
-#include <be_io_recordstoreiterator.h>
 
 namespace BE = BiometricEvaluation;
 namespace PBE = PythonBiometricEvaluation;
 namespace PRS = PythonBiometricEvaluation::RecordStore;
+using namespace BiometricEvaluation::Framework::Enumeration;
 
 /*
  * Iterators.

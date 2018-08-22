@@ -12,6 +12,7 @@
 #include "py_libbiomeval.h"
 
 namespace PBE = PythonBiometricEvaluation;
+using namespace BiometricEvaluation::Framework::Enumeration;
 
 /** Public methods of the BiometricEvaluation module. */
 static PyMethodDef biomeval_methods[] =
