@@ -98,18 +98,6 @@ similarly-named packages.
 |:---------:|:-----------------:|:--------------------------------:|:--------:|
 | PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)) | `libpcsclite-dev` |
 
-### IO
-| Name         | RHEL/CentOS  | MacPorts | Ubuntu       |
-|:------------:|:------------:|:--------:|:-------------|
-| Zlib         | `zlib-devel` | `zlib`   | `zlib1g-dev` |
-
-### RECORDSTORE
-| Name         | RHEL/CentOS    | MacPorts  | Ubuntu           |
-|:------------:|:--------------:|:---------:|:----------------:|
-| Berkeley DB  | `libdb-devel`  | `db44`    | `libdb-dev`      |
-| SQLite 3     | `sqlite-devel` | `sqlite3` | `libsqlite3-dev` |
-| Zlib         | `zlib-devel`   | `zlib`    | `zlib1g-dev`     |
-
 ### IMAGE
 | Name         | RHEL/CentOS           | MacPorts   | Ubuntu             |
 |:------------:|:---------------------:|:----------:|:------------------:|
@@ -118,6 +106,11 @@ similarly-named packages.
 | libpng       | `libpng-devel`        | `libpng`   | `libpng-dev`       |
 | libtiff      | `libtiff-devel`       | `tiff`     | `libtiff-dev`      |
 | Zlib         | `zlib-devel`          | `zlib`     | `zlib1g-dev`       |
+
+### IO
+| Name         | RHEL/CentOS  | MacPorts | Ubuntu       |
+|:------------:|:------------:|:--------:|:-------------|
+| Zlib         | `zlib-devel` | `zlib`   | `zlib1g-dev` |
 
 ### MPIBASE, MPIDISTRIBUTOR, MPIRECEIVER
 | Name         | RHEL/CentOS     | MacPorts  | Ubuntu           |
@@ -128,6 +121,18 @@ With MacPorts, you may need to select a different MPI group if you have more tha
 installed:
 
 `sudo port select mpi openmpi-mp-fortran`
+
+### RECORDSTORE
+| Name         | RHEL/CentOS    | MacPorts  | Ubuntu           |
+|:------------:|:--------------:|:---------:|:----------------:|
+| Berkeley DB  | `libdb-devel`  | `db44`    | `libdb-dev`      |
+| SQLite 3     | `sqlite-devel` | `sqlite3` | `libsqlite3-dev` |
+| Zlib         | `zlib-devel`   | `zlib`    | `zlib1g-dev`     |
+
+### SYSTEM
+| Name                       | RHEL/CentOS   | MacPorts | Ubuntu         |
+|:--------------------------:|:-------------:|:--------:|:--------------:|
+| Portable Hardware Locality | `hwloc-devel` | `hwloc`  | `libhwloc-dev` |
 
 ### VIDEO
 | Name                        | RHEL/CentOS | MacPorts       | Ubuntu          |
