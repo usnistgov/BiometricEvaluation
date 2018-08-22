@@ -7,14 +7,6 @@
  * its use by other parties, and makes no guarantees, expressed or implied,
  * about its quality, reliability, or any other characteristic.
  */
- 
-#ifdef __APPLE__
-#include <Python/Python.h>
-#include <Python/structmember.h>
-#else
-#include <Python.h>
-#include <structmember.h>
-#endif
 
 #include "py_recordstore.h"
 

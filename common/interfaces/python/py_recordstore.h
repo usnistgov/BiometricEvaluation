@@ -12,12 +12,18 @@
 #define __PY_RECORDSTORE_H__
 
 #ifdef __APPLE__
+#include <AvailabilityMacros.h>
+#ifdef MAC_OS_X_VERSION_10_13
+#include <Python.h>
+#include <structmember.h>
+#else /* MAC_OS_X_VERSION_10_13 */
 #include <Python/Python.h>
 #include <Python/structmember.h>
+#endif/* MAC_OS_X_VERSION_10_13 */
 #else
 #include <Python.h>
 #include <structmember.h>
-#endif
+#endif /* __APPLE__ */
 
 /* 
  * structmember.h #defines READONLY

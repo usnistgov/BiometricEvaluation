@@ -18,7 +18,7 @@ module.extra_compile_args = ['-std=c++11']
 module.extra_link_args = ['-Wl,-rpath,/usr/nistlocal/biomeval/lib64']
 
 if platform.mac_ver()[0] != "":
-	module.extra_compile_args += ['-Wno-error=unused-command-line-argument-hard-error-in-future']
+	module.extra_compile_args += ['-Wno-error=unused-command-line-argument']
 
 module.language = ['c++']
 
