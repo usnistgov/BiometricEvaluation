@@ -96,7 +96,7 @@ similarly-named packages.
 
 | Name      | RHEL/CentOS       | MacPorts                         | Ubuntu   |
 |:---------:|:-----------------:|:--------------------------------:|:--------:|
-| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/content/technotes/tn2339/)) | `libpcsclite-dev` |
+| PCSC Lite | `pcsc-lite-devel` | n/a (requires [Command Line Tools](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)) | `libpcsclite-dev` |
 
 ### IO
 | Name         | RHEL/CentOS  | MacPorts | Ubuntu       |
@@ -113,7 +113,7 @@ similarly-named packages.
 ### IMAGE
 | Name         | RHEL/CentOS           | MacPorts   | Ubuntu             |
 |:------------:|:---------------------:|:----------:|:------------------:|
-| OpenJPEG 2.x | [`openjpeg2-devel`](https://dl.fedoraproject.org/pub/epel/7/x86_64/o/) | `openjpeg` | `libopenjp2-7-dev` |
+| OpenJPEG 2.x | [`openjpeg2-devel`](https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/o/) | `openjpeg` | `libopenjp2-7-dev` |
 | libjpeg      | `libjpeg-turbo-devel` | `jpeg`     | `libjpeg-dev`      |
 | libpng       | `libpng-devel`        | `libpng`   | `libpng-dev`       |
 | libtiff      | `libtiff-devel`       | `tiff`     | `libtiff-dev`      |
