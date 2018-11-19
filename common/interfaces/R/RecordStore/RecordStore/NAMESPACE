@@ -1,3 +1,0 @@
-useDynLib(RecordStore)
-exportPattern("^[[:alpha:]]+")
-importFrom(Rcpp, evalCpp)
