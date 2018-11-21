@@ -13,6 +13,8 @@ Current
  * [NISTscan][4]
    * Digitization of fingerprint imagery at sample rates of 500, 1000, and 2000
      PPI in 8-bit or 16-bit grayscale as well as 24-bit color depths.
+ * [rstool][9]
+   * A tool for manipulating [Biometric Evaluation][1] RecordStores.
  * [Slap Fingerprint Segmentation][5]
    * Resources for NIST's Slap Fingerprint Segmentation Evaluations.
 
@@ -39,3 +41,4 @@ Legacy
 [6]: https://github.com/usnistgov/frpc
 [7]: https://github.com/usnistgov/iarpa-n2n
 [8]: https://github.com/usnistgov/tattoo
+[9]: https://github.com/usnistgov/rstool
